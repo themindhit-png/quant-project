@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: prop-sleeves-v4
+    env: python
+    region: frankfurt          # NOT a US region: Bybit/Binance block US IPs
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: FIRM
+        value: hyrotrader_2step_swing
+      - key: MODE
+        value: challenge
+      - key: PHASE
+        value: "1"
+      - key: ACCOUNT_SIZE
+        value: "10000"
+      - key: BASE_SCALE
+        value: "1.0"
+      - key: CPPI_FRAC
+        value: "0.5"
+      - key: BYBIT_BASE_URL
+        value: https://api-demo.bybit.com
+      - key: BYBIT_API_KEY
+        sync: false
+      - key: BYBIT_API_SECRET
+        sync: false
+      - key: TG_BOT_TOKEN
+        sync: false
+      - key: TG_CHAT_ID
+        sync: false
+      - key: STATUS_TOKEN
+        sync: false
