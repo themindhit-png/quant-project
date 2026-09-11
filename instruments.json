@@ -1,0 +1,7612 @@
+{
+"0GUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 70000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1758175736000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"1000000BABYDOGEUSDT": {
+"qtyStep": 100.0,
+"minQty": 100.0,
+"maxQty": 45000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1718105652000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"1000000MOGUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 250000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1715874213000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"10000NEXUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1800000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1779350242000,
+"maxLeverage": 10.0,
+"fundingInterval": 240
+},
+"10000SATSUSDT": {
+"qtyStep": 100.0,
+"minQty": 100.0,
+"maxQty": 82000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-08,
+"launch": 1700127695000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"1000BONKUSDT": {
+"qtyStep": 100.0,
+"minQty": 100.0,
+"maxQty": 12000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1672971039000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"1000BTTUSDT": {
+"qtyStep": 100.0,
+"minQty": 100.0,
+"maxQty": 30000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1645769298000,
+"maxLeverage": 12.5,
+"fundingInterval": 480
+},
+"1000CATUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 3100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1726140905000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"1000FLOKIUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1443800.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1677228986000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"1000LUNCUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 460000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1662681601000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"1000NEIROCTOUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 590000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1726480024000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"1000PEPEUSDT": {
+"qtyStep": 100.0,
+"minQty": 100.0,
+"maxQty": 42000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1683108271000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"1000RATSUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 620000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1700633654000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"1000TAGUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 5150.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1753691858000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"1000TOSHIUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 110000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1733390562000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"1000TURBOUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 26100.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1709205139000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"1000XECUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 270000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1649820036000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"1INCHUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 84000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1638748800000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"2ZUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 312000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1759412287000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"4STOCKUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 448000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1788953593000,
+"maxLeverage": 10.0,
+"fundingInterval": 240
+},
+"4USDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1875000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1759926326000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"AALUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 3394.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784799594000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"AAOIUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 750.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1780993432000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"AAPLUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1777364510000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"AAVEUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 460.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1620897660000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"ACEUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 130000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1702882175000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ACHUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 850000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1649405257000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ACTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 2300000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1731312852000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ACUUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 147000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1769154278000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"ADAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 590000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1610668800000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"ADBEUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 122.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782721878000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ADIUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 133.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787130147000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"AEHRUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 568.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784193622000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"AEONUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 464000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1786611877000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"AEROUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 80000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1721034308000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"AEVOUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 170000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1710327014000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"AGIUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 630000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1700209664000,
+"maxLeverage": 5.0,
+"fundingInterval": 480
+},
+"AGLDUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 25440.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1650608721000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"AIGENSYNUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 181000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1777526715000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"AIOUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 73000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1755090699000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"AIOZUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 78600.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1718266561000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"AIXBTUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1215000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1734683907000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"AKEUSDT": {
+"qtyStep": 100.0,
+"minQty": 100.0,
+"maxQty": 15000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1758892362000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"AKTUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 76000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1719392170000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ALABUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 150.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782721173000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ALCHUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 200000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1736235131000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"ALGOUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 160000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1632355200000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"ALICEUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 32150.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1635120000000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ALLOUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 70000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1763123540000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ALPINEUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 10000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1755164723000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ALTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 2500000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1706181459000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"AMATUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 100.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1780647383000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"AMCUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 21730.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1785147298000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"AMDSTOCKUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 400.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1779957173000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"AMGNUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 129.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785489635000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"AMZNUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 530.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1777363587000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"ANETUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 265.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787212574000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ANIMEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 3300000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1737642024000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ANKRUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 4400000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1637712000000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"APEUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 86190.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1647571477000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"APEXUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 95000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1759047493000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"API3USDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 24150.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1646019009000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"APLDUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1960.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784285433000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"APPSTOCKUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 110.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784195913000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"APRUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 25000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1761221867000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"APTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 160000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1666107272000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"ARBUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 4300000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1679563660000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"ARCUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 480000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1735892178000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"ARIAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 79000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1756903625000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ARKKUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 664.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784538556000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ARKMUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 210000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1690508471000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"ARKUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 210000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1690869317000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ARMUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 390.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1778659627000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ARPAUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 960000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1650369703000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ARUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 4060.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1639978762000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"ARXUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 58310.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1782186545000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"ASMLUSDT": {
+"qtyStep": 0.001,
+"minQty": 0.001,
+"maxQty": 50.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782459823000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ASRUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 4100.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1755163098000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ASTERUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 130000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1758267993000,
+"maxLeverage": 75.0,
+"fundingInterval": 240
+},
+"ASTRUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 523700.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1649044122000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ASTSUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1780563205000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ATHUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 3700000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1718269304000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ATOMUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 22100.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1633910400000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"ATUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 120000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1761746016000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"AUCTIONUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 2560.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1690526070000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"AUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 32400.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1748420402000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"AVAAIUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1736325126000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"AVAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 10000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1734343893000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"AVAXUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 22000.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1631664000000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"AVGOUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 290.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1778573548000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"AVNTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 240000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1757426737000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"AWEUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 290000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1747904988000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"AXLUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 361500.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1701941550000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"AXSUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 54000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1628726400000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"AXTIUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1781603882000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"AZTECUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1470000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1770881266000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"B2USDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 10000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1749460723000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"B3USDT": {
+"qtyStep": 100.0,
+"minQty": 100.0,
+"maxQty": 13000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1739355381000,
+"maxLeverage": 20.0,
+"fundingInterval": 60
+},
+"BABAUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 740.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1778659392000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"BABYUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1500000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1743672875000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"BACUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 800.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785837953000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"BANANAS31USDT": {
+"qtyStep": 100.0,
+"minQty": 100.0,
+"maxQty": 3000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1743154150000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"BANANAUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 3400.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1721386183000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"BANDUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 20410.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1645167116000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"BANKUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 190000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1746694311000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"BANUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 145000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1731919190000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"BARDUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 140000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1758016137000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"BASEDUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 208300.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1774859022000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"BATUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 53000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1637712000000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"BBUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 120000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1715686860000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"BBXUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 2910.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1782202516000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"BCHUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1300.0,
+"minNotional": 5.0,
+"tickSize": 0.1,
+"launch": 1514764800000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"BEAMUSDT": {
+"qtyStep": 100.0,
+"minQty": 100.0,
+"maxQty": 11000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1699955296000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"BEATUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 18000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1763722433000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"BELUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 130000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1655445585000,
+"maxLeverage": 10.0,
+"fundingInterval": 480
+},
+"BERAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 48000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1738847788000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"BEUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 300.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1779957342000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"BICOUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 310000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1638445217000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"BIGTIMEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 2900000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1697099745000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"BIIBUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 240.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785924318000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"BILLUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 216000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1778049738000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"BIOUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1735034094000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"BIRBUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 156000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1769598765000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"BITOUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 5660.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1785147545000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"BLASTUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 43000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1719480310000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"BLENDUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 250000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1777455508000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"BLESSUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1800000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1758708305000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"BLUAIUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 500000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1761219528000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"BLURUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1200000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1676428387000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"BMNRUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 4000.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1778745562000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"BMTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 520000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1741852724000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"BNBUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 370.0,
+"minNotional": 5.0,
+"tickSize": 0.1,
+"launch": 1624951080000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"BNCUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 16940.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1784193688000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"BNTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 28000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1691385533000,
+"maxLeverage": 5.0,
+"fundingInterval": 480
+},
+"BOBAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 120000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1649231761000,
+"maxLeverage": 5.0,
+"fundingInterval": 480
+},
+"BOMEUSDT": {
+"qtyStep": 100.0,
+"minQty": 100.0,
+"maxQty": 72000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1710492745000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"BOTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1187.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782892908000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"BRETTUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 3500000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1714119444000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"BREVUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 62500.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1767099365000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"BRKBUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 98.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785405218000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"BROCCOLIUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1300000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1739535111000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"BRUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 90000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1742476788000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"BSBUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 168000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1774500541000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"BSPUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1415.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1783325155000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"BSVUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1782.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1639105708000,
+"maxLeverage": 75.0,
+"fundingInterval": 240
+},
+"BTCUSDT": {
+"qtyStep": 0.001,
+"minQty": 0.001,
+"maxQty": 150.0,
+"minNotional": 5.0,
+"tickSize": 0.1,
+"launch": 1584230400000,
+"maxLeverage": 150.0,
+"fundingInterval": 480
+},
+"BTDRUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 4055.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1789031318000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"BTRUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 650000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1756293116000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"BTWUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 601000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1780646878000,
+"maxLeverage": 10.0,
+"fundingInterval": 240
+},
+"BUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 120000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1747980646000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"BXUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 390.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784285361000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"BYDUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 4562.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1788761313000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"BZUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 3000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1778659712000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"C98USDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 163290.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1635120000000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CAKEUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 16560.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1699005636000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"CAPUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1027000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1782703707000,
+"maxLeverage": 10.0,
+"fundingInterval": 240
+},
+"CARVUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 250000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1729068075000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"CASHCATUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 284000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1785924043000,
+"maxLeverage": 10.0,
+"fundingInterval": 240
+},
+"CATIUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 60000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1725869712000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"CATSTOCKUSDT": {
+"qtyStep": 0.001,
+"minQty": 0.001,
+"maxQty": 25.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782986123000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CBRSUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 700.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1779179085000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CCUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 160000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1761916855000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"CELOUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 51000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1641367582000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"CETUSUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 600000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1707104643000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"CFGUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 156250.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1773720175000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"CFXUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 252700.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1676883925000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CGNXUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 808.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1789031426000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CGPTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 400000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1736506047000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"CHILLGUYUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1400000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1732181897000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"CHIPUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 800000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1776331130000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"CHRUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 64000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1637193600000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CHZUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 560000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1633996800000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"CIENUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 150.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782721808000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CIFRUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2726.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786098184000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CKBUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 3413000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1644901148000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CLANKERUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 530.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1745835370000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"CLOUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 50000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1760701337000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"CLSKUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 3383.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785837875000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CLUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 12000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1774338320000,
+"maxLeverage": 150.0,
+"fundingInterval": 480
+},
+"COAIUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 75000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1759394107000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"COHRUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 200.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1781603709000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"COINUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1777450718000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"COMPUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2200.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1628726400000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"COOKIEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 480000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1736235179000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"COREUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 810000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1675927514000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"COSTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 52.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1783500299000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"COTIUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 221900.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1638445117000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"COWUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 240000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1731060401000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"CPUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 686000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1788507720000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"CRCLUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 4000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1778056166000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"CRDOUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 200.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782202737000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CRMUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 303.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784799756000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CROSSUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 87000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1752145300000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"CROUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 700000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1637625600000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CRVUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 196620.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1635120000000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"CRWDUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 265.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1783065201000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CRWVUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1778574111000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CSCOUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 450.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1779263175000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CSOPSAMSUNG2LUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 2983.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786431549000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"CSOPSKHYNIX2LUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 7035.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1786431091000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"CTCUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 200000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1652774270000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"CTRUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1525000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1780993713000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"CUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 125000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1752574968000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"CVCUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 153200.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1638285651000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CVXSTOCKUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 236.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1788426969000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"CVXUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 9200.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1650440282000,
+"maxLeverage": 75.0,
+"fundingInterval": 240
+},
+"CXMTUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 3580.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1785140018000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"CYBERUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 7030.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1692124015000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"CYSUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 50000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1765537544000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"DASHUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1600.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1633996800000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"DATAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 89120.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1782815431000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"DBRUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 800000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1729161730000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"DDOGUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 202.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787045026000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"DEEPUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1500000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1729165754000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"DELLUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 200.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1780387603000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"DEXEUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 1200.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1721898539000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"DGAIUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 32170.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1788507579000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"DIAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 67000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1753256933000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"DJTUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 5385.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1787653570000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"DKNGUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2008.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784538352000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"DOGEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 5991100.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1622630640000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"DOLOUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 460000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1753692850000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"DOODUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 2000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1746796833000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"DOSUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 68130.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1786515130000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"DOTUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 32140.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1616060040000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"DRAMUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 6800.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1779178914000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"DRIFTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 590000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1716283968000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"DUSKUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 180000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1639673130000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"DYDXUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 72560.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1633910400000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"DYMUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1707273410000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"EBAYUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 455.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786098422000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"EDENUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 300000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1759232604000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"EDGEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 48500.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1773977854000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"EDUUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 200000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1683273334000,
+"maxLeverage": 5.0,
+"fundingInterval": 480
+},
+"EGLDUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2534.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1637596800000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"EIGENUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 120000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1722915813000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"ELSAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 83000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1769066535000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"ENAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 700000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1712050966000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"ENJUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 142530.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1635696000000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ENSOUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 30000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1760433661000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ENSUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 8000.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1636675200000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"EPICUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 8900.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1741940281000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ERAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 130000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1752767182000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ESPORTSUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 460000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1753783524000,
+"maxLeverage": 10.0,
+"fundingInterval": 240
+},
+"ESPUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 312000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1770715786000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"ETCUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 3300.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1624950240000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"ETHBTCUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 2000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1717749178000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ETHFIUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 100000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1710767803000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ETHUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1615766400000,
+"maxLeverage": 150.0,
+"fundingInterval": 480
+},
+"EULUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 6500.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1760430633000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"EURUSDUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 89000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1788858596000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"EVAAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 37000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1760701166000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"EWJUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 500.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1778142464000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"EWTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 500.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1780563286000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"EWYUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 3000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1778142224000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"EWZUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1398.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1788168997000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"FARTCOINUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 600000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1734683847000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"FFUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 450000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1759155773000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"FHEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 555000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1767771601000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"FIDAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 720000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1727254994000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"FIGHTUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1769168536000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"FILUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 60730.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1624950900000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"FLEXUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 363.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1783065302000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"FLNCUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 3000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1781603229000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"FLOCKUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 220000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1736412607000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"FLOWUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 1100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1637856000000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"FLRUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 850000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1678953508000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"FLUIDUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 6000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1758714467000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"FLUXUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 20000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1725438663000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"FLYUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2587.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784538492000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"FOGOUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 500000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1768115669000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"FOLKSUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 9300.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1765278382000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"FORMSTOCKUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 438.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1789031546000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"FORMUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 56000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1742378167000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"FUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 5000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1733480292000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"FUTUUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 447.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787212689000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"FWDIUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 11460.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1784196063000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"GALAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 7167900.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1636416000000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"GASUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 29000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1698044952000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"GBPUSDUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 74000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1788858731000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"GDXUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 652.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785147482000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"GENIUSUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 39660.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1776324480000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"GEUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 141.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785489214000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"GEVUSDT": {
+"qtyStep": 0.001,
+"minQty": 0.001,
+"maxQty": 46.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1783677021000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"GIGADEVICEUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 852.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785230576000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"GIGGLEUSDT": {
+"qtyStep": 0.001,
+"minQty": 0.001,
+"maxQty": 475.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1760012012000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"GILDUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 384.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785489556000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"GLMUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 32000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1691643479000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"GLWUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 300.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782287375000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"GMESTOCKUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2351.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785147217000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"GMTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 3100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1647667511000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"GMXUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2900.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1665385570000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"GOATUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1400000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1729593864000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"GOOGLUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1777276478000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"GPROUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 40650.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1788336866000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"GPSUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 2550000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1739866543000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"GRAMUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 15150.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1782121594000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"GRASSUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 93000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1728987123000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"GRIFFAINUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1734683999000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"GRTUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 555670.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1638748800000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"GRVTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 98000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1785499299000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"GSUSDT": {
+"qtyStep": 0.001,
+"minQty": 0.001,
+"maxQty": 45.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784799879000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"GUNUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 980000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1743426729000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"GWEIUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 183150.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1779091413000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"HAEDALUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 460000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1746012593000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"HAJIMIUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 424000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1788769316000,
+"maxLeverage": 10.0,
+"fundingInterval": 240
+},
+"HANAUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1760700785000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"HANMIUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 308.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786698543000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"HBARUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1064600.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1635120000000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"HDUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 148.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787130242000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"HEIUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 33000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1739525015000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"HEMIUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 2000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1758632437000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"HIMSUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1344.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1783064973000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"HIVEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 58700.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1734950040000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"HMSTRUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 142500000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1726034896000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"HNTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 13000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1643006840000,
+"maxLeverage": 12.5,
+"fundingInterval": 480
+},
+"HOLOUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 480000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1757592340000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"HOMEUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 500000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1749554150000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"HOODUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1776848262000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"HORIZONUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 92250.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1789111889000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"HPEUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782459903000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"HUAHONGUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 3576.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1788761819000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"HUMAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 210000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1748264514000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"HUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 370000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1750845035000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"HYPERUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 400000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1745323627000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"HYPEUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 14700.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1733316740000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"HYUNDAIUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 200.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1780541049000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"IBMUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 300.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1780647275000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"ICNTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 65000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1751540416000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"ICPUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 25860.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1631664000000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"ICXUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 110000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1649830935000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"IDUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 980000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1679639388000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ILVUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 3700.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1637884800000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"IMXUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 150000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1637712000000,
+"maxLeverage": 75.0,
+"fundingInterval": 240
+},
+"INFQUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 3610.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787738091000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"INITUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 161200.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1744616093000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"INJUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 6020.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1660694400000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"INTCUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2600.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1776848142000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"INTUUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 135.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787654148000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"INTWUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1902.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784016053000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"INUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 130000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1754561821000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"INXUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1250000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1769675991000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"IONQUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1434.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784285524000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"IOSTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 12300000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1633996800000,
+"maxLeverage": 25.0,
+"fundingInterval": 60
+},
+"IOTAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 399000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1640772993000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"IOTXUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 639300.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1636675200000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"IOUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 190000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1718113740000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"IRENUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 1500.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1780993883000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"IRYSUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 640000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1764223243000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"ISRGUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 128.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787044940000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"IWMUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 200.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1778745922000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"JASMYUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 16000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1642574202000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"JCTUSDT": {
+"qtyStep": 100.0,
+"minQty": 100.0,
+"maxQty": 2000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1763374327000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"JDUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1708.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787296650000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"JELLYJELLYUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1738219511000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"JNJUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 194.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785746846000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"JPMUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 142.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785489356000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"JSTUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 263000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1645166741000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"JTOUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 130000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1701978619000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"JUPUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 79000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1706716267000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"KAIAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1400000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1730449474000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"KAITOUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 54000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1740057727000,
+"maxLeverage": 75.0,
+"fundingInterval": 240
+},
+"KASUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 4600000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1691138081000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"KATUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 2500000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1772435837000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"KAVAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 52130.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1641801287000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"KERNELUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 484000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1744632444000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"KGENUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 62500.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1759850272000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"KITEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 80000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1761739367000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"KLACUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 200.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782459970000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"KMNOUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 96000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1728463961000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"KNCUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 71730.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1641800434000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"KODEX200USDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 642.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786698224000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"KORUUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 20000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784111653000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"KOUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 560.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785405618000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"KSMUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1330.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1633996800000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"KSTRUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1757.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784015980000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"KUAISHOUUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 4425.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786430657000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"LABUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 5000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1761556790000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"LAOPUUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1009.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1788336754000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"LAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1749100801000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"LDOUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 59020.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1658300019000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"LENOVOUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 11990.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1788761645000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"LGELECTRONICSUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 331.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786698649000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"LIGHTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 115500.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1758978959000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"LINEAUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 15000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1756719285000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"LINKUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 15000.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1514764800000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"LITEUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 200.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1778573822000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"LITUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 40000.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1767089298000,
+"maxLeverage": 75.0,
+"fundingInterval": 240
+},
+"LLYUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 50.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1778745824000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"LPTUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 5000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1639357959000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"LQTYUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 20140.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1678694760000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"LRCUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 140000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1636588800000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"LRCXUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 150.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782287120000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"LSKUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 40000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1704208975000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"LTCUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 3000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1514764800000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"LUMIAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 204000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1729841762000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"LUNA2USDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 141870.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1653983403000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"LYNUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 468000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1759737954000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"LYTEUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1852.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786611728000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MAGICUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 111600.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1670897921000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"MAGMAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 55000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1766732813000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"MAGSUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 748.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787130312000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MANAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 130000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1636329600000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"MANTAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 240000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1705575778000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"MARAUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 4508.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784285210000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MARSCOINUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 337000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1788258911000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"MASKUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 12000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1638444542000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"MAUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 100.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785405400000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MAVIAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 270000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1707297146000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"MAVUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 710000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1687945209000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"MCDUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 187.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787819322000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MDBUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 132.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1788426836000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MEGAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 510000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1761220097000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"MEITUANUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2089.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786430779000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MEITUUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 92590.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1789111809000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MELANIAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 170000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1737350019000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"MEMEUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 10000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1699001325000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"MERLUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 390000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1713524541000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"METAUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 500.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1777276332000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"METISUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 3700.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1704207924000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"METUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 200000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1760090046000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"MEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 240000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1732521795000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"MEWUSDT": {
+"qtyStep": 100.0,
+"minQty": 100.0,
+"maxQty": 95000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1713863741000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"MINAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 150000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1649228613000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"MINIMAXUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1946.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785230280000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MIRAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 290000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1758890551000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"MITOUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1756462419000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"MMTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 60000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1761556943000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"MNSTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1095.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787044790000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MNTUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 50000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1696225255000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MOCAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 2100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1720778262000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"MONUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 4000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1763992686000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"MOODENGUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 370000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1727765946000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"MORPHOUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 7100.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1732264559000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"MOUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 738.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786097505000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MOVEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 495000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1733745977000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"MOVRUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 12000.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1700719762000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"MRKUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 331.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787296845000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MRNAUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 301.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787208956000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MRVLUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1200.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1778659541000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"MSFTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 700.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1777276719000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"MSTRUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 3000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1777450622000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"MSTUUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1685.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787738260000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MTLUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 67000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1649831690000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MUBARAKUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 460000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1742197296000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"MUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 56000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1751967363000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"MUUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1778141926000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"MUUUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784193915000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MVLLUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 3000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782813159000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"MYXUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 85000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1754386082000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"NAORISUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1753964050000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"NAVERUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 309.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786698427000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"NBISUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 750.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1779783295000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"NCLDUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1876.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786611340000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"NEARUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 66470.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1633910400000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"NEOUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 4400.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1643509229000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"NESAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 124870.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1786612087000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"NETUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 171.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786008986000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"NEWTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 40000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1750405506000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"NFLXUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 642.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1783325065000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"NIGHTUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 800000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1765275695000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"NILUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 310000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1742468146000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"NIULAIUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 653000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1787900558000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"NMRUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 840.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1693804592000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"NOKIAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 10000.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1780647188000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"NOMUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 3000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1759306658000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"NOTUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 89000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1715874083000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"NOWUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 500.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1780563360000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"NVDAUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1778056269000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"NVDLUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1632.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784626359000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"NVOUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1098.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786009451000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"NXPCUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 50000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1747289965000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"OGNUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 540000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1647671419000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"OGUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 4900.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1693210797000,
+"maxLeverage": 12.5,
+"fundingInterval": 480
+},
+"OKBUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 400.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1757591356000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"OKTAUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 302.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1788168915000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ONDOUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 900000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1705919392000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"ONDSUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 2408.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1780994017000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ONGUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 44300.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1701155663000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"ONTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 74000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1654497420000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ONUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 576.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784626218000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"OPENUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 50000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1757336655000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"OPGUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 190000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1776923521000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"OPNUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 250000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1770803369000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"OPUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 540000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1654059063000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"ORCAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 27000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1711963329000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ORCLUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1200.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1778056362000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"ORDERUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 80000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1724749336000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"ORDIUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 15000.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1684739410000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"OUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 41270.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1782186684000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"OUSTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1147.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786355654000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"PANWUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 144.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784709504000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"PARTIUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 62800.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1742908134000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"PAXGUSDT": {
+"qtyStep": 0.001,
+"minQty": 0.001,
+"maxQty": 17.0,
+"minNotional": 5.0,
+"tickSize": 0.1,
+"launch": 1647245226000,
+"maxLeverage": 75.0,
+"fundingInterval": 240
+},
+"PDDUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 560.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787296301000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"PEAQUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 320000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1732005101000,
+"maxLeverage": 5.0,
+"fundingInterval": 480
+},
+"PENDLEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 26000.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1688542002000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"PENGSTOCKUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 879.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784709594000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"PENGUUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 12000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1734445346000,
+"maxLeverage": 75.0,
+"fundingInterval": 240
+},
+"PEOPLEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1485500.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1640749024000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"PEPUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 347.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785405508000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"PHAROSUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 33300.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1778746356000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"PHAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1717149720000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"PIEVERSEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 34000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1763127243000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"PIPPINUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 610000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1737103122000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"PIXELUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1500000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1708416370000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"PLAYSOUTUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 125000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1768902912000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"PLTRUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 450.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1777450480000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"PLUMEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 3600000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1737701100000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"PNUTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 690000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1731313006000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"POETUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 6060.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1784193750000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"POLUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 500000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1725525013000,
+"maxLeverage": 75.0,
+"fundingInterval": 240
+},
+"POLYXUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 280000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1698129996000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"PONSUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 76420.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1788168745000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"POPCATUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 800000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1711609319000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"POPMARTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2422.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785230486000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"PORTALUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 1200000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1709264458000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"POWERUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 83000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1767004491000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"POWRUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 170000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1698130882000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"PRLUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 145200.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1774587057000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"PROMPTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 90000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1744293965000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"PROVEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 25000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1754413429000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"PTBUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 2250000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1756904871000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"PUFFERUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 750000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1728909421000,
+"maxLeverage": 5.0,
+"fundingInterval": 480
+},
+"PUMPFUNUSDT": {
+"qtyStep": 100.0,
+"minQty": 100.0,
+"maxQty": 27000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1752119132000,
+"maxLeverage": 75.0,
+"fundingInterval": 240
+},
+"PUNDIXUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 130000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1746011520000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"PURRUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 6553.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1783676933000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"PYPLUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 857.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785405333000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"PYTHUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 177000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1700543350000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"QCOMUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 460.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1779783510000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"QNTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 520.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1687154400000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"QNTXUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 1000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1780994116000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"QQQUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1778142025000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"QTUMUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 5100.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1639356566000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"QUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 350000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1757673982000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"RAMUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 4098.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787653995000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"RAREUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 740000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1701067684000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"RAVEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 54000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1765777812000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"RAYDIUMUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 12000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1717492319000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"RDDTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 321.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785838016000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"RDWUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 5330.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1784193845000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"RECALLUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 50000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1760530869000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"REDUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 130000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1740552652000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"REGNUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 68.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785489815000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"RENDERUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 100000.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1721982407000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"RESOLVUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 760000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1749561099000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"REUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 59340.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1781792305000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"REZUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1800000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1715154797000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"RIOTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2458.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786522964000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"RIVERUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 5500.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1761136287000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"RIVNUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2881.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784538418000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"RKLBUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 3000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1779263322000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"RLCUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 8640.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1679468899000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"RLUSDUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 25000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1758895535000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ROBOUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 625000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1772011862000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"RONINUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 65000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1739430673000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"ROSEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 2500000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1642140231000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"RPLUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 6600.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1677655946000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"RSRUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 7800000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1638286101000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"RUNEUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 44260.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1638144000000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"RVNUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1582300.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1641454067000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"SAFEUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 150000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1714382689000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"SAGAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 250000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1712662154000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"SAHARAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1750417893000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"SAMSUNGEMUSDT": {
+"qtyStep": 0.001,
+"minQty": 0.001,
+"maxQty": 45.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786698716000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SAMSUNGUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1780540679000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"SANDUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 253900.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1635724800000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"SAPIENUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 148000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1755710378000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"SEIUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1692156527000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"SENSETIMEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 299220.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1789111621000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SENTUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1800000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1763190588000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"SHAZUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 712.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1783500224000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SHEINUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 8060.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787808289000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SHELLUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 118400.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1739777623000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"SHIB1000USDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 15555000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1634688000000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"SHOPUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 403.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785924124000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SIGNUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1745838563000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"SIRENUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 270000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1742613642000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"SKDDUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 3236.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786355591000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SKHYNIXUSDT": {
+"qtyStep": 0.001,
+"minQty": 0.001,
+"maxQty": 600.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1780540536000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"SKHYUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2300.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1783737596000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"SKLUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 348100.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1647937788000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SKRUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 3120000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1768904987000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"SKUUUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2915.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786355301000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SKYAI1USDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 200000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1779697382000,
+"maxLeverage": 10.0,
+"fundingInterval": 240
+},
+"SKYUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 680000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1754900886000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"SLPUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 16000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1637164800000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SLXUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 57490.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1780300549000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"SMCIUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782287292000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SMHUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 81.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784104673000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SMICUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 2904.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786522671000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"SNDKUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 400.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1777364384000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"SNOWUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 187.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1783677139000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SNTUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 267000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1698913694000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"SNXUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 35660.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1639357278000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"SNXXUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 7000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784015916000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"SOFIUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2832.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784709408000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SOLAYERUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 320000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1739283176000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"SOLUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 12000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1634256000000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"SOMIUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 240000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1756823941000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"SONICUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 240000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1736252695000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"SONYUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2329.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1783500006000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SOONUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 120000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1747990696000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"SOPHUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 3300000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1748437483000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"SOSOUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 21000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1750936079000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"SOXLUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 5000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1779178631000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"SOXSUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2500.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784195821000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"SOXXUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 95.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784626286000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SPACEUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1250000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1769171029000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"SPCHUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 5595.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1787212487000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SPCXUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 6000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1781510821000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"SPKUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1200000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1750151567000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"SPORTFUNUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 312000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1768814718000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"SPOTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 100.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785747058000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SPXLUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 175.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787737283000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SPXUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 70000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1730183497000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"SPYUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1300.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1778745719000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"SQDUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 540000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1749641005000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"SQQQUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1310.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782813258000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SSPCUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2474.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785317839000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SSVUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1797.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1677655670000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"STABLEUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 620000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1762433433000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"STBLUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 140000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1758103139000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"STEEMUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 300000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1698215382000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"STGUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 50420.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1661493459000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"STORJUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 240000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1637539200000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"STOUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 190000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1744795735000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"STRKUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 1200000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1708436526000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"STXUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 102840.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1638259183000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"STXXUSDT": {
+"qtyStep": 0.001,
+"minQty": 0.001,
+"maxQty": 100.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782376308000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"SUIUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 66000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1683029724000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"SUNUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 310000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1645166314000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"SUPERUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 21100.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1700720186000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"SUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 390000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1736930840000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"SUSHIUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 83000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1638230400000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"SXTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 800000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1746252735000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"SYRUPUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 140000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1747640186000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"TACUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1250000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1752576498000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"TAIKOUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 110000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1717597055000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"TAOUSDT": {
+"qtyStep": 0.001,
+"minQty": 0.001,
+"maxQty": 980.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1706601081000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"TAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 150000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1753089119000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"TBTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1366.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785317952000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"TEAMUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 265.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1788426526000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"TEMUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 790.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1788168828000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"TENCENTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 873.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785230213000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"TERUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 118.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782986346000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"THETAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 52860.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1628726400000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"THEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 22000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1732697404000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"TIAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 200000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1698768749000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"TLMUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 9200000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1637539200000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"TMFUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1524.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785317895000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"TMXUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 152810.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1787740378000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"TNSRUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1712648864000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"TOWNSUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1050000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1754404399000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"TQQQUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782287214000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"TRBUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 690.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1654828244000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"TREEUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 310000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1753797825000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"TRIAUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1250000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1770285700000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"TRUMPUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 8000.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1737181907000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"TRUSTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 170000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1763122691000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"TRUTHUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1320000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1759328067000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"TRXUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 460000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1628726400000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"TSEMUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 203.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784285287000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"TSLAUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1776772618000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"TSLLUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 4416.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784539008000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"TSMUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 300.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1776845726000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"TTWOUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 196.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1783325218000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"TURTLEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 50000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1761145437000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"TUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 886000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1678087595000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"TUTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 450000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1742375596000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"TWTUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 14000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1668666261000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"TXNUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 166.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782986273000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"TZAUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1242.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784195987000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"UAIUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 95000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1763374294000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"UBERUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 730.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786009537000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"UBUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 300000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1757668569000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"UMAUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 32000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1686210562000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"UNHUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 119.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785489283000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"UNITREEUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 500.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785722139000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"UNIUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 11000.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1638230400000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"USARUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 3000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782202956000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"USD1USDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 25000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1752662996000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"USDCUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 100000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1656399612000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"USDEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 120000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1723025685000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"USDJPYUSDT": {
+"qtyStep": 0.001,
+"minQty": 0.001,
+"maxQty": 620.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1788858440000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"USELESSUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 500000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1752144978000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"USTCUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 3700000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1701067354000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"USUALUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 200000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1731921583000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"USUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1000000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1765537596000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"UVXYUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1782376186000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"VANAUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 4000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1734349422000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"VELODROMEUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 610000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1734082004000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"VELOUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 2100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1716196913000,
+"maxLeverage": 5.0,
+"fundingInterval": 480
+},
+"VELVETUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 21000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1752575111000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"VETUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 5200000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1635120000000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"VIRTUALUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 200000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1730449551000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"VRTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 155.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1783677222000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"VRTXSTOCKUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 103.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785924419000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"VSTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 340.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786611264000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"VUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 140.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785147377000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"VVVUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 10000.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1738038705000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"WALUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 216000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1743069956000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"WAVESUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 40000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1641368026000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"WAXPUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 499000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1696918909000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"WCTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 200000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1744716727000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"WDCUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 150.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1779957259000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"WENSTOCKUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 6443.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1784538291000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"WETUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 80000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1764845996000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"WIFUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 300000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1704965504000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"WLDUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 370000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1690184920000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"WLFIUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 2400000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1755939756000,
+"maxLeverage": 75.0,
+"fundingInterval": 240
+},
+"WMTUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 437.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785405748000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"WOOUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 1100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1636416000000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"WUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 1500000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1712147964000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"XAGUSDT": {
+"qtyStep": 0.001,
+"minQty": 0.001,
+"maxQty": 16000.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1773024483000,
+"maxLeverage": 150.0,
+"fundingInterval": 240
+},
+"XAIUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1300000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1704879965000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"XANUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1900000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1759142669000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"XAUTUSDT": {
+"qtyStep": 0.001,
+"minQty": 0.001,
+"maxQty": 105.0,
+"minNotional": 5.0,
+"tickSize": 0.1,
+"launch": 1743678359000,
+"maxLeverage": 75.0,
+"fundingInterval": 240
+},
+"XAUUSDT": {
+"qtyStep": 0.001,
+"minQty": 0.001,
+"maxQty": 250.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1773022440000,
+"maxLeverage": 150.0,
+"fundingInterval": 240
+},
+"XBIUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 319.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784104559000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"XCNUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 1100000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1651132431000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"XDCUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 900000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1739179487000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"XIAOMIUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 7395.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1786522867000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"XLEUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 879.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784104454000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"XLFUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 892.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784625978000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"XLKUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 282.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784626046000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"XLMUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 260000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1628726400000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"XLPUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 580.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787819682000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"XLUUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1149.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1787819581000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"XLVUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 312.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784626153000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"XMRUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 205.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1640143015000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"XNYUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 900000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1755090821000,
+"maxLeverage": 5.0,
+"fundingInterval": 240
+},
+"XOMUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 318.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785746925000,
+"maxLeverage": 50.0,
+"fundingInterval": 480
+},
+"XPINUSDT": {
+"qtyStep": 100.0,
+"minQty": 100.0,
+"maxQty": 2600000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1757673432000,
+"maxLeverage": 20.0,
+"fundingInterval": 240
+},
+"XPLUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 700000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1755854834000,
+"maxLeverage": 75.0,
+"fundingInterval": 240
+},
+"XRPUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 1500000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1620898440000,
+"maxLeverage": 100.0,
+"fundingInterval": 480
+},
+"XTZUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 62530.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1514764800000,
+"maxLeverage": 75.0,
+"fundingInterval": 240
+},
+"XVGUSDT": {
+"qtyStep": 100.0,
+"minQty": 100.0,
+"maxQty": 5040000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1688541486000,
+"maxLeverage": 20.0,
+"fundingInterval": 480
+},
+"XVSUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 1080.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1694159027000,
+"maxLeverage": 10.0,
+"fundingInterval": 480
+},
+"YBUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 15000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1760168936000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"YFIUSDT": {
+"qtyStep": 0.0001,
+"minQty": 0.0001,
+"maxQty": 4.0,
+"minNotional": 5.0,
+"tickSize": 1.0,
+"launch": 1638930769000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"YGGUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 134390.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1637625600000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"YOFCUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 2300.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1788336569000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ZAMAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 568000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1767953327000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ZBCNUSDT": {
+"qtyStep": 100.0,
+"minQty": 100.0,
+"maxQty": 2900000.0,
+"minNotional": 5.0,
+"tickSize": 1e-07,
+"launch": 1713339765000,
+"maxLeverage": 5.0,
+"fundingInterval": 480
+},
+"ZBTUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 150000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1760706241000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ZECUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 1100.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1637712000000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"ZENUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 3220.0,
+"minNotional": 5.0,
+"tickSize": 0.001,
+"launch": 1637884800000,
+"maxLeverage": 75.0,
+"fundingInterval": 480
+},
+"ZEREBROUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 1300000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1735546608000,
+"maxLeverage": 12.5,
+"fundingInterval": 240
+},
+"ZESTUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 92550.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1780646706000,
+"maxLeverage": 10.0,
+"fundingInterval": 240
+},
+"ZETAUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 800000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1706760329000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ZHIPUUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 381.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1785230353000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ZHONGJIUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 333.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1786698826000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ZILUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 6600000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1643480306000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ZKCUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 249000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1757945116000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ZKPUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 292000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1766382658000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ZKUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 2200000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1718849280000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ZMUSDT": {
+"qtyStep": 0.01,
+"minQty": 0.01,
+"maxQty": 545.0,
+"minNotional": 5.0,
+"tickSize": 0.01,
+"launch": 1784285148000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+},
+"ZORAUSDT": {
+"qtyStep": 10.0,
+"minQty": 10.0,
+"maxQty": 310000.0,
+"minNotional": 5.0,
+"tickSize": 1e-06,
+"launch": 1745572650000,
+"maxLeverage": 25.0,
+"fundingInterval": 240
+},
+"ZROUSDT": {
+"qtyStep": 0.1,
+"minQty": 0.1,
+"maxQty": 42000.0,
+"minNotional": 5.0,
+"tickSize": 0.0001,
+"launch": 1718891646000,
+"maxLeverage": 50.0,
+"fundingInterval": 240
+},
+"ZRXUSDT": {
+"qtyStep": 1.0,
+"minQty": 1.0,
+"maxQty": 320000.0,
+"minNotional": 5.0,
+"tickSize": 1e-05,
+"launch": 1648453878000,
+"maxLeverage": 25.0,
+"fundingInterval": 480
+}
+}

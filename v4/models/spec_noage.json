@@ -1,0 +1,65 @@
+{
+ "features": [
+  "r24",
+  "r72",
+  "r168",
+  "r336",
+  "r720",
+  "r1440",
+  "r2160",
+  "r720_skip24",
+  "r168_skip24",
+  "rel168",
+  "rel720",
+  "vol168",
+  "vol720",
+  "volratio",
+  "fund24",
+  "fund72",
+  "fund168",
+  "fund720",
+  "prem8",
+  "prem24",
+  "prem168",
+  "premz",
+  "logturn",
+  "turnratio",
+  "hl168",
+  "dist_hi720",
+  "dist_lo720",
+  "beta720"
+ ],
+ "dropped": [
+  "age_d"
+ ],
+ "need_h": 2161,
+ "universe": {
+  "min_age_h": 2160,
+  "min_turn": 10000000.0,
+  "top_n": 150
+ },
+ "target": "log fwd return minus funding paid (long), demeaned cross-sectionally",
+ "horizons": [
+  3,
+  7
+ ],
+ "train_end": "2026-08-23",
+ "params": {
+  "objective": "regression",
+  "learning_rate": 0.03,
+  "num_leaves": 31,
+  "min_data_in_leaf": 200,
+  "feature_fraction": 0.7,
+  "bagging_fraction": 0.7,
+  "bagging_freq": 1,
+  "lambda_l2": 10.0,
+  "verbose": -1,
+  "num_threads": 2,
+  "seed": 1
+ },
+ "rank_norm": "cross-sectional rank to [-0.5,0.5]",
+ "env": {
+  "ML_DROP_FEATS": "age_d",
+  "ML_MIN_AGE_D": 90
+ }
+}
