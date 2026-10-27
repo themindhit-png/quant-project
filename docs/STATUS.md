@@ -1,6 +1,6 @@
 # STATUS — журнал работы (обновлять в конце каждой фазы)
 
-## Сейчас: Фаза 3 сделана (3a + ревью + 3b, тесты 67/67). Следующий шаг: деплой на VPS владельцем (`ops/deploy.sh`), затем Фаза 4
+## Сейчас: Фаза 3 сделана и задеплоена на VPS (27.10 17:22 UTC). Следующий шаг: Фаза 4 (Opus)
 
 ### Итоги Фазы 1 (кратко)
 - Данные Binance Vision скачаны (64 263 архива), панели до 2026-09-30, 860 символов. Модели walk-forward обучены (IC положителен каждый год).
@@ -91,14 +91,14 @@
 - п.12 `ops/deploy.sh` (бот на VPS: systemd `propsleeves`, код `/opt/propsleeves/src/v4`, venv `/opt/propsleeves/venv`, env — EnvironmentFile сервиса). Шаги: git pull ветки → тесты в отдельном venv `.venv-tests` → хэш старым кодом (должен совпасть с записанным `EXPECTED_CONFIG_HASH`, иначе стоп) и новым → бэкап кода и env → копирование `v4/*.py` → замена хэша, `RESET_*` комментируются → `Restart=always` (если не было) → перезапуск → ждёт `/status` с новым хэшем; при неудаче печатает команду отката. Модели не трогает (если отличаются от репо — стоп).
 - Проверено на макете VPS (env из дампа + код до шага G): старый хэш = `bddb019be2c4ab83` точно как на VPS. Новый хэш с env VPS: `fad53aa842c63167` (на VPS скрипт посчитает сам).
 
+### Деплой на VPS сделан (2026-10-27 17:22 UTC)
+- Репо на VPS клонировано заново в `/root/quant-project` (старой папки не было). `ops/deploy.sh --check`: тесты 67/67 на VPS, env `/opt/propsleeves/bot.env`, старый хэш совпал (`bddb019be2c4ab83`), модели = репо, `Restart=always` уже был.
+- `ops/deploy.sh`: код v4 заменён, `EXPECTED_CONFIG_HASH` -> `fad53aa842c63167`, `/status` подтвердил новый хэш, чёрный список 89 символов. Бэкапы: `/opt/propsleeves/src/v4.bak.20261027-172254`, `/opt/propsleeves/bot.env.bak.20261027-172254`.
+- В Telegram пришли «запущен» (equity 9 387.81) и предупреждение «CPPI не действует» (п.8 работает). Расхождение репо/VPS по `ml8_mult` закрыто.
+- Риск: до ABANDON (9 300) осталось ~90 USDT; демо может остановиться в любой день (это поведение по правилам, не ошибка).
+
 ### Следующий шаг
-Владелец: деплой на VPS (≈5 мин, бот перезапустится). В Termius:
-```
-cd /root/quant-project && git fetch origin claude/capabilities-environment-limits-3w4yfe && git checkout claude/capabilities-environment-limits-3w4yfe && git pull
-bash ops/deploy.sh --check      # ничего не меняет, только показывает
-bash ops/deploy.sh              # сам деплой
-```
-Вывод обеих команд прислать в чат. Затем (Opus, `/model opusplan`) — Фаза 4: ворота на холдауте (см. `docs/PHASE3_FIXES.md`, раздел «Перенесено в Фазу 4»).
+(Opus, `/model opusplan`) Фаза 4: ворота на холдауте (см. `docs/PLAN_AUDIT.md` и `docs/PHASE3_FIXES.md`, раздел «Перенесено в Фазу 4»). Первым делом — стопы по шортам в харнессе на 11.09–25.10.
 
 ### Для владельца
 После каждой фазы: `/clear`, затем «продолжай по docs/STATUS.md».
