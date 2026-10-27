@@ -442,7 +442,9 @@ if S.models.get(8) is not None:
                              panel['high'][-2161:], panel['low'][-2161:], age_h, jb25, int((d.hh[i] + 1) % 24))
     ix8 = ix25   # ML universe (the ml8 one needs age >= 180d, longer than this test's data window)
     X8 = np.column_stack([F8[f][ix8] for f in FEATURES_8H]).astype(np.float32)
-    const8 = [f for k, f in enumerate(FEATURES_8H) if len(np.unique(X8[np.isfinite(X8[:, k]), k])) < 3]
+    # age_d skipped: the test's age is counted from the first loaded bar, so on a short panel every symbol can share it;
+    # live passes the real (Binance-clock) listing age
+    const8 = [f for k, f in enumerate(FEATURES_8H) if f != 'age_d' and len(np.unique(X8[np.isfinite(X8[:, k]), k])) < 3]
     perm = np.random.default_rng(25).permutation(len(ix8)); inv = np.argsort(perm)
     p8a = S.models[8].predict(rank_norm(X8).astype(np.float64)); p8b = S.models[8].predict(rank_norm(X8[perm]).astype(np.float64))[inv]
     check('T25c ml8 features: none constant across symbols (CONST_8H excluded)', not const8 and not set(CONST_8H) & set(FEATURES_8H) and len(ix8) >= 30,
