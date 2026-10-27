@@ -8,3 +8,5 @@ logs/
 vps_dump/
 .env
 *.env.local
+/out_*.csv
+/out_*.txt
