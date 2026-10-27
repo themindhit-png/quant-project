@@ -6,7 +6,7 @@ out_exp21c_pred_h{3,7}_noage.npy on the standard Data(2021-01-01) grid + IC by y
 import os, sys, time, json, numpy as np, pandas as pd
 import lightgbm as lgb
 from bt import Data
-START, END = '2021-01-01', '2026-08-31 23:00'
+START, END = '2021-01-01', os.environ.get('END', '2026-08-31 23:00')
 MIN_AGE_H = int(os.environ.get('MIN_AGE_D', '90')) * 24
 DROP = [f for f in os.environ.get('DROP_FEATS', 'age_d').split(',') if f]
 SUF = os.environ.get('SUF', '_noage')

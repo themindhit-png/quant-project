@@ -9,7 +9,7 @@ from bt import Data, run, quantile_ls, slip_model
 from strategies import core_signal
 from ml_features_v3 import compute_features_v3, FEATURES_V3, rank_norm
 
-START, END, OOS = '2021-01-01', '2026-08-31 23:00', '2022-01-01'
+START, END, OOS = '2021-01-01', os.environ.get('END', '2026-08-31 23:00'), '2022-01-01'
 d = Data(start=START, end=END, min_turn_ever=5e6, load_hl=True, load_premium=True)
 T, N = d.ret.shape
 jbtc = int(np.flatnonzero(d.cols == 'BTCUSDT')[0])
@@ -67,6 +67,8 @@ print('8h IC by year: ' + ' '.join(f'{y}:{v:.3f}' for y, v in ic.groupby('y').ic
 P8 = np.full((T, N), np.nan, dtype=np.float32); okp = np.isfinite(pred)
 P8[dec[tab.dec.values[okp]], tab.sym.values[okp]] = pred[okp]
 np.save(f'out_exp17_pred_8h{SUF}.npy', P8); del tab; gc.collect()
+if os.environ.get('PRED_ONLY'):
+    print('DONE (pred only)'); raise SystemExit
 
 P3, P7 = np.load('out_exp6_pred_h3.npy'), np.load('out_exp6_pred_h7.npy')
 instr = json.load(open('instruments.json')); launch_h = np.full(N, np.nan)

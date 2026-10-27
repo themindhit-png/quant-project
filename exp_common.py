@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """Shared research definitions (Data, sleeves, F/F2 books, BASE8/BASE24, go()) — sliced from exp26_opus3.py."""
-import time, json, math, glob, itertools, numpy as np, pandas as pd
+import os, time, json, math, glob, itertools, numpy as np, pandas as pd
 from scipy.stats import norm, skew, kurtosis
 from bt import Data, run, quantile_ls, slip_model
 from strategies import core_signal
 from betautil import rolling_std
-START, END, OOS = '2021-01-01', '2026-08-31 23:00', '2022-01-01'
+START, END, OOS = '2021-01-01', os.environ.get('END', '2026-08-31 23:00'), '2022-01-01'
+PS8, PS37 = os.environ.get('PRED_SUF8', '_p0'), os.environ.get('PRED_SUF37', '_noage')   # Phase 4: PRED_SUF8=_oct PRED_SUF37=_noage_oct for predictions extended to 2026-10-26
 d = Data(start=START, end=END, min_turn_ever=5e6, load_hl=False, load_premium=False); T, N = d.ret.shape
-P8 = np.load('out_exp17_pred_8h_p0.npy', mmap_mode='r'); Q3, Q7 = np.load('out_exp21c_pred_h3_noage.npy', mmap_mode='r'), np.load('out_exp21c_pred_h7_noage.npy', mmap_mode='r'); Q14 = np.load('out_exp24b_pred_h14_noage.npy', mmap_mode='r')
+P8 = np.load(f'out_exp17_pred_8h{PS8}.npy', mmap_mode='r'); Q3, Q7 = np.load(f'out_exp21c_pred_h3{PS37}.npy', mmap_mode='r'), np.load(f'out_exp21c_pred_h7{PS37}.npy', mmap_mode='r')
+Q14 = np.load('out_exp24b_pred_h14_noage.npy', mmap_mode='r'); Q14 = Q14 if Q14.shape[0] == T else None   # h14 only exists on the old (to 2026-08) grid
 VOL = rolling_std(d.ret, 168, 72)
 instr = json.load(open('instruments.json')); launch_h = np.full(N, np.nan)
 for j, s in enumerate(d.cols):
@@ -33,7 +35,7 @@ def uni(dd, i): return dd.universe(i, min_age_h=720, min_turn=1e7, top_n=150)
 def q(sig, m, top=0.2): return quantile_ls(np.where(m & np.isfinite(sig), sig, np.nan), top)
 def fund_change(dd, i, mask): return q(-(fsum(i, 24, 0) - fsum(i, 48, 24)), uni(dd, i))
 def fund_level(dd, i, mask): return q(-fsum(i, 72, 0), uni(dd, i))
-ML3n, ML7n, ML14n, ML8 = make_ml(Q3, min_age_h=90 * 24), make_ml(Q7, min_age_h=90 * 24), make_ml(Q14, min_age_h=90 * 24), make_ml(P8, 0.2, 180 * 24, True)
+ML3n, ML7n, ML14n, ML8 = make_ml(Q3, min_age_h=90 * 24), make_ml(Q7, min_age_h=90 * 24), (make_ml(Q14, min_age_h=90 * 24) if Q14 is not None else None), make_ml(P8, 0.2, 180 * 24, True)
 class Held:
     def __init__(self, fn): self.fn = fn; self.w = np.zeros(N)
     def __call__(self, dd, i, mask):
