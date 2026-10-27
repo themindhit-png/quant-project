@@ -1,0 +1,20 @@
+name: tests
+# Offline bot tests (v4/tests_v4.py) on synthetic panels: data/panels is not in git, so the research-parity tests run on
+# v4/tests_synth.py data. Locally, with real panels present, the same script uses them.
+on:
+  push:
+    branches: [claude/capabilities-environment-limits-3w4yfe, main, master]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python3 v4/tests_v4.py

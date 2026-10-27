@@ -4,8 +4,16 @@
 import os, sys, json, numpy as np, pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
 os.environ.update(dict(FIRM='hyrotrader_2step', MODE='challenge', ACCOUNT_SIZE='10000', BYBIT_API_KEY='x', BYBIT_API_SECRET='x',
-                       USE_BINANCE_CLOCK='0', TG_BOT_TOKEN='', MODEL_DIR=os.path.join(ROOT, 'models')))
+                       USE_BINANCE_CLOCK='0', TG_BOT_TOKEN='', MODEL_DIR=os.path.join(HERE, 'models'),
+                       ML_MODEL_SUFFIX='_noage', ML_DROP_FEATS='age_d', ML_MIN_AGE_D='90'))          # the production ML setup (evns/base.env)
 sys.path.insert(0, HERE); sys.path.insert(0, ROOT)
+# Real Binance panels (data/panels, not in git) when present; otherwise (CI, fresh clone, or V4_TESTS_SYNTH=1) synthetic ones
+import bt, tempfile
+REAL_PANELS = os.path.exists(os.path.join(bt.PAN, 'close.parquet')) and os.environ.get('V4_TESTS_SYNTH', '0') != '1'
+if not REAL_PANELS:
+    from tests_synth import make_panels
+    bt.PAN = make_panels(tempfile.mkdtemp(prefix='v4_synth_panels_'))
+print(f'panels: {"REAL " + bt.PAN if REAL_PANELS else "SYNTHETIC (tests_synth.py, seed 7)"}')
 import config as C
 from signals import Sleeves, quantile_ls as q_bot
 from risk import RiskEngine
@@ -380,4 +388,50 @@ dl24 = -1.01 * C.DAILY_HALT_FRAC * C.RULES['daily_dd'] / 100.0 * 10000.0
 check('T24d limit_breach: a day loss past the daily halt is detected read-only', b24.limit_breach(10000.0 + dl24) is not None, str(b24.limit_breach(10000.0 + dl24)))
 check('T24e limit_breach healthy equity -> None', b24.limit_breach(10000.0) is None)
 
+
+# T25: ML feature parity — the training path (exp21c_ml_noage.py formulas on the research Data arrays, one decision bar)
+# vs the live compute_features on the bot panel at the same bar; then the production h3/h7 models on both inputs.
+# premz is excluded: the training std window is fixed at the first decision day (known, Phase 4: one premz formula).
+from ml_features import compute_features, rank_norm, FEATURES
+from scipy.stats import spearmanr
+def _research_feats(d, i, jb):
+    dec = np.array([i]); cff = d.cff; t24 = d.t24; fund = d.fund; prem = d.prem; high = d.high; low = d.low
+    rh = lambda k: np.log(cff[dec] / cff[dec - k])[0]
+    win = lambda a, k, f: f(a[i - k + 1:i + 1], 0)
+    F = {f'r{k}': rh(k) for k in (24, 72, 168, 336, 720, 1440, 2160)}
+    F['r720_skip24'] = np.log(cff[i - 24] / cff[i - 720]); F['r168_skip24'] = np.log(cff[i - 24] / cff[i - 168])
+    F['rel168'] = F['r168'] - np.log(cff[i, jb] / cff[i - 168, jb]); F['rel720'] = F['r720'] - np.log(cff[i, jb] / cff[i - 720, jb])
+    F['vol168'] = win(d.ret, 168, np.nanstd); F['vol720'] = win(d.ret, 720, np.nanstd); F['volratio'] = F['vol168'] / F['vol720']
+    for k in (24, 72, 168, 720): F[f'fund{k}'] = np.nansum(fund[i - k + 1:i + 1], 0, dtype=np.float64)
+    for k in (8, 24, 168): F[f'prem{k}'] = np.nanmean(prem[i - k + 1:i + 1], 0, dtype=np.float64)
+    F['logturn'] = np.log(np.where(t24[i] > 0, t24[i], np.nan)); F['turnratio'] = np.log(t24[i] / np.nanmean(t24[i - 719:i + 1], 0, dtype=np.float64))
+    F['hl168'] = np.log(win(high, 168, np.nanmax) / win(low, 168, np.nanmin))
+    F['dist_hi720'] = np.log(cff[i] / win(high, 720, np.nanmax)); F['dist_lo720'] = np.log(cff[i] / win(low, 720, np.nanmin))
+    R = d.ret[i - 719:i + 1]; rb = R[:, jb]; ok = np.isfinite(rb); Rm = np.where(np.isfinite(R[ok]), R[ok], 0.0); rbb = rb[ok]
+    F['beta720'] = ((Rm - Rm.mean(0)) * (rbb - rbb.mean())[:, None]).mean(0) / rbb.var()
+    return F
+jb25 = syms.index('BTCUSDT')
+Fr = _research_feats(d, i, jb25)
+Fl = compute_features(panel['cff'][-2161:], np.where(np.isfinite(panel['fund']), panel['fund'], 0.0)[-2161:], panel['t24'][-2161:], panel['prem'][-2161:],
+                      panel['high'][-2161:], panel['low'][-2161:], age_h, jb25)
+S.uni.prev = {}; mu25 = S.ml_universe(panel, age_h); ix25 = np.flatnonzero(mu25)
+sp25 = {}
+for f in Fr:
+    a, b = Fr[f][ix25], Fl[f][ix25]; ok = np.isfinite(a) & np.isfinite(b)
+    sp25[f] = spearmanr(a[ok], b[ok]).correlation if ok.sum() > 10 else np.nan
+bad25 = {f: round(v, 4) for f, v in sp25.items() if not v >= 0.99}
+check('T25a ML features: training formulas == live compute_features (Spearman >= 0.99 on the ML universe, premz excluded)', not bad25 and len(ix25) >= 30,
+      f'n {len(ix25)} min {min(sp25.values()):.4f} worse: {bad25}')
+if S.models.get(3) is not None:
+    feats25 = [f for f in FEATURES if f not in C.ML_DROP_FEATS]
+    Fr2 = dict(Fr, premz=Fl['premz'], age_d=Fl['age_d'])
+    Xr = rank_norm(np.column_stack([Fr2[f][ix25] for f in feats25]).astype(np.float32)).astype(np.float64)
+    Xl = rank_norm(np.column_stack([Fl[f][ix25] for f in feats25]).astype(np.float32)).astype(np.float64)
+    sp_pred = {hz: spearmanr(S.models[hz].predict(Xr), S.models[hz].predict(Xl)).correlation for hz in (3, 7) if S.models.get(hz) is not None}
+    check('T25b h3/h7 predictions: training-path inputs vs live inputs, Spearman >= 0.99', all(v >= 0.99 for v in sp_pred.values()),
+          ' '.join(f'h{k} {v:.4f}' for k, v in sp_pred.items()))
+else:
+    print('SKIP  T25b (no ML models)')
+
 print(f'\n{sum(1 for _, ok in res if ok)}/{len(res)} passed')
+sys.exit(0 if all(ok for _, ok in res) else 1)
