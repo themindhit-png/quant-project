@@ -8,7 +8,10 @@ from betautil import rolling_std
 START, END, OOS = '2021-01-01', os.environ.get('END', '2026-08-31 23:00'), '2022-01-01'
 PS8, PS37 = os.environ.get('PRED_SUF8', '_p0'), os.environ.get('PRED_SUF37', '_noage')   # Phase 4: PRED_SUF8=_oct PRED_SUF37=_noage_oct for predictions extended to 2026-10-26
 d = Data(start=START, end=END, min_turn_ever=5e6, load_hl=False, load_premium=False); T, N = d.ret.shape
-P8 = np.load(f'out_exp17_pred_8h{PS8}.npy', mmap_mode='r'); Q3, Q7 = np.load(f'out_exp21c_pred_h3{PS37}.npy', mmap_mode='r'), np.load(f'out_exp21c_pred_h7{PS37}.npy', mmap_mode='r')
+P8 = np.load(f'out_exp17_pred_8h{PS8}.npy', mmap_mode='r')
+_h8 = np.unique(d.hh[np.isfinite(P8).any(1)] % 8)   # ML8 reads P8 on 00/08/16 bars: predictions made with exp17 DEC_PHASE=7 would leave the sleeve silently empty
+assert list(_h8) == [0], f'out_exp17_pred_8h{PS8}.npy: predictions on hour%8 {list(_h8)}, need [0] (run exp17 with DEC_PHASE=0)'
+Q3, Q7 =np.load(f'out_exp21c_pred_h3{PS37}.npy', mmap_mode='r'), np.load(f'out_exp21c_pred_h7{PS37}.npy', mmap_mode='r')
 Q14 = np.load('out_exp24b_pred_h14_noage.npy', mmap_mode='r'); Q14 = Q14 if Q14.shape[0] == T else None   # h14 only exists on the old (to 2026-08) grid
 VOL = rolling_std(d.ret, 168, 72)
 instr = json.load(open('instruments.json')); launch_h = np.full(N, np.nan)
