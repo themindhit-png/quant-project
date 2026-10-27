@@ -34,6 +34,7 @@ class Executor:
         self.api, self.log, self.tg, self.dry = api, log, (tg or (lambda *_: None)), dry_run
         self.stats = dict(maker_sent=0, market_sent=0, closes=0, opens=0, errors=0)          # per execute() call (cycle)
         self.stats_total = dict(self.stats)                                                  # cumulative since start
+        self.abort = None                         # threading.Event set by the watchdog when a hard risk limit is hit mid-rebalance
 
     def _reset_stats(self):
         for k, v in self.stats.items():
@@ -167,10 +168,13 @@ class Executor:
         t_start = time.time(); dec_px = {}; fill_bps = []; n_maker_filled = 0; n_market = 0; t_last_fill = t_start
         for sym in want:
             tk = tickers.get(sym, {}); dec_px[sym] = tk.get('mark') or tk.get('last') or 0.0
-        prev_active = {}
+        prev_active = {}; aborted = False
         for attempt in range(maker_attempts + 1):
             if not active:
                 break
+            if self.abort is not None and self.abort.is_set():      # checked between quote rounds: no new orders, open quotes cancelled below
+                aborted = True; errors.append(('*', None, 'aborted by watchdog (risk limit)'))
+                self.log(f'EXECUTE ABORTED (watchdog: risk limit hit): round {attempt}, {len(active)} legs not traded'); break
             final = attempt == maker_attempts
             try:
                 self.api.cancel_all()
@@ -253,7 +257,7 @@ class Executor:
         st.update(exec_seconds=round(time.time() - t_start, 1), last_fill_seconds=round(t_last_fill - t_start, 1), legs=len(want),
                   maker_fill_share=round(n_maker_filled / n_fills, 3) if n_fills else None,                        # by legs (proxy)
                   maker_notional_share=round(maker_notional / tot_notional, 3) if tot_notional > 0 else None,      # by notional (proxy)
-                  market_legs=n_market,
+                  market_legs=n_market, aborted=aborted,
                   adverse_bps_mean=round(float(np.mean(fill_bps)), 2) if fill_bps else None, adverse_bps_p90=round(float(np.percentile(fill_bps, 90)), 2) if fill_bps else None)
         # real fills from the exchange (best effort): notional-weighted maker share and slippage vs the decision price
         if not self.dry and hasattr(self.api, 'executions'):

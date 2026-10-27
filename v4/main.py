@@ -33,6 +33,8 @@ class Bot:
         self.ex = Executor(api, log, tg, C.DRY_RUN)
         self.instr = {}
         self.lock = threading.Lock()
+        self.abort_event = threading.Event()               # watchdog -> executor: stop trading the current rebalance (hard limit hit)
+        self.ex.abort = self.abort_event
         self.reb_every_base = int(C.REBAL_EVERY_H)         # cadence with ml8 on; the kill rule switches to daily when ml8 is off
 
     # ------------------------------------------------------------ helpers
@@ -210,6 +212,7 @@ class Bot:
 
     def rebalance(self, slot=None):
         with self.lock:
+            self.abort_event.clear()                       # guards() below re-checks the limits with fresh equity
             t0 = time.time()
             equity = self.equity()
             m = self.mem
@@ -352,7 +355,8 @@ class Bot:
             stats, errors = self.ex.execute(legs, self.instr, tickers, self.api.positions)
             # ---- bookkeeping
             m['last_targets'] = targets; m['k_ref'] = k; m['last_rebal_date'] = self.now().date().isoformat()
-            m['last_rebal_slot'] = slot or f'{self.now().date().isoformat()}T{self.now().hour:02d}'
+            if not stats.get('aborted'):                   # an aborted slot is retried at the next wake-up (guards decide then)
+                m['last_rebal_slot'] = slot or f'{self.now().date().isoformat()}T{self.now().hour:02d}'
             m['k_avg'] = 0.8 * float(m.get('k_avg', k)) + 0.2 * k
             m['cycles'] = int(m.get('cycles', 0)) + 1
             m.save()
@@ -439,6 +443,7 @@ class Bot:
     # ------------------------------------------------------------ hourly proportional scale pass
     def scale_pass(self):
         with self.lock:
+            self.abort_event.clear()
             m = self.mem
             if not m.get('last_targets') or m.get('k_ref') in (None, 0):
                 return
@@ -470,67 +475,102 @@ class Bot:
             equity = self.equity()
         except Exception as e:
             log(f'watchdog equity fail: {e}'); return
-        with self.lock:
-            if not self.guards(equity):
-                return
-            try:
-                poss = self.api.positions()
-            except Exception as e:
-                log(f'watchdog positions fail: {e}'); return
-            if not poss:
-                return
-            # short stop-loss: mark >= entry * (1 + STOP)
-            for sym, p in poss.items():
-                if C.STOP_SHORT_PCT > 0 and p['qty'] < 0 and p['entry'] > 0 and p['mark'] >= p['entry'] * (1 + C.STOP_SHORT_PCT / 100.0):   # 0 = stop disabled
+        # a rebalance holds the lock for 5-7 min: do not wait for it; check the hard limits read-only and, if one is hit,
+        # stop its execution (abort_event); the flatten itself runs under the lock at the next watchdog tick
+        if not self.lock.acquire(timeout=5):
+            why = self.limit_breach(equity)
+            if why and not self.abort_event.is_set():
+                self.abort_event.set(); log(f'WATCHDOG: {why} during a rebalance -> execution aborted, flatten after it')
+                tg(f'⚠️ {why} во время ребаланса: остановил исполнение, закрытие сразу после выхода из ребаланса.')
+            return
+        try:
+            self.abort_event.clear()
+            self._watchdog_locked(equity)
+        finally:
+            self.lock.release()
+
+    def limit_breach(self, equity):
+        """Read-only (no memory writes, safe without the lock): the hard limit guards() would act on at this equity, or None.
+        Short stops / per-trade / gross guards are not checked here: the rebalance itself is re-sizing the positions."""
+        m = self.mem
+        if C.KILL_SWITCH:
+            return 'KILL_SWITCH'
+        if m['halt_total']:
+            return None
+        dd = self.risk.dd_amount(); buf = equity - self.risk.total_floor()
+        if buf <= C.FLOOR_GUARD_FRAC * dd:
+            return f'FLOOR GUARD (buffer {buf:,.0f})'
+        if C.MODE == 'challenge' and C.ABANDON_FRAC > 0 and buf <= C.ABANDON_FRAC * dd:
+            return f'ABANDON (buffer {buf:,.0f})'
+        if m.get('day_date') == self.now().date().isoformat() and m.get('day_anchor') is not None and m.get('halted_day') != m.get('day_date'):
+            ref = max(float(m.get('day_peak') or equity), equity) if C.RULES['daily_dd_mode'] == 'trailing' else float(m['day_anchor'])
+            day_loss = (equity - ref) / self.risk.initial
+            if day_loss <= -C.DAILY_HALT_FRAC * C.RULES['daily_dd'] / 100.0:
+                return f'DAILY HALT ({day_loss * 100:.2f}% of initial)'
+        return None
+
+    def _watchdog_locked(self, equity):
+        m = self.mem
+        if not self.guards(equity):
+            return
+        try:
+            poss = self.api.positions()
+        except Exception as e:
+            log(f'watchdog positions fail: {e}'); return
+        if not poss:
+            return
+        # short stop-loss: mark >= entry * (1 + STOP)
+        for sym, p in poss.items():
+            if C.STOP_SHORT_PCT > 0 and p['qty'] < 0 and p['entry'] > 0 and p['mark'] >= p['entry'] * (1 + C.STOP_SHORT_PCT / 100.0):   # 0 = stop disabled
+                meta = self.instr.get(sym)
+                if not meta:
+                    continue
+                q = round_qty(abs(p['qty']), meta)
+                try:
+                    if not C.DRY_RUN:
+                        self.api.market(sym, q, 'Buy', reduce_only=True)
+                    m['cooldown'][sym] = self.now().timestamp() + C.STOP_COOLDOWN_H * 3600
+                    m['last_targets'].pop(sym, None); m.save()
+                    log(f'STOP: {sym} short closed at mark {p["mark"]} (entry {p["entry"]}, upnl {p["upnl"]:,.0f})')
+                    tg(f'✂️ Стоп по шорту {sym}: цена +{(p["mark"] / p["entry"] - 1) * 100:.0f}% от входа, убыток {p["upnl"]:,.0f} USDT. Карантин {C.STOP_COOLDOWN_H}ч.')
+                except Exception as e:
+                    tg(f'🛑 Стоп {sym} не исполнен: {e} — ЗАКРОЙ ВРУЧНУЮ'); log(f'stop {sym}: {e}')
+        # per-position loss guard (firm 'per trade loss' rules; RULES.per_trade_loss % of initial, 0 = off)
+        ptl = float(C.RULES.get('per_trade_loss', 0.0) or 0.0)
+        if ptl > 0:
+            for sym, p in list(poss.items()):
+                if p.get('upnl', 0.0) < -0.9 * ptl / 100.0 * self.risk.initial and p['qty'] != 0:
                     meta = self.instr.get(sym)
                     if not meta:
                         continue
-                    q = round_qty(abs(p['qty']), meta)
                     try:
                         if not C.DRY_RUN:
-                            self.api.market(sym, q, 'Buy', reduce_only=True)
+                            self.api.market(sym, round_qty(abs(p['qty']), meta), 'Sell' if p['qty'] > 0 else 'Buy', reduce_only=True)
                         m['cooldown'][sym] = self.now().timestamp() + C.STOP_COOLDOWN_H * 3600
                         m['last_targets'].pop(sym, None); m.save()
-                        log(f'STOP: {sym} short closed at mark {p["mark"]} (entry {p["entry"]}, upnl {p["upnl"]:,.0f})')
-                        tg(f'✂️ Стоп по шорту {sym}: цена +{(p["mark"] / p["entry"] - 1) * 100:.0f}% от входа, убыток {p["upnl"]:,.0f} USDT. Карантин {C.STOP_COOLDOWN_H}ч.')
+                        log(f'PER-TRADE LOSS GUARD: {sym} closed, upnl {p["upnl"]:,.0f} (limit {ptl}% of {self.risk.initial:,.0f})')
+                        tg(f'✂️ Лимит убытка по позиции {sym}: {p["upnl"]:,.0f} USDT (правило фирмы {ptl}% от initial). Закрыта, карантин {C.STOP_COOLDOWN_H}ч.')
                     except Exception as e:
-                        tg(f'🛑 Стоп {sym} не исполнен: {e} — ЗАКРОЙ ВРУЧНУЮ'); log(f'stop {sym}: {e}')
-            # per-position loss guard (firm 'per trade loss' rules; RULES.per_trade_loss % of initial, 0 = off)
-            ptl = float(C.RULES.get('per_trade_loss', 0.0) or 0.0)
-            if ptl > 0:
-                for sym, p in list(poss.items()):
-                    if p.get('upnl', 0.0) < -0.9 * ptl / 100.0 * self.risk.initial and p['qty'] != 0:
-                        meta = self.instr.get(sym)
-                        if not meta:
-                            continue
-                        try:
-                            if not C.DRY_RUN:
-                                self.api.market(sym, round_qty(abs(p['qty']), meta), 'Sell' if p['qty'] > 0 else 'Buy', reduce_only=True)
-                            m['cooldown'][sym] = self.now().timestamp() + C.STOP_COOLDOWN_H * 3600
-                            m['last_targets'].pop(sym, None); m.save()
-                            log(f'PER-TRADE LOSS GUARD: {sym} closed, upnl {p["upnl"]:,.0f} (limit {ptl}% of {self.risk.initial:,.0f})')
-                            tg(f'✂️ Лимит убытка по позиции {sym}: {p["upnl"]:,.0f} USDT (правило фирмы {ptl}% от initial). Закрыта, карантин {C.STOP_COOLDOWN_H}ч.')
-                        except Exception as e:
-                            tg(f'🛑 Не смог закрыть {sym} по лимиту убытка: {e} — ЗАКРОЙ ВРУЧНУЮ'); log(f'per-trade guard {sym}: {e}')
-            # notional / margin guards vs firm limits (of INITIAL)
-            g = sum(abs(p['qty'] * p['mark']) for p in poss.values())
-            im = sum(p.get('im', 0.0) for p in poss.values())
-            lim_g = C.RULES['notional_x'] * self.risk.initial
-            lim_m = C.RULES['margin_pct'] / 100.0 * self.risk.initial
-            if g > 0.95 * lim_g or (im > 0 and im > 0.95 * lim_m):
-                cut = 1.0 - min(0.90 * lim_g / g if g > 0 else 1.0, 0.90 * lim_m / im if im > 0 else 1.0)
-                log(f'GROSS GUARD: gross {g:,.0f} (limit {lim_g:,.0f}), IM {im:,.0f} (limit {lim_m:,.0f}) — cutting {cut * 100:.0f}%')
-                tg(f'⚠️ Объём {g:,.0f} / маржа {im:,.0f} у лимитов фирмы — сокращаю все позиции на {cut * 100:.0f}%')
-                for sym, p in poss.items():
-                    meta = self.instr.get(sym)
-                    if not meta:
-                        continue
-                    q = round_qty(abs(p['qty']) * cut, meta)
-                    if q >= meta['minQty'] and not C.DRY_RUN:
-                        try:
-                            self.api.market(sym, q, 'Sell' if p['qty'] > 0 else 'Buy', reduce_only=True)
-                        except Exception as e:
-                            log(f'gross guard {sym}: {e}')
+                        tg(f'🛑 Не смог закрыть {sym} по лимиту убытка: {e} — ЗАКРОЙ ВРУЧНУЮ'); log(f'per-trade guard {sym}: {e}')
+        # notional / margin guards vs firm limits (of INITIAL)
+        g = sum(abs(p['qty'] * p['mark']) for p in poss.values())
+        im = sum(p.get('im', 0.0) for p in poss.values())
+        lim_g = C.RULES['notional_x'] * self.risk.initial
+        lim_m = C.RULES['margin_pct'] / 100.0 * self.risk.initial
+        if g > 0.95 * lim_g or (im > 0 and im > 0.95 * lim_m):
+            cut = 1.0 - min(0.90 * lim_g / g if g > 0 else 1.0, 0.90 * lim_m / im if im > 0 else 1.0)
+            log(f'GROSS GUARD: gross {g:,.0f} (limit {lim_g:,.0f}), IM {im:,.0f} (limit {lim_m:,.0f}) — cutting {cut * 100:.0f}%')
+            tg(f'⚠️ Объём {g:,.0f} / маржа {im:,.0f} у лимитов фирмы — сокращаю все позиции на {cut * 100:.0f}%')
+            for sym, p in poss.items():
+                meta = self.instr.get(sym)
+                if not meta:
+                    continue
+                q = round_qty(abs(p['qty']) * cut, meta)
+                if q >= meta['minQty'] and not C.DRY_RUN:
+                    try:
+                        self.api.market(sym, q, 'Sell' if p['qty'] > 0 else 'Buy', reduce_only=True)
+                    except Exception as e:
+                        log(f'gross guard {sym}: {e}')
 
     # ------------------------------------------------------------ startup
     def start(self):

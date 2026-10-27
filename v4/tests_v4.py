@@ -286,7 +286,7 @@ class _Api20:
     def positions(self): return {'AAAUSDT': dict(qty=100.0, mark=5.0, entry=5.0, upnl=0, im=1, legs=[])}
 def _mk20(errors):
     b = Bot.__new__(Bot); b.api = _Api20(); b.mem = Memory(); b.mem.save = lambda: None; b.risk = RiskEngine(b.mem, lambda *a: None)
-    b.lock = threading.Lock(); b.instr = {'AAAUSDT': dict(qtyStep=0.1, minQty=0.1, maxQty=1e9, minNotional=5.0, tickSize=0.001)}
+    b.lock = threading.Lock(); b.abort_event = threading.Event(); b.instr = {'AAAUSDT': dict(qtyStep=0.1, minQty=0.1, maxQty=1e9, minNotional=5.0, tickSize=0.001)}
     b.mem['last_targets'] = {'AAAUSDT': 500.0}; b.mem['k_ref'] = 2.0
     b.risk.multiplier = lambda eq, now: (1.6, 'test'); b.guards = lambda eq: True
     b.sent = []
@@ -343,5 +343,41 @@ S.uni.prev = {}; mm_a = S.ml_universe(panel, age_h); j23 = int(np.flatnonzero(mm
 panel_s = dict(panel); da = np.array(panel['data_age'], float); da[j23] = 500.0; panel_s['data_age'] = da
 S.uni.prev = {}; mm_b = S.ml_universe(panel_s, age_h); S.uni.prev = {}; m8_b = S.ml8_universe(panel_s, age_h)
 check('T23 short Bybit history (500h, age 200d) excluded from ml and ml8 universes', mm_a[j23] and not mm_b[j23] and not m8_b[j23] and S.short_hist_n >= 1, f'short_hist_n {S.short_hist_n}')
+
+# ---------------------------------------------------------------- Phase 3b (T24)
+import time
+# T24: the watchdog does not wait for a rebalance; a hard limit hit mid-rebalance stops its execution between quote rounds
+class _Api24:
+    def __init__(self, ev=None): self.sent = []; self.ev = ev
+    def cancel_all(self, *a, **k): return None
+    def tickers(self): return {'AAAUSDT': dict(mark=10.0, last=10.0, bid=9.99, ask=10.01)}
+    def post_only(self, *a, **k):
+        self.sent.append(('PO',) + a)
+        if self.ev is not None: self.ev.set()        # the limit is hit while the first quote rests
+    def market(self, *a, **k): self.sent.append(('MKT',) + a)
+meta24 = {'AAAUSDT': dict(minQty=0.1, qtyStep=0.1, maxQty=1e9, tickSize=0.01, minNotional=5.0)}
+legs24 = [('AAAUSDT', 'Buy', 500.0, False, False)]
+a24 = _Api24(); ex24 = Executor(a24, lambda *a: None, None, False); ex24.abort = threading.Event()
+st24, er24 = ex24.execute(legs24, meta24, a24.tickers(), lambda: {}, maker_attempts=2, wait_s=0)
+ev24 = threading.Event(); a24b = _Api24(ev24); ex24b = Executor(a24b, lambda *a: None, None, False); ex24b.abort = ev24
+st24b, er24b = ex24b.execute(legs24, meta24, a24b.tickers(), lambda: {}, maker_attempts=2, wait_s=0)
+check('T24a no abort: 2 quote rounds + market fallback', [x[0] for x in a24.sent] == ['PO', 'PO', 'MKT'] and not st24['aborted'], f'{a24.sent}')
+check('T24b abort set after round 1: no further orders, aborted flagged as an error', [x[0] for x in a24b.sent] == ['PO'] and st24b['aborted'] and er24b and er24b[0][0] == '*', f'{a24b.sent} {er24b}')
+b24 = Bot.__new__(Bot); b24.mem = Memory(); b24.risk = RiskEngine(b24.mem, lambda *a: None); b24.lock = threading.Lock(); b24.abort_event = threading.Event()
+b24.mem['initial'] = 10000.0; b24.mem['eq_peak'] = 10000.0; b24.mem['halt_total'] = False; b24.mem['target_hit'] = False
+b24.now = lambda: datetime(2026, 5, 3, 12, 0, tzinfo=timezone.utc)
+b24.mem['day_date'] = '2026-05-03'; b24.mem['day_anchor'] = 10000.0; b24.mem['day_peak'] = 10000.0; b24.mem['halted_day'] = None
+b24.guards = lambda eq: (_ for _ in ()).throw(AssertionError('guards must not run while the lock is held'))
+floor24 = b24.risk.total_floor(); dd24 = b24.risk.dd_amount()
+eq_ok = 10000.0; eq_floor = floor24 + 0.5 * C.FLOOR_GUARD_FRAC * dd24
+b24.equity = lambda: eq_ok
+b24.lock.acquire(); b24.watchdog(); ab_ok = b24.abort_event.is_set()
+b24.equity = lambda: eq_floor
+t24 = time.time(); b24.watchdog(); dt24 = time.time() - t24; ab_hit = b24.abort_event.is_set(); b24.lock.release()
+check('T24c lock held: watchdog returns after ~5 s, sets abort only on a breach', not ab_ok and ab_hit and dt24 < 8 and b24.mem['halt_total'] is False,
+      f'ok {ab_ok} hit {ab_hit} {dt24:.1f}s {b24.limit_breach(eq_floor)}')
+dl24 = -1.01 * C.DAILY_HALT_FRAC * C.RULES['daily_dd'] / 100.0 * 10000.0
+check('T24d limit_breach: a day loss past the daily halt is detected read-only', b24.limit_breach(10000.0 + dl24) is not None, str(b24.limit_breach(10000.0 + dl24)))
+check('T24e limit_breach healthy equity -> None', b24.limit_breach(10000.0) is None)
 
 print(f'\n{sum(1 for _, ok in res if ok)}/{len(res)} passed')
