@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+data/raw/
+data/panels/
+logs/
+*.npy
+/models/
+vps_dump/
+.env
+*.env.local
