@@ -80,7 +80,9 @@ class RiskEngine:
         now = now or datetime.now(timezone.utc)
         today = now.date().isoformat()
         m = self.mem
+        rolled = False
         if m['day_date'] != today:
+            rolled = True
             # new UTC day: finalise yesterday's pnl for consistency tracking
             if m['day_anchor'] is not None and m['day_date'] is not None:
                 pnl = equity - float(m['day_anchor'])
@@ -99,7 +101,7 @@ class RiskEngine:
         m['day_peak'] = max(float(m['day_peak'] or equity), equity)
         m['eq_peak'] = max(float(m['eq_peak']), equity)
         tf, df_ = self.total_floor(), self.daily_floor()
-        return dict(equity=equity, total_floor=tf, daily_floor=df_, buffer_total=equity - tf, buffer_daily=equity - df_,
+        return dict(rolled=rolled, equity=equity, total_floor=tf, daily_floor=df_, buffer_total=equity - tf, buffer_daily=equity - df_,
                     day_pnl=equity - float(m['day_anchor']), day_dd=(equity - float(m['day_peak'])) if C.RULES['daily_dd_mode'] == 'trailing'
                     else equity - float(m['day_anchor']))
 

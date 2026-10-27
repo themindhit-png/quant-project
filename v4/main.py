@@ -7,10 +7,11 @@ Risk: firm presets (static/trailing floors), CPPI, daily throttle/halt, vol targ
 Cycle: daily rebalance at REBAL_HOUR_UTC:REBAL_MINUTE (after the 00:00 funding + bar close); hourly
 scale pass (proportional de-risking when K drops); watchdog every WATCHDOG_SEC.
 """
-import os, sys, time, json, threading, traceback
+import os, sys, time, json, threading, traceback, hashlib
 from datetime import datetime, timezone, timedelta
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import numpy as np
+import requests
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import config as C
@@ -35,6 +36,18 @@ class Bot:
         self.reb_every_base = int(C.REBAL_EVERY_H)         # cadence with ml8 on; the kill rule switches to daily when ml8 is off
 
     # ------------------------------------------------------------ helpers
+    def bad_data_split(self, bad, positions, hard_blocked):
+        """A transient candle-load error must not close a position: held names with bad data are kept for up to BAD_HOLD_MAX
+        consecutive cycles (counter in memory), then closed. stale / cooldown names (hard_blocked) are always closed.
+        Returns (blocked, bad_hold)."""
+        bn = self.mem.setdefault('bad_n', {}); bad_set = set(bad)
+        for s in [s for s in bn if s not in bad_set]:
+            bn.pop(s)
+        for s in bad_set:
+            bn[s] = int(bn.get(s, 0)) + 1
+        bad_hold = {s for s in bad_set if s in positions and s not in hard_blocked and bn[s] < C.BAD_HOLD_MAX}
+        return set(hard_blocked) | (bad_set - bad_hold), bad_hold
+
     def now(self):
         return datetime.now(timezone.utc)
 
@@ -63,6 +76,8 @@ class Bot:
         if m['halt_total']:
             return False
         met = self.risk.observe_equity(equity, self.now())
+        if met.get('rolled'):
+            m.save()                                   # day rollover (daily PnL, trading days) must survive a restart
         if met['buffer_total'] <= C.FLOOR_GUARD_FRAC * self.risk.dd_amount():
             m['halt_total'] = True; m.save()
             self.ex.flatten_all(self.instr, f'FLOOR GUARD: equity {equity:,.0f} within {C.FLOOR_GUARD_FRAC * 100:.0f}% of allowance to floor {met["total_floor"]:,.0f}')
@@ -265,7 +280,8 @@ class Bot:
             for s, until in list(m['cooldown'].items()):
                 if until < now_ts:
                     m['cooldown'].pop(s, None)
-            blocked = set(m['cooldown']) | {s for s, st in zip(syms, panel['stale']) if st} | set(bad)
+            hard_blocked = set(m['cooldown']) | {s for s, st in zip(syms, panel['stale']) if st}
+            blocked, bad_hold = self.bad_data_split(bad, positions, hard_blocked)
             if blocked:
                 jb = [j for j, s in enumerate(syms) if s in blocked]
                 w = w.copy(); w[jb] = 0.0; info['blocked_n'] = len(jb)
@@ -323,7 +339,15 @@ class Bot:
                 m['attrib_px'] = {s: float(panel['cff'][i][j]) for j, s in enumerate(syms) if (s in targets or s in shadow) and np.isfinite(panel['cff'][i][j])}
             for s in blocked:
                 targets.pop(s, None)                       # weight was zero already; open positions in these names get closed
-            # ---- execution
+            for s in bad_hold:
+                targets[s] = float(positions[s]['qty'] * (positions[s].get('mark') or 0.0))     # keep the position as is
+            if bad_hold:
+                info['bad_hold_n'] = len(bad_hold); log(f'bad data, positions held: {sorted(bad_hold)}')
+            # ---- execution (tickers re-read: the candle load above takes 1-2 min and maker quotes are placed at this bid/ask)
+            try:
+                tickers = self.api.tickers()
+            except Exception as e:
+                log(f'tickers refresh failed ({e}); using the earlier snapshot')
             legs = self.ex.plan(targets, positions, tickers, self.instr, C.REBAL_BAND, C.MIN_TRADE_USDT)
             stats, errors = self.ex.execute(legs, self.instr, tickers, self.api.positions)
             # ---- bookkeeping
@@ -428,8 +452,13 @@ class Bot:
             log(f'SCALE PASS: K {float(m["k_ref"]):.2f} -> {k:.2f} ({why}); scaling book x{ratio:.2f}')
             targets = {s: v * ratio for s, v in m['last_targets'].items()}
             tickers = self.api.tickers(); positions = self.api.positions()
-            legs = [l for l in self.ex.plan(targets, positions, tickers, self.instr, C.REBAL_BAND, C.MIN_TRADE_USDT) if l[3]]
-            self.ex.execute(legs, self.instr, tickers, self.api.positions, maker_attempts=1, wait_s=60)
+            # band 0.05, not REBAL_BAND: a 15-33% cut is below the daily no-trade band and would be silently dropped
+            legs = [l for l in self.ex.plan(targets, positions, tickers, self.instr, 0.05, C.MIN_TRADE_USDT) if l[3]]
+            if not legs:
+                log('SCALE PASS: no reducing legs, K reference not moved'); return
+            stats, errors = self.ex.execute(legs, self.instr, tickers, self.api.positions, maker_attempts=1, wait_s=60)
+            if errors:
+                log(f'SCALE PASS: {len(errors)} order errors, K reference kept at {float(m["k_ref"]):.2f} (retry next hour)'); return
             m['last_targets'] = targets; m['k_ref'] = k; m.save()
 
     # ------------------------------------------------------------ watchdog
@@ -510,14 +539,12 @@ class Bot:
         if C.EXPECTED_CONFIG_HASH and h != C.EXPECTED_CONFIG_HASH:
             tg(f'🛑 Конфигурация ({h}) не совпадает с пред-регистрацией ({C.EXPECTED_CONFIG_HASH}). Бот НЕ запущен.')
             raise SystemExit(f'FATAL: effective config hash {h} != EXPECTED_CONFIG_HASH {C.EXPECTED_CONFIG_HASH}')
+        m.check_writable()
         m.load()
-        # latches are cleared one by one (Opus: one flag used to clear the total stop AND the phase-passed latch)
-        if os.environ.get('RESET_TOTAL_STOP', '0') == '1':
-            m['halt_total'] = False; m.save(); log('RESET_TOTAL_STOP=1: total-stop latch cleared')
-        if os.environ.get('RESET_TARGET_HIT', '0') == '1':
-            m['target_hit'] = False; m.save(); log('RESET_TARGET_HIT=1: phase-passed latch cleared')
-        if os.environ.get('RESET_ABANDONED', '0') == '1':
-            m['abandoned'] = False; m['halt_total'] = False; m.save(); log('RESET_ABANDONED=1: abandon latch cleared')
+        bl = sorted(C.BLACKLIST); bh = hashlib.sha256(','.join(bl).encode()).hexdigest()[:12]
+        log(f'blacklist {len(bl)} symbols, hash {bh} (not part of the config hash)'); set_status(blacklist_hash=bh, blacklist_n=len(bl))
+        self.warn_cppi_inactive()
+        self.apply_resets()
         try:
             self.api.switch_one_way()
         except ApiError as e:
@@ -565,6 +592,35 @@ class Bot:
            f'Пол сейчас: {tf:,.2f} | рукава {C.SLEEVES} | BASE {C.BASE_SCALE} CPPI {C.CPPI_FRAC} VT {C.VT_TARGET_DVOL * 100:.2f}%/д\n'
            f'Ребаланс {C.REBAL_HOUR_UTC:02d}:{C.REBAL_MINUTE:02d} UTC | {"DRY_RUN" if C.DRY_RUN else "LIVE"} | {C.BASE_URL}')
 
+    def apply_resets(self):
+        """Latches are cleared one by one (Opus: one flag used to clear the total stop AND the phase-passed latch).
+        A RESET_* value is a one-time key: it is applied when it differs from the value remembered in the state, so a
+        variable left in the env does not clear the latch again at every restart ('1' works as before, the first time)."""
+        m = self.mem
+        for flag, what, fn in (
+                ('RESET_TOTAL_STOP', 'total-stop latch', lambda: m.update(halt_total=False)),
+                ('RESET_TARGET_HIT', 'phase-passed latch', lambda: m.update(target_hit=False)),
+                ('RESET_ABANDONED', 'abandon latch', lambda: m.update(abandoned=False, halt_total=False))):
+            v = os.environ.get(flag, '0').strip()
+            key = f'reset_nonce_{flag}'
+            if v in ('', '0') or v == m.get(key):
+                continue
+            fn(); m[key] = v; m.save()
+            log(f'{flag}={v}: {what} cleared')
+            tg(f'🔓 {flag}={v}: сброс выполнен ({what}). Переменную можно удалить из env; то же значение второй раз не сработает.')
+
+    def warn_cppi_inactive(self):
+        """CPPI starts cutting K when the buffer falls below CPPI_FRAC x allowance x (K_MAX/base); ABANDON fires at ABANDON_FRAC x allowance."""
+        if C.MODE != 'challenge' or C.ABANDON_FRAC <= 0 or C.CPPI_FRAC <= 0:
+            return
+        base = C.BASE_SCALE
+        kmax = max(C.K_MAX, base) if C.K_MAX > 0 else base
+        cppi_buf = C.CPPI_FRAC * kmax / base * self.risk.dd_amount(); aband_buf = C.ABANDON_FRAC * self.risk.dd_amount()
+        if cppi_buf <= aband_buf:
+            msg = (f'CPPI не действует: ABANDON (буфер ≤ {aband_buf:,.0f}) срабатывает раньше, чем CPPI начинает снижать K '
+                   f'(буфер < {cppi_buf:,.0f}). Бот идёт полным риском до сдачи челленджа.')
+            log(msg); tg_once('cppi_inactive', f'⚠️ {msg}', 24.0)
+
     def due_slot(self, now):
         """Most recent scheduled rebalance time <= now on the REBAL_HOUR_UTC + k*REBAL_EVERY_H grid (at REBAL_MINUTE)."""
         base = now.replace(hour=C.REBAL_HOUR_UTC, minute=C.REBAL_MINUTE, second=0, microsecond=0)
@@ -573,8 +629,25 @@ class Bot:
         k = int((now - base).total_seconds() // (int(C.REBAL_EVERY_H) * 3600))
         return base + timedelta(hours=k * int(C.REBAL_EVERY_H))
 
+    def start_with_retry(self, sleeps=(30, 60)):
+        """start() with retries on network errors only (an exchange blip at boot must not leave a bot that never trades);
+        SystemExit (config hash, model spec, state dir) is not caught: the process dies and the supervisor sees it."""
+        for n in range(len(sleeps) + 1):
+            try:
+                self.start(); return
+            except (requests.RequestException, ApiError) as e:
+                if n == len(sleeps):
+                    raise
+                log(f'start failed ({e}); retry {n + 1}/{len(sleeps)} in {sleeps[n]}s')
+                tg_once('start_retry', f'⚠️ Старт не удался ({e}), повтор через {sleeps[n]} с', 0.1)
+                time.sleep(sleeps[n])
+
     def loop(self):
-        self.start()
+        self.start_with_retry()
+        self.loop_body()
+
+    def loop_body(self, health=None):
+        """The trading cycle (start() already done). health(): called every <=30 s while idle, may stop the process."""
         while True:
             try:
                 now = self.now()
@@ -589,7 +662,11 @@ class Bot:
             now2 = self.now(); nxt = now2.replace(minute=C.REBAL_MINUTE, second=0, microsecond=0)
             if nxt <= now2:
                 nxt += timedelta(hours=1)                          # (a start at hh:05 waits for hh:10, not for the next hour)
-            time.sleep(max(30.0, (nxt - now2).total_seconds() + 5))
+            end = time.time() + max(30.0, (nxt - now2).total_seconds() + 5)
+            while time.time() < end:
+                time.sleep(min(30.0, max(0.0, end - time.time())))
+                if health:
+                    health()
 
     def watchdog_loop(self):
         while True:
@@ -623,9 +700,21 @@ def main():
         log('NO KEYS: set BYBIT_API_KEY / BYBIT_API_SECRET'); sys.exit(1)
     api = Bybit(C.BASE_URL, C.API_KEY, C.API_SECRET, log)
     bot = Bot(api)
-    threading.Thread(target=bot.watchdog_loop, daemon=True).start()
-    threading.Thread(target=bot.loop, daemon=True).start()
-    HTTPServer(('0.0.0.0', C.PORT), Handler).serve_forever()
+    bot.start_with_retry()                                  # watchdog only after the state is loaded and the config checked
+    wd = threading.Thread(target=bot.watchdog_loop, daemon=True, name='watchdog'); wd.start()
+    threading.Thread(target=HTTPServer(('0.0.0.0', C.PORT), Handler).serve_forever, daemon=True, name='http').start()
+
+    def die(why):
+        log(f'FATAL: {why}'); tg(f'🛑 Бот остановлен: {why}. Процесс завершается (код 1), перезапустит супервизор.')
+        os._exit(1)
+
+    def health():
+        if not wd.is_alive():
+            die('поток watchdog умер')
+    try:
+        bot.loop_body(health)
+    except BaseException as e:
+        die(f'торговый цикл упал: {e!r}\n{traceback.format_exc()[:800]}')
 
 
 if __name__ == '__main__':

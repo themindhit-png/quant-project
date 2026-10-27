@@ -197,7 +197,8 @@ C.REBAL_EVERY_H = 8
 # T15: effective config hash: deterministic, excludes secrets, changes with a risk parameter
 cfg1, h1 = C.effective_config(); cfg2, h2 = C.effective_config()
 check('T15a effective_config deterministic', h1 == h2 and len(h1) == 16)
-check('T15b secrets excluded', not any(k in cfg1 for k in ('BYBIT_API_KEY', 'BYBIT_API_SECRET', 'TG_BOT_TOKEN', 'STATUS_TOKEN')))
+check('T15b secrets / connection / paths excluded (real global names)', not any(k in cfg1 for k in (
+    'API_KEY', 'API_SECRET', 'TG_TOKEN', 'TG_CHAT', 'STATUS_TOKEN', 'PORT', 'STATE_FILE', 'STATE_BACKUP_FILE', 'BASE_URL', 'BLACKLIST', 'MODEL_DIR')))
 old = C.VT_TARGET_DVOL; C.VT_TARGET_DVOL = old * 1.5; _, h3 = C.effective_config(); C.VT_TARGET_DVOL = old
 check('T15c hash changes with a risk parameter', h3 != h1)
 
@@ -224,5 +225,114 @@ C.SLEEVE_SCALES['ml8'] = 0.0; C.ML8_KILL_RULE = 1
 bot6.apply_ml8_kill_rule(10000.0, datetime(2026, 6, 1, tzinfo=timezone.utc))
 check('T17 shadow ml8 negative -> multiplier stays 0 and cadence 24h', mem6['ml8_mult'] == 0.0 and C.REBAL_EVERY_H == 24, f'mult {mem6["ml8_mult"]} every {C.REBAL_EVERY_H}')
 C.REBAL_EVERY_H = 8; C.SLEEVE_SCALES['ml8'] = C.ML8_BASE_SCALE
+
+# ---------------------------------------------------------------- Phase 3a (T15d, T18-T23)
+import subprocess, inspect, types
+from datetime import datetime, timezone, timedelta
+def _cfg_hash(**env):
+    e = dict(os.environ); e.update(env)
+    return subprocess.run([sys.executable, os.path.join(HERE, 'config.py')], env=e, capture_output=True, text=True, timeout=60).stdout.strip()
+ha = _cfg_hash(); hb = _cfg_hash(BYBIT_BASE_URL='https://api.bybit.com', PORT='12345', BLACKLIST_SYMBOLS='FOOUSDT,BARUSDT'); hc = _cfg_hash(VT_TARGET_DVOL='0.0123')
+check('T15d hash ignores BASE_URL / PORT / BLACKLIST_SYMBOLS, reacts to a risk parameter', len(ha) == 16 and ha == hb and ha != hc, f'{ha} {hb} {hc}')
+
+# T18: start() retried on network errors only; watchdog thread is started after start()
+import requests
+from bybit import ApiError
+class _Eq:
+    def __init__(self): self.n = 0
+    def equity(self):
+        self.n += 1
+        if self.n <= 2: raise requests.ConnectionError('boom')
+        return 10000.0
+b18 = Bot.__new__(Bot); eq18 = _Eq(); b18.start = lambda: eq18.equity()
+b18.start_with_retry(sleeps=(0, 0))
+check('T18a start_with_retry survives 2 ConnectionErrors, 3rd attempt ok', eq18.n == 3)
+b18.start = lambda: (_ for _ in ()).throw(SystemExit('FATAL hash'))
+try:
+    b18.start_with_retry(sleeps=(0, 0)); ex18 = False
+except SystemExit:
+    ex18 = True
+b18.start = lambda: (_ for _ in ()).throw(ApiError(10002, 'x'))
+try:
+    b18.start_with_retry(sleeps=(0, 0)); ex18b = False
+except ApiError:
+    ex18b = True
+check('T18b SystemExit is not retried; persistent ApiError is raised after the last attempt', ex18 and ex18b)
+import main as _main
+src = inspect.getsource(_main.main)
+check('T18c main(): start_with_retry before the watchdog thread; trading loop in the main thread', 0 <= src.index('start_with_retry') < src.index('watchdog_loop') < src.index('bot.loop_body'))
+
+# T19: quantity rounding is exact (never above the position) and formatted without exponents
+from execution import round_qty
+from bybit import fmt_qty
+cases = [(0.5, 1.5, 1.5), (0.5, 2.6, 2.5), (0.05, 0.15, 0.15), (0.05, 0.35, 0.35), (0.001, 0.0029, 0.002), (5, 12, 10), (1, 12, 12), (0.1, 0.3, 0.3), (0.01, 1.005, 1.0)]
+okr = all(abs(round_qty(q, dict(qtyStep=st)) - want) < 1e-12 and round_qty(q, dict(qtyStep=st)) <= q + 1e-12 for st, q, want in cases)
+check('T19a round_qty multiples of the step, never above the quantity', okr, str([(st, q, round_qty(q, dict(qtyStep=st))) for st, q, _ in cases]))
+check('T19b fmt_qty plain decimals', fmt_qty(0.00001, 1e-5) == '0.00001' and fmt_qty(1.5, 0.5) == '1.5' and fmt_qty(12.0, 1) == '12' and fmt_qty(1e-05) == '0.00001' and fmt_qty(100.0) == '100')
+
+# T20: scale pass sends reducing legs even when the cut is inside the daily band; k_ref moves only after clean execution
+class _Api20:
+    def equity(self): return 10000.0
+    def tickers(self): return {'AAAUSDT': dict(mark=5.0, last=5.0, bid=5.0, ask=5.0, turnover24h=1e8)}
+    def positions(self): return {'AAAUSDT': dict(qty=100.0, mark=5.0, entry=5.0, upnl=0, im=1, legs=[])}
+def _mk20(errors):
+    b = Bot.__new__(Bot); b.api = _Api20(); b.mem = Memory(); b.mem.save = lambda: None; b.risk = RiskEngine(b.mem, lambda *a: None)
+    b.lock = threading.Lock(); b.instr = {'AAAUSDT': dict(qtyStep=0.1, minQty=0.1, maxQty=1e9, minNotional=5.0, tickSize=0.001)}
+    b.mem['last_targets'] = {'AAAUSDT': 500.0}; b.mem['k_ref'] = 2.0
+    b.risk.multiplier = lambda eq, now: (1.6, 'test'); b.guards = lambda eq: True
+    b.sent = []
+    b.ex = types.SimpleNamespace(plan=Executor(None, lambda *a: None, None, True).plan, execute=lambda legs, *a, **k: (b.sent.append(legs) or ({}, errors)))
+    return b
+import threading
+C.REBAL_BAND = 0.30
+b20 = _mk20([]); b20.scale_pass()
+check('T20a ratio 0.8 (inside the daily band): reduce-only leg sent, k_ref -> 1.6', len(b20.sent) == 1 and b20.sent[0] and all(l[3] for l in b20.sent[0]) and abs(b20.mem['k_ref'] - 1.6) < 1e-9 and abs(b20.mem['last_targets']['AAAUSDT'] - 400.0) < 1e-6, f'{b20.sent} k_ref {b20.mem["k_ref"]}')
+b20e = _mk20([('AAAUSDT', 'Sell', 'err')]); b20e.scale_pass()
+check('T20b order error: k_ref and last_targets unchanged', b20e.mem['k_ref'] == 2.0 and b20e.mem['last_targets']['AAAUSDT'] == 500.0)
+
+# T21: a held name with a candle-load error is kept, closed on the 3rd consecutive cycle; counter resets on success
+b21 = Bot.__new__(Bot); b21.mem = Memory(); pos21 = {'XUSDT': dict(qty=1.0, mark=1.0)}
+r1 = b21.bad_data_split(['XUSDT'], pos21, set()); r2 = b21.bad_data_split(['XUSDT'], pos21, set()); r3 = b21.bad_data_split(['XUSDT'], pos21, set())
+check('T21a held bad name kept on cycles 1-2, closed (blocked) on the 3rd', r1 == (set(), {'XUSDT'}) and r2 == (set(), {'XUSDT'}) and r3 == ({'XUSDT'}, set()), f'{r1} {r2} {r3}')
+b21.bad_data_split([], pos21, set()); r4 = b21.bad_data_split(['XUSDT'], pos21, set())
+check('T21b counter resets after a good cycle; not-held and stale names are blocked at once', r4[1] == {'XUSDT'} and b21.bad_data_split(['YUSDT'], pos21, set()) == ({'YUSDT'}, set()) and b21.bad_data_split(['XUSDT'], pos21, {'XUSDT'})[0] == {'XUSDT'})
+legs21 = Executor(None, lambda *a: None, None, True).plan({'XUSDT': 1.0 * 1.0 * 1000.0}, {'XUSDT': dict(qty=1000.0, mark=1.0, entry=1, upnl=0, im=1, legs=[])},
+        {'XUSDT': dict(mark=1.0, last=1.0, bid=1.0, ask=1.0)}, {'XUSDT': dict(qtyStep=0.1, minQty=0.1, maxQty=1e9, minNotional=5.0, tickSize=0.001)}, 0.3, 15.0)
+check('T21c target = current position -> no leg', legs21 == [])
+
+# T22: RESET_* is a one-time key; day roll in guards triggers save()
+b22 = Bot.__new__(Bot); b22.mem = Memory(); b22.mem.saves = 0
+def _sv(): b22.mem.saves += 1
+b22.mem.save = _sv
+os.environ['RESET_TOTAL_STOP'] = '1'
+b22.mem['halt_total'] = True; b22.apply_resets(); c1 = b22.mem['halt_total']
+b22.mem['halt_total'] = True; b22.apply_resets(); c2 = b22.mem['halt_total']
+os.environ['RESET_TOTAL_STOP'] = '2'; b22.apply_resets(); c3 = b22.mem['halt_total']
+del os.environ['RESET_TOTAL_STOP']
+check('T22a RESET_TOTAL_STOP: first value clears, same value again does not, a new value clears', c1 is False and c2 is True and c3 is False)
+b22b = Bot.__new__(Bot); b22b.mem = Memory(); b22b.risk = RiskEngine(b22b.mem, lambda *a: None); b22b.mem.saves = 0
+def _sv2(): b22b.mem.saves += 1
+b22b.mem.save = _sv2
+b22b.ex = types.SimpleNamespace(flatten_all=lambda *a, **k: 0); b22b.instr = {}
+tday = datetime(2026, 5, 3, 0, 5, tzinfo=timezone.utc); b22b.now = lambda: tday
+b22b.mem['day_date'] = '2026-05-02'; b22b.mem['day_anchor'] = 10000.0; b22b.mem['day_peak'] = 10000.0
+b22b.guards(10000.0)
+check('T22b guards saves the state when the UTC day rolls over', b22b.mem.saves >= 1 and b22b.mem['day_date'] == '2026-05-03', f'saves {b22b.mem.saves}')
+import tempfile
+_old_sf = C.STATE_FILE; C.STATE_FILE = os.path.join(tempfile.mkdtemp(), 'sub', 'dir', 'state.json')
+Memory().check_writable(); okdir = os.path.isdir(os.path.dirname(C.STATE_FILE))
+C.STATE_FILE = '/proc/nonexistent/state.json'
+try:
+    Memory().check_writable(); bad_dir = False
+except SystemExit:
+    bad_dir = True
+C.STATE_FILE = _old_sf
+check('T22c state dir is created; an unwritable one aborts the start', okdir and bad_dir)
+
+# T23: a name with long Binance age but <30d of bars on the trading exchange is outside the ML universes
+S.uni.prev = {}; mm_a = S.ml_universe(panel, age_h); j23 = int(np.flatnonzero(mm_a)[0])
+panel_s = dict(panel); da = np.array(panel['data_age'], float); da[j23] = 500.0; panel_s['data_age'] = da
+S.uni.prev = {}; mm_b = S.ml_universe(panel_s, age_h); S.uni.prev = {}; m8_b = S.ml8_universe(panel_s, age_h)
+check('T23 short Bybit history (500h, age 200d) excluded from ml and ml8 universes', mm_a[j23] and not mm_b[j23] and not m8_b[j23] and S.short_hist_n >= 1, f'short_hist_n {S.short_hist_n}')
 
 print(f'\n{sum(1 for _, ok in res if ok)}/{len(res)} passed')

@@ -171,9 +171,11 @@ def effective_config():
     """Every non-secret configuration value that changes behaviour (strategy + risk + execution), for the pre-registration
     hash (PREREG.md). Secrets, connection settings and model bytes are excluded; models are hashed separately."""
     import hashlib, json
-    skip = {'BYBIT_API_KEY', 'BYBIT_API_SECRET', 'TG_BOT_TOKEN', 'TG_CHAT_ID', 'STATUS_TOKEN', 'BYBIT_BASE_URL', 'STATE_FILE', 'MODEL_DIR', 'DRY_RUN', 'KILL_SWITCH',
+    skip = {'STATUS_TOKEN', 'STATE_FILE', 'MODEL_DIR', 'DRY_RUN', 'KILL_SWITCH',
             'RESET_TOTAL_STOP', 'EQ_PEAK', 'PHASE_BASE', 'EXPECTED_CONFIG_HASH', 'FIRM_PRESETS', 'DEFAULT_BLACKLIST',
-            'API_KEY', 'API_SECRET', 'TG_TOKEN', 'TG_CHAT', 'STATE_BACKUP_FILE', 'PORT'}
+            'API_KEY', 'API_SECRET', 'TG_TOKEN', 'TG_CHAT', 'STATE_BACKUP_FILE', 'PORT',
+            # connection / operations, not strategy: demo -> live or a blacklist edit must not change the registered hash
+            'BASE_URL', 'BLACKLIST', 'BLACKLIST_PATTERNS', 'STATE_PUSH_H', 'WATCHDOG_SEC', 'VERSION'}
     out = {}
     for k, v in sorted(globals().items()):
         if k.startswith('_') or k in skip or not k.isupper() or callable(v):
@@ -249,6 +251,7 @@ MIN_TRADE_USDT = _env('MIN_TRADE_USDT', max(15.0, 0.0015 * ACCOUNT_SIZE), float)
 REBAL_HOUR_UTC = _env('REBAL_HOUR_UTC', 1, int)
 REBAL_MINUTE = _env('REBAL_MINUTE', 10, int)
 WATCHDOG_SEC = _env('WATCHDOG_SEC', 60, int)
+BAD_HOLD_MAX = _env('BAD_HOLD_MAX', 3, int)             # held names with a candle-load error are kept for this many cycles in a row, then closed
 MODEL_DIR = _env('MODEL_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models'))
 USE_BINANCE_CLOCK = _bool('USE_BINANCE_CLOCK', True)   # also use Binance onboardDate for token age (if reachable)
 
@@ -284,3 +287,7 @@ DEFAULT_BLACKLIST = {
     'VRTUSDT', 'FLEXUSDT', 'HDUSDT', 'BXUSDT', 'LAOPUUSDT',
 }
 BLACKLIST = DEFAULT_BLACKLIST | {s.strip().upper() for s in _env('BLACKLIST_SYMBOLS', '').split(',') if s.strip()}
+
+
+if __name__ == '__main__':
+    print(effective_config()[1])

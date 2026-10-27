@@ -42,12 +42,27 @@ class Memory(dict):
                'fund_days', 'fund_settlements', 'fund_total', 'ml8_audit', 'ml8_audit_day', 'ml8_changes',
                'attrib_share', 'attrib_px', 'attrib_notional', 'attrib_day', 'sleeve_pnl_day', 'sleeve_pnl_hist', 'ml8_mult', 'ml8_mult_date',
                'cooldown', 'k_avg', 'last_rebal_date', 'last_rebal_slot', 'last_daily_date', 'held_w', 'last_targets', 'k_ref',
-               'cycles', 'blocked', 'created', 'abandoned')
+               'cycles', 'blocked', 'created', 'abandoned', 'bad_n',
+               'reset_nonce_RESET_TOTAL_STOP', 'reset_nonce_RESET_TARGET_HIT', 'reset_nonce_RESET_ABANDONED')
 
     def __init__(self):
         super().__init__()
         self.loaded = False
         self.update(created=time.time(), cycles=0, blocked={}, cooldown={}, last_targets={}, k_ref=None)
+
+    def check_writable(self):
+        """Fail fast when the state directory cannot be written: a bot without memory forgets its floors and latches."""
+        for path in (C.STATE_FILE, C.STATE_BACKUP_FILE):
+            if not path:
+                continue
+            try:
+                os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+                with open(path + '.probe', 'w') as f:
+                    f.write('ok')
+                os.remove(path + '.probe')
+            except OSError as e:
+                tg(f'🛑 Нельзя писать state-файл {path}: {e}. Бот НЕ запущен (без памяти он забудет пол и стопы).')
+                raise SystemExit(f'FATAL: state path {path} not writable: {e}')
 
     def load(self):
         """Restore order: STATE_FILE -> STATE_BACKUP_FILE -> STATE_JSON_B64 env (paste of the last Telegram backup)."""

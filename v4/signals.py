@@ -114,10 +114,19 @@ class Sleeves:
         return self.uni.select('core', panel['symbols'], panel['t24'][i], age_h, panel['valid'][i], panel['stale'],
                                C.UNI_MIN_AGE_D * 24, C.UNI_MIN_TURN, C.UNI_TOP_CORE, C.UNI_EXIT_EXTRA, C.BLACKLIST, panel.get('delist', set()))
 
+    ML_MIN_HIST_H = 720        # r720 / vol720 / beta720 need 30 days of bars ON THIS exchange (Binance age can be far older)
+
+    def _need_hist(self, mask, panel):
+        """Drop names whose candle history on the trading exchange is shorter than the ML feature windows (their r1440/r2160/
+        vol720 would be NaN although the Binance-clock age passed the 90d filter); counted in self.short_hist_n."""
+        ok = np.asarray(panel['data_age'], float) >= self.ML_MIN_HIST_H
+        self.short_hist_n = max(getattr(self, 'short_hist_n', 0), int((mask & ~ok).sum()))
+        return mask & ok
+
     def ml_universe(self, panel, age_h):
         i = self._last(panel)
-        return self.uni.select('ml', panel['symbols'], panel['t24'][i], age_h, panel['valid'][i], panel['stale'],
-                               C.ML_MIN_AGE_D * 24, C.UNI_MIN_TURN, C.UNI_TOP_ML, C.UNI_EXIT_EXTRA, C.BLACKLIST, panel.get('delist', set()))
+        return self._need_hist(self.uni.select('ml', panel['symbols'], panel['t24'][i], age_h, panel['valid'][i], panel['stale'],
+                               C.ML_MIN_AGE_D * 24, C.UNI_MIN_TURN, C.UNI_TOP_ML, C.UNI_EXIT_EXTRA, C.BLACKLIST, panel.get('delist', set())), panel)
 
     # ------------------------------------------------------------ sleeves
     def core(self, panel, mask):
@@ -177,8 +186,8 @@ class Sleeves:
     def ml8_universe(self, panel, age_h):
         """ml8 trades only names >= ML8_MIN_AGE_D old (young names are a jump lottery on an 8h grid; exp20b/20h)."""
         i = self._last(panel)
-        return self.uni.select('ml8', panel['symbols'], panel['t24'][i], age_h, panel['valid'][i], panel['stale'],
-                               C.ML8_MIN_AGE_D * 24, C.UNI_MIN_TURN, C.UNI_TOP_ML, C.UNI_EXIT_EXTRA, C.BLACKLIST, panel.get('delist', set()))
+        return self._need_hist(self.uni.select('ml8', panel['symbols'], panel['t24'][i], age_h, panel['valid'][i], panel['stale'],
+                               C.ML8_MIN_AGE_D * 24, C.UNI_MIN_TURN, C.UNI_TOP_ML, C.UNI_EXIT_EXTRA, C.BLACKLIST, panel.get('delist', set())), panel)
 
     def ml8_vol(self, panel):
         """Std of hourly returns over the last ML8_VOL_H closed bars (gap bars -> unknown), >= 72 obs; else NaN.
@@ -273,6 +282,7 @@ class Sleeves:
         age_ml = age_h if age_ml is None else np.where(age_ml >= 0, age_ml, age_h)
         majors_idx = np.array([syms.index(s) for s in C.MAJORS if s in syms], dtype=np.int64)
         parts, info = {}, {}
+        self.short_hist_n = 0
         daily = [s for s in C.SLEEVES if s in ('listing', 'core', 'fchg') or (s.startswith('ml') and s[2:].isdigit() and s != 'ml8')]
         pdl = panel if panel_daily is None or list(panel_daily.get('symbols', [])) != list(syms) else panel_daily
         if daily_update or any(k not in self.held for k in daily):
@@ -302,6 +312,7 @@ class Sleeves:
             parts['ml8'] = self.ml8(panel, mm8, age_ml, hour_utc); info['ml8_n'] = int((parts['ml8'] != 0).sum())
         if 'fcarry' in C.SLEEVES:                  # funding-level carry (exp24a/e), recomputed every rebalance (8h holding)
             parts['fcarry'] = self.fund_carry(panel, self.fund_universe(panel, age_ml)); info['fcarry_n'] = int((parts['fcarry'] != 0).sum())
+        info['ml_short_hist_n'] = self.short_hist_n
         w = np.zeros(N); tot = 0.0
         for k, v in parts.items():
             s = C.SLEEVE_SCALES.get(k, 2.0 if k == 'ml8' else 1.0)

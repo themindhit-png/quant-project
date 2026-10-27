@@ -5,18 +5,19 @@
  * reductions/closures first, then openings; PostOnly at the touch with re-quotes, market fallback;
  * fills verified by re-reading positions (robust to demo quirks); dust closed fully."""
 import os, sys, time, math
+from decimal import Decimal, ROUND_FLOOR
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import config as C
-from bybit import ApiError
+from bybit import ApiError, fmt_qty
 
 
 def round_qty(qty, meta):
-    step = meta['qtyStep']
-    q = math.floor(abs(qty) / step + 1e-9) * step
-    prec = max(0, int(round(-math.log10(step)))) if step < 1 else 0
-    return round(q, prec)
+    """Floor |qty| to a whole multiple of qtyStep (exact decimal arithmetic: 1.5 at step 0.5 stays 1.5, never rounds up)."""
+    d = Decimal(str(meta['qtyStep']))
+    n = (Decimal(str(abs(qty))) / d).to_integral_value(ROUND_FLOOR)
+    return float(n * d)
 
 
 def fmt_price(price, tick, side):
@@ -103,8 +104,8 @@ class Executor:
         cur = positions.get(sym, {}).get('qty', 0.0)
         return target_qty_signed - cur
 
-    def _order_params(self, sym, side, q, ro, price_str=None):
-        p = {'category': 'linear', 'symbol': sym, 'side': side, 'qty': str(q), 'positionIdx': 0}
+    def _order_params(self, sym, side, q, ro, price_str=None, meta=None):
+        p = {'category': 'linear', 'symbol': sym, 'side': side, 'qty': fmt_qty(q, (meta or {}).get('qtyStep')), 'positionIdx': 0}
         if price_str:
             p.update(orderType='Limit', price=price_str, timeInForce='PostOnly')
         else:
@@ -125,7 +126,7 @@ class Executor:
         batch = [x for x in quotes if x[2] <= x[5]['maxQty']]
         if len(batch) >= 2 and hasattr(self.api, 'create_batch'):
             try:
-                codes = self.api.create_batch([self._order_params(s, sd, q, ro, ps) for s, sd, q, ro, ps, _ in batch])
+                codes = self.api.create_batch([self._order_params(s, sd, q, ro, ps, mt) for s, sd, q, ro, ps, mt in batch])
                 for (sym, *_), (c, msg) in zip(batch, codes):
                     res[sym] = (c, msg); self.stats['maker_sent'] += 1
                 batch = []

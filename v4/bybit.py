@@ -2,10 +2,20 @@
 # -*- coding: utf-8 -*-
 """Bybit v5 REST client (linear USDT perps, UTA). Market data is public; account/order calls signed."""
 import time, hmac, hashlib, uuid, json
+from decimal import Decimal
 from urllib.parse import urlencode
 import requests
 
 RETRY_RETCODES = {10002, 10006, 10016, 10018}
+
+
+def fmt_qty(q, step=None):
+    """Order quantity as a plain decimal string (never '1e-05'); with a step, with exactly the step's decimals."""
+    d = Decimal(str(q))
+    if step:
+        exp = Decimal(str(step)).normalize().as_tuple().exponent
+        return format(d.quantize(Decimal(1).scaleb(min(exp, 0))), 'f')
+    return format(d.normalize(), 'f') if d != d.to_integral_value() else format(d.quantize(Decimal(1)), 'f')
 
 
 class ApiError(RuntimeError):
@@ -341,14 +351,14 @@ class Bybit:
                 return out
 
     def market(self, symbol, qty, side, reduce_only=False, position_idx=0):
-        p = {'category': 'linear', 'symbol': symbol, 'side': side, 'orderType': 'Market', 'qty': str(qty),
+        p = {'category': 'linear', 'symbol': symbol, 'side': side, 'orderType': 'Market', 'qty': fmt_qty(qty),
              'positionIdx': position_idx}
         if reduce_only:
             p['reduceOnly'] = True
         return self.create(p)
 
     def post_only(self, symbol, qty, side, price_str, reduce_only=False, position_idx=0):
-        p = {'category': 'linear', 'symbol': symbol, 'side': side, 'orderType': 'Limit', 'qty': str(qty),
+        p = {'category': 'linear', 'symbol': symbol, 'side': side, 'orderType': 'Limit', 'qty': fmt_qty(qty),
              'price': price_str, 'timeInForce': 'PostOnly', 'positionIdx': position_idx}
         if reduce_only:
             p['reduceOnly'] = True
