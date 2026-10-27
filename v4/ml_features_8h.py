@@ -6,7 +6,10 @@ import numpy as np
 from ml_features_v3 import compute_features_v3, FEATURES_V3, rank_norm, NEED_H  # noqa: F401
 
 EXTRA_8H = ['r8', 'vol24', 'fund8', 'prem_last', 'hl24', 'hour']
-FEATURES_8H = FEATURES_V3 + EXTRA_8H
+# Phase 4.3(ii): features constant across symbols at a decision bar carry no cross-sectional signal; after rank_norm they
+# become the symbol's position in the column order (alphabetical in training, by turnover live) -> dropped from the model.
+CONST_8H = ('reg_btcvol', 'reg_btcret', 'reg_disp24', 'reg_breadth', 'hour')
+FEATURES_8H = [f for f in FEATURES_V3 + EXTRA_8H if f not in CONST_8H]
 
 
 def compute_features_8h(cff, fund, t24, prem, high, low, age_h, btc_j, hour_utc):

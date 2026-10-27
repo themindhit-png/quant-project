@@ -2,6 +2,7 @@
 # Деплой бота v4 на VPS одной командой (запускать от root из клона репо, обычно /root/quant-project):
 #   bash ops/deploy.sh --check     # только проверить: обновить репо, тесты, посчитать хэши, показать, что изменится
 #   bash ops/deploy.sh             # то же + бэкап, копирование кода, новый EXPECTED_CONFIG_HASH, перезапуск, проверка /status
+#   bash ops/deploy.sh --models    # то же + замена моделей из репо (только когда это решение записано в docs/STATUS.md)
 # Ничего секретного не печатает. Откат — команды в конце вывода (бэкапы с меткой времени рядом с оригиналами).
 set -euo pipefail
 
@@ -13,7 +14,10 @@ BOTPY="${BOTPY:-$APP/venv/bin/python}"
 SYSTEMD_DIR="${SYSTEMD_DIR:-/etc/systemd/system}"
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TS="$(date -u +%Y%m%d-%H%M%S)"
-CHECK=0; [[ "${1:-}" == "--check" ]] && CHECK=1
+CHECK=0; MODELS=0
+for a in "$@"; do
+  case "$a" in --check) CHECK=1 ;; --models) MODELS=1 ;; *) echo "неизвестный ключ: $a" >&2; exit 1 ;; esac
+done
 
 say()  { printf '\n== %s\n' "$*"; }
 die()  { printf '\n!! ОШИБКА: %s\n' "$*" >&2; exit 1; }
@@ -110,7 +114,7 @@ echo "изменённые файлы кода:"; diff -rq --exclude=__pycache__
 if [[ $CHECK -eq 1 ]]; then
   say "Режим --check: ничего не изменено. Для деплоя: bash ops/deploy.sh"; exit 0
 fi
-[[ $MODELS_DIFF -eq 0 ]] || die "модели бота не совпадают с репо — их не трогаю (это пред-регистрация). Пришли вывод в чат."
+[[ $MODELS_DIFF -eq 0 || $MODELS -eq 1 ]] || die "модели бота не совпадают с репо — их не трогаю (это пред-регистрация). Пришли вывод в чат."
 
 # ---------------------------------------------------------------- 5. бэкап + код + env
 say "5/7 Бэкап и установка"
@@ -118,6 +122,15 @@ cp -a "$SRC" "$SRC.bak.$TS"; cp -a "$ENVF" "$ENVF.bak.$TS"
 echo "бэкап кода: $SRC.bak.$TS ; бэкап env: $ENVF.bak.$TS"
 for f in "$REPO"/v4/*.py "$REPO"/v4/requirements.txt; do cp -f "$f" "$SRC/"; done
 rm -rf "$SRC/__pycache__"
+ROLLBACK="rm -rf $SRC && cp -a $SRC.bak.$TS $SRC && cp -a $ENVF.bak.$TS $ENVF"
+if [[ $MODELS -eq 1 && $MODELS_DIFF -eq 1 ]]; then
+  case "$(realpath -m "$MD")/" in
+    "$(realpath -m "$SRC")"/*) echo "модели внутри $SRC — их бэкап уже в $SRC.bak.$TS" ;;
+    *) cp -a "$MD" "$MD.bak.$TS"; echo "бэкап моделей: $MD.bak.$TS"; ROLLBACK="$ROLLBACK && rm -rf $MD && cp -a $MD.bak.$TS $MD" ;;
+  esac
+  cp -f "$REPO"/v4/models/* "$MD/"; echo "модели заменены из репо"
+fi
+ROLLBACK="$ROLLBACK && systemctl restart $UNIT"
 if grep -qE '^[[:space:]]*(export[[:space:]]+)?EXPECTED_CONFIG_HASH=' "$ENVF"; then
   sed -i -E "s/^([[:space:]]*(export[[:space:]]+)?EXPECTED_CONFIG_HASH=).*/\1$NEW/" "$ENVF"
 else
@@ -159,7 +172,7 @@ if [[ "$GOT" != "$NEW "* ]]; then
   cat <<EOF
 
 !! Бот не подтвердил новый хэш. ОТКАТ (скопируй и выполни):
-   rm -rf $SRC && cp -a $SRC.bak.$TS $SRC && cp -a $ENVF.bak.$TS $ENVF && systemctl restart $UNIT
+   $ROLLBACK
 Пришли вывод выше в чат.
 EOF
   exit 1
@@ -168,5 +181,5 @@ cat <<EOF
 
 ГОТОВО: бот работает на новом коде, config_hash $NEW.
 Откат при необходимости:
-   rm -rf $SRC && cp -a $SRC.bak.$TS $SRC && cp -a $ENVF.bak.$TS $ENVF && systemctl restart $UNIT
+   $ROLLBACK
 EOF

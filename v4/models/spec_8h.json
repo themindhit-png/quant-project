@@ -31,16 +31,11 @@
   "age_d",
   "beta720",
   "skew168",
-  "reg_btcvol",
-  "reg_btcret",
-  "reg_disp24",
-  "reg_breadth",
   "r8",
   "vol24",
   "fund8",
   "prem_last",
-  "hl24",
-  "hour"
+  "hl24"
  ],
  "need_h": 2161,
  "universe": {

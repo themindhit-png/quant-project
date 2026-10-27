@@ -433,5 +433,22 @@ if S.models.get(3) is not None:
 else:
     print('SKIP  T25b (no ML models)')
 
+# T25c: no ml8 feature may be constant across symbols (Phase 4.3(ii)): after rank_norm a constant column becomes the
+# symbol's position in the column order (alphabetical in training, by turnover live). The order-permutation Spearman of
+# the predictions is printed for information: ties (e.g. equal funding) still make rank_norm order-dependent (Phase 4.4).
+if S.models.get(8) is not None:
+    from ml_features_8h import compute_features_8h, FEATURES_8H, CONST_8H
+    F8 = compute_features_8h(panel['cff'][-2161:], panel['fund'][-2161:], panel['t24'][-2161:], panel['prem'][-2161:],
+                             panel['high'][-2161:], panel['low'][-2161:], age_h, jb25, int((d.hh[i] + 1) % 24))
+    ix8 = ix25   # ML universe (the ml8 one needs age >= 180d, longer than this test's data window)
+    X8 = np.column_stack([F8[f][ix8] for f in FEATURES_8H]).astype(np.float32)
+    const8 = [f for k, f in enumerate(FEATURES_8H) if len(np.unique(X8[np.isfinite(X8[:, k]), k])) < 3]
+    perm = np.random.default_rng(25).permutation(len(ix8)); inv = np.argsort(perm)
+    p8a = S.models[8].predict(rank_norm(X8).astype(np.float64)); p8b = S.models[8].predict(rank_norm(X8[perm]).astype(np.float64))[inv]
+    check('T25c ml8 features: none constant across symbols (CONST_8H excluded)', not const8 and not set(CONST_8H) & set(FEATURES_8H) and len(ix8) >= 30,
+          f'n {len(ix8)} constant {const8} | info: symbol-order permutation Spearman {spearmanr(p8a, p8b).correlation:.4f}')
+else:
+    print('SKIP  T25c (no ml8 model)')
+
 print(f'\n{sum(1 for _, ok in res if ok)}/{len(res)} passed')
 sys.exit(0 if all(ok for _, ok in res) else 1)
