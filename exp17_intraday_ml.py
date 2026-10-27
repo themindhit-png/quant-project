@@ -22,6 +22,9 @@ dec = dec[(dec >= NEED) & (dec < T - 48)]
 D = len(dec); print(f'decisions: {D}', flush=True)
 EXTRA = ['r8', 'vol24', 'fund8', 'prem_last', 'hl24', 'hour']
 FEATS = FEATURES_V3 + EXTRA
+if os.environ.get('NOCONST'):   # Phase 4.3(ii): drop features that are constant/untrainable live
+    FEATS = [f for f in FEATS if f not in ('reg_btcvol', 'reg_btcret', 'reg_disp24', 'reg_breadth', 'hour')]
+    print('features:', len(FEATS), flush=True)
 t0 = time.time(); rows = []; d.prev_mask = None
 for n, i in enumerate(dec):
     m = d.universe(i, min_age_h=720, min_turn=1e7, top_n=150)
