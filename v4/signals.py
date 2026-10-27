@@ -16,6 +16,12 @@ except Exception:       # pragma: no cover
     lgb = None
 
 
+def alpha_order(idx, syms):
+    """ML universe indices sorted by symbol name. rank_norm breaks ties (equal funding is common) by row order; training
+    panels are alphabetical, the live panel is ordered by turnover -> sort so live ranks match training (Phase 4.4)."""
+    return idx[np.argsort(np.asarray(syms)[idx], kind='stable')]
+
+
 def quantile_ls(sig, top_frac=0.2, min_n=10, inv_vol=None):
     """Long top / short bottom quantile; each side sums to 1.0. inv_vol: per-name vol -> weights within a side are
     proportional to 1/vol (names without a vol estimate get weight 0). Mirrors bt.quantile_ls exactly."""
@@ -153,7 +159,7 @@ class Sleeves:
         jb = syms.index('BTCUSDT')
         F = compute_features(panel['cff'][-ML_NEED_H:], panel['fund'][-ML_NEED_H:], panel['t24'][-ML_NEED_H:],
                              panel['prem'][-ML_NEED_H:], panel['high'][-ML_NEED_H:], panel['low'][-ML_NEED_H:], age_h, jb)
-        idx = np.flatnonzero(mask)
+        idx = alpha_order(np.flatnonzero(mask), syms)
         if len(idx) < 20:
             return np.zeros(len(syms))
         feats = [f for f in FEATURES if f not in C.ML_DROP_FEATS]
@@ -243,7 +249,7 @@ class Sleeves:
         jb = syms.index('BTCUSDT')
         F = compute_features_8h(panel['cff'][-ML_NEED_H:], panel['fund'][-ML_NEED_H:], panel['t24'][-ML_NEED_H:], panel['prem'][-ML_NEED_H:],
                                 panel['high'][-ML_NEED_H:], panel['low'][-ML_NEED_H:], age_h, jb, hour_utc)
-        idx = np.flatnonzero(mask)
+        idx = alpha_order(np.flatnonzero(mask), syms)
         if len(idx) < 20:
             return np.zeros(len(syms))
         X = np.column_stack([F[f][idx] for f in FEATURES_8H]).astype(np.float32)

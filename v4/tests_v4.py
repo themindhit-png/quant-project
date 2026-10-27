@@ -452,5 +452,21 @@ if S.models.get(8) is not None:
 else:
     print('SKIP  T25c (no ml8 model)')
 
+# T26: ML sleeves do not depend on the panel's symbol order (Phase 4.4): live orders symbols by turnover, training
+# alphabetically; rank_norm breaks ties by row order, so the bot sorts the universe by name before ranking.
+if S.models:
+    perm26 = np.random.default_rng(26).permutation(len(syms)); inv26 = np.argsort(perm26)
+    pp = dict(panel, symbols=[syms[j] for j in perm26], **{k: v[:, perm26] for k, v in panel.items() if isinstance(v, np.ndarray) and v.ndim == 2})
+    hr26 = int((d.hh[i] + 1) % 24); d26 = {}
+    for hz in sorted(S.models):
+        S.uni.prev = {}
+        wa = S.ml8(panel, mu25, age_h, hr26) if hz == 8 else S.ml(panel, mu25, age_h, hz)
+        wb = S.ml8(pp, mu25[perm26], age_h[perm26], hr26) if hz == 8 else S.ml(pp, mu25[perm26], age_h[perm26], hz)
+        d26[hz] = (float(np.abs(wa - wb[inv26]).max()), int((wa != 0).sum()))
+    check('T26 ML weights invariant to symbol order', all(v[0] < 1e-12 and v[1] > 0 for v in d26.values()),
+          ' '.join(f'h{k} maxdiff {v[0]:.1e} n {v[1]}' for k, v in d26.items()))
+else:
+    print('SKIP  T26 (no ML models)')
+
 print(f'\n{sum(1 for _, ok in res if ok)}/{len(res)} passed')
 sys.exit(0 if all(ok for _, ok in res) else 1)
