@@ -10,3 +10,5 @@ vps_dump/
 *.env.local
 /out_*.csv
 /out_*.txt
+/data/raw_oct/
+/data/panels_orig/
