@@ -6,6 +6,7 @@ out_exp21c_pred_h{3,7}_noage.npy on the standard Data(2021-01-01) grid + IC by y
 import os, sys, time, json, numpy as np, pandas as pd
 import lightgbm as lgb
 from bt import Data
+from ml_features import rank_norm
 START, END = '2021-01-01', os.environ.get('END', '2026-08-31 23:00')
 MIN_AGE_H = int(os.environ.get('MIN_AGE_D', '90')) * 24
 DROP = [f for f in os.environ.get('DROP_FEATS', 'age_d').split(',') if f]
@@ -71,12 +72,7 @@ feat_names = list(F); rows = []
 for n in range(D):
     m = masks[n]
     if m.sum() < 20: continue
-    X = np.column_stack([F[f][n][m] for f in feat_names]).astype(np.float32); Xr = np.empty_like(X)
-    for c in range(X.shape[1]):
-        col = X[:, c]; ok = np.isfinite(col); r = np.full(len(col), np.nan, dtype=np.float32)
-        if ok.sum() > 2:
-            rr = np.empty(ok.sum()); rr[np.argsort(col[ok])] = np.arange(ok.sum()); r[ok] = rr / (ok.sum() - 1) - 0.5
-        Xr[:, c] = r
+    X = np.column_stack([F[f][n][m] for f in feat_names]).astype(np.float32); Xr = rank_norm(X)
     df = pd.DataFrame(Xr, columns=feat_names); df['day'] = n; df['sym'] = np.flatnonzero(m)
     for hzn, arr in fwd.items():
         v = arr[n][m]; df[f'y{hzn}'] = v - np.nanmean(v)

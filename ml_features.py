@@ -8,7 +8,9 @@ All features are computed from hourly arrays ending at the decision bar (inclusi
 The decision bar is the LAST row. Returns dict name -> (N,) float array. Cross-sectional rank
 normalisation (rank_norm) is applied by the caller within the eligible universe.
 Requires at least 2160+1 rows of history."""
+import os
 import numpy as np
+from scipy.stats import rankdata
 
 FEATURES = ['r24', 'r72', 'r168', 'r336', 'r720', 'r1440', 'r2160', 'r720_skip24', 'r168_skip24', 'rel168', 'rel720',
             'vol168', 'vol720', 'volratio', 'fund24', 'fund72', 'fund168', 'fund720', 'prem8', 'prem24', 'prem168', 'premz',
@@ -64,12 +66,19 @@ def compute_features(cff, fund, t24, prem, high, low, age_h, btc_j):
     return F
 
 
-def rank_norm(X):
-    """Column-wise cross-sectional rank normalisation to [-0.5, 0.5]; NaN preserved. X: (n, f)."""
+def rank_norm(X, ties=None):
+    """Column-wise cross-sectional rank normalisation to [-0.5, 0.5]; NaN preserved. X: (n, f).
+    ties='average' (Phase 4.4): equal values get the mean rank (independent of column order); default keeps argsort order.
+    Research switch: env RANK_TIES=average."""
+    if ties is None:
+        ties = os.environ.get('RANK_TIES', '')
     Xr = np.full(X.shape, np.nan, dtype=np.float32)
     for c in range(X.shape[1]):
         col = X[:, c]; ok = np.isfinite(col)
         if ok.sum() > 2:
-            rr = np.empty(ok.sum()); rr[np.argsort(col[ok])] = np.arange(ok.sum())
+            if ties == 'average':
+                rr = rankdata(col[ok], method='average') - 1.0
+            else:
+                rr = np.empty(ok.sum()); rr[np.argsort(col[ok])] = np.arange(ok.sum())
             Xr[ok, c] = rr / (ok.sum() - 1) - 0.5
     return Xr
