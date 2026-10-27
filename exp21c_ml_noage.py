@@ -10,6 +10,7 @@ START, END = '2021-01-01', os.environ.get('END', '2026-08-31 23:00')
 MIN_AGE_H = int(os.environ.get('MIN_AGE_D', '90')) * 24
 DROP = [f for f in os.environ.get('DROP_FEATS', 'age_d').split(',') if f]
 SUF = os.environ.get('SUF', '_noage')
+RETRAIN = os.environ.get('RETRAIN', 'monthly')   # Phase 4.2: monthly | semi (retrain 1 Jan / 1 Jul, expanding) | roll24 (monthly, 24-month window)
 d = Data(start=START, end=END, min_turn_ever=5e6, load_hl=True, load_premium=True)
 T, N = d.ret.shape
 dec = np.flatnonzero(d.hh % 24 == 0); dec = dec[(dec >= 24 * 100) & (dec < T - 24 * 8)]; D = len(dec)
@@ -85,14 +86,23 @@ print(f'table: {tab.shape}, {tab.date.min().date()} -> {tab.date.max().date()}',
 params = dict(objective='regression', learning_rate=0.03, num_leaves=31, min_data_in_leaf=200, feature_fraction=0.7, bagging_fraction=0.7, bagging_freq=1, lambda_l2=10.0, verbose=-1, num_threads=2, seed=1)
 months = sorted(set(tab.date.dt.strftime('%Y-%m'))); first_test = months.index('2022-01'); mth_col = tab.date.dt.strftime('%Y-%m').values
 for HZ in (3, 7):
-    ycol = f'y{HZ}'; okrow = np.isfinite(tab[ycol].values); pred = np.full(len(tab), np.nan, dtype=np.float32); ics = []; imp = np.zeros(len(feat_names))
+    cache = {}; ycol = f'y{HZ}'; okrow = np.isfinite(tab[ycol].values); pred = np.full(len(tab), np.nan, dtype=np.float32); ics = []; imp = np.zeros(len(feat_names))
     for k in range(first_test, len(months)):
         mth = months[k]; test = (mth_col == mth) & okrow
         if test.sum() == 0: continue
-        t_start = tab.date.values[test].min(); train = (tab.date.values < (t_start - np.timedelta64(HZ + 7, 'D'))) & okrow
-        Xtr, ytr = tab.loc[train, feat_names].values, tab.loc[train, ycol].values
-        lo, hi = np.nanpercentile(ytr, [0.5, 99.5]); ytr = np.clip(ytr, lo, hi)
-        mdl = lgb.train(params, lgb.Dataset(Xtr, ytr, free_raw_data=True), num_boost_round=400)
+        t_start = tab.date.values[test].min(); anchor = pd.Timestamp(t_start)
+        if RETRAIN == 'semi':
+            anchor = np.datetime64(f'{anchor.year}-{"01" if anchor.month < 7 else "07"}-01T00:00:00')
+        else:
+            anchor = t_start
+        train = (tab.date.values < (anchor - np.timedelta64(HZ + 7, 'D'))) & okrow
+        if RETRAIN == 'roll24': train &= tab.date.values >= (anchor - np.timedelta64(730 + HZ + 7, 'D'))
+        key = (RETRAIN == 'semi', str(anchor))
+        if RETRAIN != 'semi' or key not in cache:
+            Xtr, ytr = tab.loc[train, feat_names].values, tab.loc[train, ycol].values
+            lo, hi = np.nanpercentile(ytr, [0.5, 99.5]); ytr = np.clip(ytr, lo, hi)
+            cache[key] = lgb.train(params, lgb.Dataset(Xtr, ytr, free_raw_data=True), num_boost_round=400)
+        mdl = cache[key]
         p = mdl.predict(tab.loc[test, feat_names].values); pred[test] = p; imp += mdl.feature_importance('gain')
         sub = tab.loc[test, ['day', ycol]].copy(); sub['p'] = p
         ics.append((mth, sub.groupby('day').apply(lambda g: g[[ycol, 'p']].corr(method='spearman').iloc[0, 1]).mean(), int(train.sum())))

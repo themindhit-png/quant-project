@@ -16,6 +16,7 @@ jbtc = int(np.flatnonzero(d.cols == 'BTCUSDT')[0])
 HZ = 8; NEED = 2161
 DEC_PHASE = int(os.environ.get('DEC_PHASE', '7'))        # 7: decisions at 07/15/23 bars (funding-aligned); 0: 00/08/16 (daily-grid aligned)
 SUF = os.environ.get('SUF', '')
+RETRAIN = os.environ.get('RETRAIN', 'monthly')   # Phase 4.2: monthly | semi | roll24
 dec = np.flatnonzero(d.hh % 8 == DEC_PHASE)
 dec = dec[(dec >= NEED) & (dec < T - 48)]
 D = len(dec); print(f'decisions: {D}', flush=True)
@@ -49,14 +50,21 @@ print(f'table {tab.shape} ({time.time()-t0:.0f}s)', flush=True)
 params = dict(objective='regression', learning_rate=0.03, num_leaves=31, min_data_in_leaf=400, feature_fraction=0.7, bagging_fraction=0.7,
               bagging_freq=1, lambda_l2=10.0, verbose=-1, num_threads=2, seed=1)
 months = sorted(set(tab.date.dt.strftime('%Y-%m'))); first_test = months.index('2022-01'); mth_col = tab.date.dt.strftime('%Y-%m').values
-okrow = np.isfinite(tab['y'].values); pred = np.full(len(tab), np.nan, dtype=np.float32); ics = []
+cache = {}; okrow = np.isfinite(tab['y'].values); pred = np.full(len(tab), np.nan, dtype=np.float32); ics = []
 for kk in range(first_test, len(months)):
     mth = months[kk]; test = (mth_col == mth) & okrow
     if test.sum() == 0:
         continue
-    t_start = tab.date.values[test].min(); train = (tab.date.values < (t_start - np.timedelta64(8, 'D'))) & okrow
-    ytr = tab.loc[train, 'y'].values; lo, hi = np.nanpercentile(ytr, [0.5, 99.5])
-    mdl = lgb.train(params, lgb.Dataset(tab.loc[train, FEATS].values, np.clip(ytr, lo, hi), free_raw_data=True), num_boost_round=300)
+    t_start = tab.date.values[test].min(); anchor = t_start
+    if RETRAIN == 'semi':
+        a = pd.Timestamp(t_start); anchor = np.datetime64(f'{a.year}-{"01" if a.month < 7 else "07"}-01T00:00:00')
+    train = (tab.date.values < (anchor - np.timedelta64(8, 'D'))) & okrow
+    if RETRAIN == 'roll24': train &= tab.date.values >= (anchor - np.timedelta64(730 + 8, 'D'))
+    key = str(anchor)
+    if RETRAIN != 'semi' or key not in cache:
+        ytr = tab.loc[train, 'y'].values; lo, hi = np.nanpercentile(ytr, [0.5, 99.5])
+        cache[key] = lgb.train(params, lgb.Dataset(tab.loc[train, FEATS].values, np.clip(ytr, lo, hi), free_raw_data=True), num_boost_round=300)
+    mdl = cache[key]
     p = mdl.predict(tab.loc[test, FEATS].values); pred[test] = p
     sub = tab.loc[test, ['dec', 'y']].copy(); sub['p'] = p
     ics.append((mth, sub.groupby('dec').apply(lambda g: g[['y', 'p']].corr(method='spearman').iloc[0, 1]).mean()))
