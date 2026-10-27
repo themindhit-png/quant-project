@@ -46,8 +46,13 @@ execution.time.sleep = lambda x: None          # no real waiting in simulation
 botstate.tg = lambda *a, **k: None
 botmain.tg = lambda *a, **k: None
 botmain.tg_once = lambda *a, **k: None
+STOP_EVENTS = []                                  # (sim time, line) for short-stop closes (invisible without --verbose otherwise)
+def _quiet_log(*a, **k):
+    msg = ' '.join(str(x) for x in a)
+    if msg.startswith('STOP:'):
+        STOP_EVENTS.append((now_dt().isoformat(), msg))
 if not A.verbose:
-    botmain.log = lambda *a, **k: None
+    botmain.log = _quiet_log
     execution_log = lambda *a, **k: None
 else:
     execution_log = print
@@ -365,6 +370,9 @@ def run():
     print(f'  costs %/yr of initial: fees {api_stat["fees"]/e0/yrs*100:.2f} slip {api_stat["slip"]/e0/yrs*100:.2f} funding {api_stat["funding"]/e0/yrs*100:+.2f} | '
           f'turnover {api_stat["turnover"]/e0/yrs:.0f}x | maker filled {api_stat["maker_filled"]}/{api_stat["maker_tried"]} market {api_stat["market"]} | rebalances {r["n_reb"]}'
           + (f' | paid out {r["paid"]:,.0f}' if r['paid'] else ''))
+    print(f'  short stops (STOP_SHORT_PCT={C.STOP_SHORT_PCT}): {len(STOP_EVENTS)} events')
+    for t, line in STOP_EVENTS:
+        print(f'    {t[:16]} {line}')
     ml8 = r.get('ml8') or {}
     print(f'  ml8 kill rule: multiplier changes {ml8.get("changes")} | final mult {ml8.get("mult")}')
     print('  ml8 monthly audit (date, net Sharpe 180d, cost/gross, mult): ' + ' '.join(str(a) for a in (ml8.get('audit') or [])[-24:]))
