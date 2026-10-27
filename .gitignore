@@ -12,3 +12,4 @@ vps_dump/
 /out_*.txt
 /data/raw_oct/
 /data/panels_orig/
+/.venv-tests/
