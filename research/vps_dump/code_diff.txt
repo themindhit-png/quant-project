@@ -1,0 +1,29 @@
+--- repo/v4/bybit.py
++++ deployed/v4/bybit.py
+@@ -321,4 +321,5 @@
+                 p = dict(p); p['orderLinkId'] = self.oid(); chunk.append(p)
+             j = self._req('POST', '/v5/order/create-batch', {'category': 'linear', 'request': chunk}, auth=True, retries=2, raw=True)
++            time.sleep(0.1 * len(chunk))
+             codes = ((j.get('retExtInfo') or {}).get('list') or [])
+             for n in range(len(chunk)):
+
+--- repo/v4/config.py
++++ deployed/v4/config.py
+@@ -173,5 +173,6 @@
+     import hashlib, json
+     skip = {'BYBIT_API_KEY', 'BYBIT_API_SECRET', 'TG_BOT_TOKEN', 'TG_CHAT_ID', 'STATUS_TOKEN', 'BYBIT_BASE_URL', 'STATE_FILE', 'MODEL_DIR', 'DRY_RUN', 'KILL_SWITCH',
+-            'RESET_TOTAL_STOP', 'EQ_PEAK', 'PHASE_BASE', 'EXPECTED_CONFIG_HASH', 'FIRM_PRESETS', 'DEFAULT_BLACKLIST'}
++            'RESET_TOTAL_STOP', 'EQ_PEAK', 'PHASE_BASE', 'EXPECTED_CONFIG_HASH', 'FIRM_PRESETS', 'DEFAULT_BLACKLIST',
++            'API_KEY', 'API_SECRET', 'TG_TOKEN', 'TG_CHAT', 'STATE_BACKUP_FILE', 'PORT'}
+     out = {}
+     for k, v in sorted(globals().items()):
+
+--- repo/v4/main.py
++++ deployed/v4/main.py
+@@ -153,5 +153,5 @@
+         restore one step after RESTORE_D days of contribution Sharpe > 0.5; at most one change per MIN_GAP_D days."""
+         m = self.mem; hist = m.get('sleeve_pnl_hist') or []
+-        mult = float(m.get('ml8_mult', 1.0)); last = m.get('ml8_mult_date')
++        mult = float(m.get('ml8_mult') or 1.0); last = m.get('ml8_mult_date')
+         if len(hist) < C.ML8_KILL_WIN_D:
+             C.SLEEVE_SCALES['ml8'] = C.ML8_BASE_SCALE * mult; return

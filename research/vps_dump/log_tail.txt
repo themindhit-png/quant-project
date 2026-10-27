@@ -1,0 +1,400 @@
+[2026-10-05T09:16:21Z] REBALANCE done in 376s | eq 10,054.64 K=2.00 (K 1.00x base (buffer 105% of allowance)) lev 0.35 (VT realised 0.76%/d (unlevered 1.70%)) | targets 59 gross 5,642 (0.56x) L31/S28 | orders maker 54 market 3 errors 1 | positions 58 gross 5,111 net +196
+[2026-10-05T17:10:05Z] instruments: 782
+[2026-10-05T17:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-05T17:11:14Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-05T17:15:57Z] REBALANCE done in 352s | eq 10,096.97 K=2.00 (K 1.00x base (buffer 110% of allowance)) lev 0.35 (VT realised 0.76%/d (unlevered 1.70%)) | targets 57 gross 5,582 (0.56x) L32/S25 | orders maker 77 market 8 errors 1 | positions 56 gross 4,977 net +255
+[2026-10-06T01:10:05Z] instruments: 782
+[2026-10-06T01:10:06Z] binance onboard dates: 659
+[2026-10-06T01:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-06T01:11:28Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 0.41, 'mean_bybit_bps': np.float64(-15.37), 'mean_binance_bps': np.float64(-3.2), 'mean_abs_diff_bps': 15.06}
+[2026-10-06T01:11:34Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-06T01:16:16Z] REBALANCE done in 372s | eq 10,084.99 K=2.00 (K 1.00x base (buffer 108% of allowance)) lev 0.36 (VT realised 0.75%/d (unlevered 1.67%)) | targets 62 gross 5,959 (0.60x) L31/S31 | orders maker 80 market 8 errors 1 | positions 61 gross 5,630 net +128
+[2026-10-06T09:10:05Z] instruments: 782
+[2026-10-06T09:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-06T09:11:02Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-06T09:15:44Z] REBALANCE done in 340s | eq 10,096.92 K=2.00 (K 1.00x base (buffer 110% of allowance)) lev 0.36 (VT realised 0.75%/d (unlevered 1.67%)) | targets 66 gross 6,200 (0.62x) L31/S35 | orders maker 48 market 6 errors 1 | positions 65 gross 5,501 net +143
+[2026-10-06T17:10:05Z] instruments: 782
+[2026-10-06T17:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-06T17:11:45Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-06T17:16:26Z] REBALANCE done in 381s | eq 10,112.40 K=2.00 (K 1.00x base (buffer 111% of allowance)) lev 0.36 (VT realised 0.75%/d (unlevered 1.67%)) | targets 65 gross 6,495 (0.65x) L31/S34 | orders maker 47 market 3 errors 1 | positions 64 gross 5,571 net +85
+[2026-10-07T01:10:05Z] instruments: 782
+[2026-10-07T01:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-07T01:11:19Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 1.0, 'mean_bybit_bps': np.float64(-27.91), 'mean_binance_bps': np.float64(-21.29), 'mean_abs_diff_bps': 8.58}
+[2026-10-07T01:11:25Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-07T01:16:07Z] REBALANCE done in 363s | eq 10,090.77 K=2.00 (K 1.00x base (buffer 109% of allowance)) lev 0.37 (VT realised 0.74%/d (unlevered 1.64%)) | targets 72 gross 6,623 (0.66x) L36/S36 | orders maker 77 market 10 errors 1 | positions 71 gross 6,295 net +128
+[2026-10-07T09:10:05Z] instruments: 782
+[2026-10-07T09:10:06Z] binance onboard dates: 659
+[2026-10-07T09:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-07T09:11:15Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-07T09:15:54Z] REBALANCE done in 350s | eq 10,122.51 K=2.00 (K 1.00x base (buffer 112% of allowance)) lev 0.37 (VT realised 0.74%/d (unlevered 1.64%)) | targets 73 gross 6,597 (0.66x) L38/S35 | orders maker 64 market 2 errors 1 | positions 72 gross 5,752 net +154
+[2026-10-07T17:10:06Z] instruments: 782
+[2026-10-07T17:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-07T17:11:46Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-07T17:16:30Z] REBALANCE done in 386s | eq 10,145.82 K=2.00 (K 1.00x base (buffer 115% of allowance)) lev 0.37 (VT realised 0.74%/d (unlevered 1.64%)) | targets 74 gross 6,894 (0.69x) L37/S37 | orders maker 67 market 10 errors 1 | positions 73 gross 5,920 net +158
+[2026-10-08T01:10:05Z] instruments: 782
+[2026-10-08T01:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-08T01:11:20Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 0.96, 'mean_bybit_bps': np.float64(-21.01), 'mean_binance_bps': np.float64(-14.13), 'mean_abs_diff_bps': 10.47}
+[2026-10-08T01:11:26Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-08T01:11:26Z] ZHIPUUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-08T01:16:08Z] REBALANCE done in 363s | eq 10,157.99 K=2.00 (K 1.00x base (buffer 116% of allowance)) lev 0.37 (VT realised 0.74%/d (unlevered 1.62%)) | targets 78 gross 6,864 (0.69x) L41/S37 | orders maker 80 market 6 errors 2 | positions 76 gross 6,101 net +467
+[2026-10-08T09:10:05Z] instruments: 782
+[2026-10-08T09:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-08T09:11:10Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-08T09:15:51Z] REBALANCE done in 346s | eq 10,185.25 K=2.00 (K 1.00x base (buffer 119% of allowance)) lev 0.37 (VT realised 0.74%/d (unlevered 1.62%)) | targets 73 gross 7,077 (0.71x) L38/S35 | orders maker 62 market 5 errors 1 | positions 72 gross 6,032 net +393
+[2026-10-08T17:10:06Z] instruments: 785
+[2026-10-08T17:10:07Z] binance onboard dates: 659
+[2026-10-08T17:10:07Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-08T17:11:20Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-08T17:16:02Z] REBALANCE done in 357s | eq 10,192.29 K=2.00 (K 1.00x base (buffer 119% of allowance)) lev 0.37 (VT realised 0.74%/d (unlevered 1.62%)) | targets 76 gross 7,392 (0.74x) L40/S36 | orders maker 69 market 5 errors 1 | positions 75 gross 6,073 net +486
+[2026-10-09T01:10:05Z] instruments: 785
+[2026-10-09T01:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-09T01:11:13Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 0.98, 'mean_bybit_bps': np.float64(-10.26), 'mean_binance_bps': np.float64(-13.21), 'mean_abs_diff_bps': 3.93}
+[2026-10-09T01:11:18Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-09T01:16:01Z] REBALANCE done in 357s | eq 10,188.87 K=2.00 (K 1.00x base (buffer 119% of allowance)) lev 0.38 (VT realised 0.72%/d (unlevered 1.59%)) | targets 80 gross 7,530 (0.75x) L42/S38 | orders maker 82 market 14 errors 1 | positions 79 gross 6,661 net +272
+[2026-10-09T02:52:03Z] STOP: USUSDT short closed at mark 0.0171 (entry 0.01068, upnl -36)
+[2026-10-09T08:58:53Z] STOP: STRKUSDT short closed at mark 0.07647 (entry 0.04760105, upnl -63)
+[2026-10-09T09:10:06Z] instruments: 785
+[2026-10-09T09:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-09T09:11:10Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-09T09:15:51Z] REBALANCE done in 346s | eq 10,109.77 K=2.00 (K 1.00x base (buffer 111% of allowance)) lev 0.38 (VT realised 0.72%/d (unlevered 1.59%)) | targets 77 gross 7,363 (0.74x) L40/S39 | orders maker 59 market 5 errors 1 | positions 76 gross 6,448 net +177
+[2026-10-09T16:10:05Z] SCALE PASS: K 2.00 -> 1.00 (K 1.00x base (buffer 109% of allowance) + daily throttle (-1.13%)); scaling book x0.50
+[2026-10-09T17:10:05Z] instruments: 791
+[2026-10-09T17:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-09T17:11:06Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-09T17:15:44Z] REBALANCE done in 340s | eq 10,092.01 K=1.00 (K 1.00x base (buffer 109% of allowance) + daily throttle (-1.11%)) lev 0.38 (VT realised 0.72%/d (unlevered 1.59%)) | targets 68 gross 4,152 (0.41x) L35/S35 | orders maker 30 market 2 errors 1 | positions 67 gross 3,774 net +155
+[2026-10-10T01:10:05Z] instruments: 791
+[2026-10-10T01:10:05Z] binance onboard dates: 659
+[2026-10-10T01:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-10T01:11:14Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 0.76, 'mean_bybit_bps': np.float64(-27.55), 'mean_binance_bps': np.float64(-11.33), 'mean_abs_diff_bps': 18.76}
+[2026-10-10T01:11:20Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-10T01:16:07Z] REBALANCE done in 363s | eq 10,100.31 K=2.00 (K 1.00x base (buffer 110% of allowance)) lev 0.37 (VT realised 0.74%/d (unlevered 1.62%)) | targets 73 gross 6,712 (0.67x) L37/S38 | orders maker 100 market 9 errors 1 | positions 72 gross 5,835 net +366
+[2026-10-10T01:16:37Z] state push fail: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=30)
+[2026-10-10T09:10:06Z] instruments: 790
+[2026-10-10T09:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-10T09:11:11Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-10T09:15:54Z] REBALANCE done in 349s | eq 10,118.27 K=2.00 (K 1.00x base (buffer 112% of allowance)) lev 0.37 (VT realised 0.74%/d (unlevered 1.62%)) | targets 73 gross 6,467 (0.65x) L36/S37 | orders maker 84 market 9 errors 1 | positions 72 gross 5,798 net +243
+[2026-10-10T17:10:05Z] instruments: 790
+[2026-10-10T17:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-10T17:15:49Z] REBALANCE done in 345s | eq 10,105.93 K=2.00 (K 1.00x base (buffer 111% of allowance)) lev 0.37 (VT realised 0.74%/d (unlevered 1.62%)) | targets 67 gross 5,942 (0.59x) L31/S36 | orders maker 71 market 6 errors 0 | positions 67 gross 5,523 net +390
+[2026-10-11T01:10:05Z] instruments: 790
+[2026-10-11T01:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-11T01:11:09Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 0.69, 'mean_bybit_bps': np.float64(-37.13), 'mean_binance_bps': np.float64(-19.92), 'mean_abs_diff_bps': 17.8}
+[2026-10-11T01:15:56Z] REBALANCE done in 352s | eq 10,167.65 K=2.00 (K 1.00x base (buffer 117% of allowance)) lev 0.37 (VT realised 0.74%/d (unlevered 1.60%)) | targets 64 gross 5,994 (0.60x) L31/S33 | orders maker 85 market 8 errors 0 | positions 64 gross 5,625 net +98
+[2026-10-11T01:16:11Z] TG fail: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=15)
+[2026-10-11T01:16:26Z] state push fail: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=30)
+[2026-10-11T05:52:00Z] STOP: LUMIAUSDT short closed at mark 0.17599 (entry 0.10783693000000001, upnl -100)
+[2026-10-11T06:10:05Z] SCALE PASS: K 2.00 -> 1.00 (K 1.00x base (buffer 106% of allowance) + daily throttle (-1.15%)); scaling book x0.50
+[2026-10-11T09:10:05Z] instruments: 790
+[2026-10-11T09:10:06Z] binance onboard dates: 659
+[2026-10-11T09:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-11T09:16:01Z] REBALANCE done in 356s | eq 10,061.74 K=1.00 (K 1.00x base (buffer 106% of allowance) + daily throttle (-1.13%)) lev 0.37 (VT realised 0.74%/d (unlevered 1.60%)) | targets 57 gross 3,638 (0.36x) L28/S30 | orders maker 63 market 8 errors 0 | positions 57 gross 3,157 net +256
+[2026-10-11T17:10:06Z] instruments: 790
+[2026-10-11T17:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-11T17:15:49Z] REBALANCE done in 345s | eq 10,078.20 K=2.00 (K 1.00x base (buffer 108% of allowance)) lev 0.37 (VT realised 0.74%/d (unlevered 1.60%)) | targets 61 gross 6,231 (0.62x) L28/S34 | orders maker 60 market 8 errors 0 | positions 61 gross 4,999 net -268
+[2026-10-11T20:10:05Z] SCALE PASS: K 2.00 -> 1.00 (K 1.00x base (buffer 107% of allowance) + daily throttle (-1.03%)); scaling book x0.50
+[2026-10-12T01:10:05Z] instruments: 790
+[2026-10-12T01:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-12T01:11:04Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 0.97, 'mean_bybit_bps': np.float64(0.45), 'mean_binance_bps': np.float64(-0.64), 'mean_abs_diff_bps': 1.21}
+[2026-10-12T01:11:09Z] SPYUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-12T01:15:53Z] REBALANCE done in 348s | eq 10,061.21 K=2.00 (K 1.00x base (buffer 106% of allowance)) lev 0.36 (VT realised 0.76%/d (unlevered 1.65%)) | targets 64 gross 6,010 (0.60x) L31/S34 | orders maker 77 market 10 errors 1 | positions 63 gross 4,794 net +223
+[2026-10-12T09:10:05Z] instruments: 790
+[2026-10-12T09:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-12T09:12:01Z] HDUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-12T09:12:01Z] SPYUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-12T09:16:42Z] REBALANCE done in 398s | eq 9,995.63 K=2.00 (K 1.00x base (buffer 100% of allowance)) lev 0.36 (VT realised 0.76%/d (unlevered 1.65%)) | targets 69 gross 6,233 (0.62x) L31/S38 | orders maker 67 market 3 errors 2 | positions 67 gross 5,251 net -190
+[2026-10-12T17:10:05Z] instruments: 795
+[2026-10-12T17:10:05Z] binance onboard dates: 659
+[2026-10-12T17:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-12T17:11:21Z] HDUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-12T17:11:21Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-12T17:11:21Z] SPYUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-12T17:16:02Z] REBALANCE done in 357s | eq 10,072.25 K=2.00 (K 1.00x base (buffer 107% of allowance)) lev 0.36 (VT realised 0.76%/d (unlevered 1.65%)) | targets 73 gross 6,199 (0.62x) L30/S43 | orders maker 62 market 4 errors 3 | positions 70 gross 5,168 net -316
+[2026-10-13T01:10:05Z] instruments: 795
+[2026-10-13T01:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-13T01:11:30Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 1.0, 'mean_bybit_bps': np.float64(-21.73), 'mean_binance_bps': np.float64(-23.53), 'mean_abs_diff_bps': 2.28}
+[2026-10-13T01:11:37Z] FLEXUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T01:11:37Z] HDUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T01:11:37Z] JPMUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T01:11:37Z] KLACUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T01:11:37Z] PANWUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T01:11:37Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T01:16:21Z] REBALANCE done in 376s | eq 10,100.04 K=2.00 (K 1.00x base (buffer 110% of allowance)) lev 0.36 (VT realised 0.76%/d (unlevered 1.65%)) | targets 77 gross 5,967 (0.60x) L38/S39 | orders maker 102 market 9 errors 6 | positions 71 gross 5,696 net +22
+[2026-10-13T09:10:05Z] instruments: 798
+[2026-10-13T09:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-13T09:11:24Z] BRKBUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T09:11:24Z] FLEXUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T09:11:24Z] KLACUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T09:11:24Z] PANWUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T09:11:24Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T09:16:08Z] REBALANCE done in 363s | eq 10,072.38 K=2.00 (K 1.00x base (buffer 107% of allowance)) lev 0.36 (VT realised 0.76%/d (unlevered 1.65%)) | targets 80 gross 6,165 (0.62x) L41/S39 | orders maker 101 market 12 errors 5 | positions 75 gross 5,736 net +135
+[2026-10-13T17:10:06Z] instruments: 798
+[2026-10-13T17:10:07Z] binance onboard dates: 659
+[2026-10-13T17:10:07Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-13T17:11:24Z] BRKBUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T17:11:24Z] FLEXUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T17:11:24Z] KLACUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T17:11:24Z] LAOPUUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T17:11:24Z] PANWUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T17:11:24Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T17:11:24Z] ZHIPUUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-13T17:16:05Z] REBALANCE done in 361s | eq 10,078.63 K=2.00 (K 1.00x base (buffer 108% of allowance)) lev 0.36 (VT realised 0.76%/d (unlevered 1.65%)) | targets 85 gross 7,077 (0.71x) L45/S40 | orders maker 61 market 8 errors 7 | positions 78 gross 6,128 net +2
+[2026-10-14T00:12:31Z] STOP: BTWUSDT short closed at mark 2.14172 (entry 1.33635795, upnl -24)
+[2026-10-14T01:10:05Z] instruments: 798
+[2026-10-14T01:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-14T01:11:24Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 0.81, 'mean_bybit_bps': np.float64(-0.12), 'mean_binance_bps': np.float64(0.42), 'mean_abs_diff_bps': 1.01}
+[2026-10-14T01:11:30Z] BRKBUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-14T01:11:30Z] LAOPUUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-14T01:11:30Z] MCDUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-14T01:11:30Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-14T01:11:30Z] PANWUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-14T01:11:30Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-14T01:11:30Z] ZHIPUUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-14T01:16:15Z] REBALANCE done in 370s | eq 10,063.08 K=2.00 (K 1.00x base (buffer 106% of allowance)) lev 0.50 (VT realised 0.62%/d (unlevered 1.19%)) | targets 87 gross 7,974 (0.80x) L43/S45 | orders maker 72 market 4 errors 7 | positions 80 gross 6,858 net +309
+[2026-10-14T09:10:05Z] instruments: 798
+[2026-10-14T09:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-14T09:11:17Z] MCDUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-14T09:11:17Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-14T09:11:17Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-14T09:11:17Z] ZHIPUUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-14T09:16:00Z] REBALANCE done in 355s | eq 10,036.10 K=2.00 (K 1.00x base (buffer 104% of allowance)) lev 0.50 (VT realised 0.62%/d (unlevered 1.19%)) | targets 83 gross 7,546 (0.76x) L39/S45 | orders maker 93 market 6 errors 4 | positions 79 gross 6,347 net +596
+[2026-10-14T17:10:06Z] instruments: 798
+[2026-10-14T17:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-14T17:11:20Z] DDOGUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-14T17:11:20Z] MCDUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-14T17:11:20Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-14T17:11:20Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-14T17:11:20Z] ZHIPUUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-14T17:16:03Z] REBALANCE done in 359s | eq 9,974.38 K=2.00 (K 1.00x base (buffer 97% of allowance)) lev 0.50 (VT realised 0.62%/d (unlevered 1.19%)) | targets 75 gross 8,030 (0.80x) L35/S40 | orders maker 86 market 10 errors 5 | positions 70 gross 6,449 net +310
+[2026-10-15T01:10:05Z] instruments: 798
+[2026-10-15T01:10:05Z] binance onboard dates: 659
+[2026-10-15T01:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-15T01:11:20Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 1.0, 'mean_bybit_bps': np.float64(-14.79), 'mean_binance_bps': np.float64(-11.19), 'mean_abs_diff_bps': 4.47}
+[2026-10-15T01:11:27Z] DDOGUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-15T01:11:27Z] JNJUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-15T01:11:27Z] MCDUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-15T01:11:27Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-15T01:11:27Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-15T01:11:27Z] ZHIPUUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-15T01:16:13Z] REBALANCE done in 369s | eq 10,000.23 K=2.00 (K 1.00x base (buffer 100% of allowance)) lev 0.50 (VT realised 0.62%/d (unlevered 1.19%)) | targets 75 gross 7,850 (0.79x) L33/S42 | orders maker 106 market 9 errors 6 | positions 69 gross 7,018 net +169
+[2026-10-15T09:10:05Z] instruments: 798
+[2026-10-15T09:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-15T09:11:20Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-15T09:11:20Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-15T09:16:03Z] REBALANCE done in 359s | eq 9,915.89 K=2.00 (K 1.00x base (buffer 92% of allowance)) lev 0.50 (VT realised 0.62%/d (unlevered 1.19%)) | targets 75 gross 7,607 (0.76x) L34/S41 | orders maker 89 market 14 errors 2 | positions 73 gross 6,881 net +240
+[2026-10-15T16:10:05Z] SCALE PASS: K 2.00 -> 1.00 (K 1.00x base (buffer 87% of allowance) + daily throttle (-1.26%)); scaling book x0.50
+[2026-10-15T17:10:06Z] instruments: 798
+[2026-10-15T17:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-15T17:11:13Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-15T17:15:51Z] REBALANCE done in 347s | eq 9,867.88 K=1.00 (K 1.00x base (buffer 87% of allowance) + daily throttle (-1.28%)) lev 0.50 (VT realised 0.62%/d (unlevered 1.19%)) | targets 70 gross 4,761 (0.48x) L32/S38 | orders maker 49 market 4 errors 1 | positions 69 gross 4,055 net +182
+[2026-10-16T01:10:05Z] instruments: 798
+[2026-10-16T01:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-16T01:11:22Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 1.0, 'mean_bybit_bps': np.float64(-6.27), 'mean_binance_bps': np.float64(-5.51), 'mean_abs_diff_bps': 1.98}
+[2026-10-16T01:11:29Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-16T01:11:29Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-16T01:16:13Z] REBALANCE done in 368s | eq 9,856.81 K=2.00 (K 1.00x base (buffer 86% of allowance)) lev 0.48 (VT realised 0.66%/d (unlevered 1.24%)) | targets 78 gross 7,451 (0.74x) L38/S40 | orders maker 96 market 4 errors 2 | positions 75 gross 6,101 net -248
+[2026-10-16T09:10:05Z] instruments: 796
+[2026-10-16T09:10:05Z] binance onboard dates: 659
+[2026-10-16T09:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-16T09:11:08Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-16T09:11:08Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-16T09:15:51Z] REBALANCE done in 347s | eq 9,873.74 K=2.00 (K 1.00x base (buffer 87% of allowance)) lev 0.48 (VT realised 0.66%/d (unlevered 1.24%)) | targets 71 gross 7,233 (0.72x) L34/S37 | orders maker 86 market 9 errors 2 | positions 69 gross 5,958 net -331
+[2026-10-16T17:10:05Z] instruments: 798
+[2026-10-16T17:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-16T17:11:02Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-16T17:11:02Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-16T17:15:42Z] REBALANCE done in 337s | eq 9,948.00 K=2.00 (K 1.00x base (buffer 95% of allowance)) lev 0.48 (VT realised 0.66%/d (unlevered 1.24%)) | targets 71 gross 7,636 (0.76x) L34/S37 | orders maker 48 market 3 errors 2 | positions 68 gross 6,155 net -373
+[2026-10-16T23:17:46Z] STOP: QUSDT short closed at mark 0.067237 (entry 0.03865, upnl -51)
+[2026-10-17T01:10:05Z] instruments: 798
+[2026-10-17T01:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-17T01:11:07Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 0.81, 'mean_bybit_bps': np.float64(1.54), 'mean_binance_bps': np.float64(0.69), 'mean_abs_diff_bps': 1.26}
+[2026-10-17T01:11:13Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-17T01:11:13Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-17T01:15:55Z] REBALANCE done in 350s | eq 9,914.33 K=2.00 (K 1.00x base (buffer 91% of allowance)) lev 0.48 (VT realised 0.66%/d (unlevered 1.24%)) | targets 71 gross 7,443 (0.74x) L36/S36 | orders maker 77 market 7 errors 2 | positions 69 gross 6,493 net -86
+[2026-10-17T09:10:06Z] instruments: 798
+[2026-10-17T09:10:06Z] binance onboard dates: 659
+[2026-10-17T09:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-17T09:11:05Z] BABAUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-17T09:11:05Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-17T09:11:05Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-17T09:15:46Z] REBALANCE done in 342s | eq 9,892.54 K=2.00 (K 1.00x base (buffer 89% of allowance)) lev 0.48 (VT realised 0.66%/d (unlevered 1.24%)) | targets 73 gross 7,127 (0.71x) L36/S38 | orders maker 68 market 7 errors 3 | positions 70 gross 6,044 net -223
+[2026-10-17T17:10:05Z] instruments: 798
+[2026-10-17T17:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-17T17:11:04Z] BABAUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-17T17:11:04Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-17T17:11:04Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-17T17:15:44Z] REBALANCE done in 339s | eq 9,993.18 K=2.00 (K 1.00x base (buffer 99% of allowance)) lev 0.48 (VT realised 0.66%/d (unlevered 1.24%)) | targets 64 gross 6,666 (0.67x) L32/S33 | orders maker 67 market 3 errors 3 | positions 61 gross 5,786 net +53
+[2026-10-18T01:10:05Z] instruments: 798
+[2026-10-18T01:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-18T01:11:05Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 0.87, 'mean_bybit_bps': np.float64(-5.12), 'mean_binance_bps': np.float64(-6.51), 'mean_abs_diff_bps': 5.04}
+[2026-10-18T01:11:12Z] BABAUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-18T01:11:12Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-18T01:15:56Z] REBALANCE done in 351s | eq 9,956.01 K=2.00 (K 1.00x base (buffer 96% of allowance)) lev 0.50 (VT realised 0.65%/d (unlevered 1.21%)) | targets 60 gross 5,987 (0.60x) L28/S33 | orders maker 86 market 9 errors 2 | positions 58 gross 5,832 net +124
+[2026-10-18T09:10:05Z] instruments: 798
+[2026-10-18T09:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-18T09:10:50Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-18T09:15:32Z] REBALANCE done in 328s | eq 9,985.16 K=2.00 (K 1.00x base (buffer 99% of allowance)) lev 0.50 (VT realised 0.65%/d (unlevered 1.21%)) | targets 62 gross 6,045 (0.60x) L28/S34 | orders maker 76 market 10 errors 1 | positions 61 gross 5,358 net -63
+[2026-10-18T17:10:05Z] instruments: 798
+[2026-10-18T17:10:06Z] binance onboard dates: 659
+[2026-10-18T17:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-18T17:11:00Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-18T17:15:39Z] REBALANCE done in 335s | eq 9,971.45 K=2.00 (K 1.00x base (buffer 97% of allowance)) lev 0.50 (VT realised 0.65%/d (unlevered 1.21%)) | targets 58 gross 6,707 (0.67x) L26/S32 | orders maker 40 market 5 errors 1 | positions 57 gross 5,687 net -46
+[2026-10-19T01:10:05Z] instruments: 798
+[2026-10-19T01:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-19T01:11:05Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 1.0, 'mean_bybit_bps': np.float64(-14.36), 'mean_binance_bps': np.float64(-9.56), 'mean_abs_diff_bps': 5.41}
+[2026-10-19T01:11:11Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-19T01:15:53Z] REBALANCE done in 348s | eq 9,949.65 K=2.00 (K 1.00x base (buffer 95% of allowance)) lev 0.50 (VT realised 0.65%/d (unlevered 1.21%)) | targets 56 gross 5,900 (0.59x) L29/S27 | orders maker 78 market 4 errors 1 | positions 55 gross 5,744 net +251
+model ml_h3_noage.txt: 28 features verified against spec_noage.json (sha256 339a326cb214)
+model ml_h7_noage.txt: 28 features verified against spec_noage.json (sha256 339a326cb214)
+model ml_8h.txt: 41 features verified against spec_8h.json (sha256 211e86656551)
+[2026-10-19T09:31:28Z] ML models loaded: [3, 7, 8]
+[2026-10-19T09:31:28Z] effective config hash bddb019be2c4ab83 (90 keys)
+[2026-10-19T09:31:28Z] state restored from /opt/propsleeves/state/state.json (file; created 2026-09-11)
+[2026-10-19T09:31:29Z] instruments: 798
+[2026-10-19T09:31:30Z] binance onboard dates: 658
+[2026-10-19T09:31:30Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-19T09:32:50Z] leverage set on 43 symbols
+[2026-10-19T09:33:03Z] TG fail: ('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))
+[2026-10-19T09:35:21Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-19T09:35:21Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-19T09:40:01Z] REBALANCE done in 418s | eq 9,975.76 K=2.00 (K 1.00x base (buffer 98% of allowance)) lev 0.50 (VT realised 0.65%/d (unlevered 1.21%)) | targets 59 gross 5,801 (0.58x) L31/S28 | orders maker 53 market 4 errors 2 | positions 57 gross 5,583 net +104
+[2026-10-19T17:10:05Z] instruments: 798
+[2026-10-19T17:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-19T17:11:02Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-19T17:11:02Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-19T17:15:43Z] REBALANCE done in 339s | eq 10,024.22 K=2.00 (K 1.00x base (buffer 102% of allowance)) lev 0.50 (VT realised 0.65%/d (unlevered 1.21%)) | targets 60 gross 6,387 (0.64x) L31/S29 | orders maker 62 market 10 errors 2 | positions 58 gross 5,881 net +291
+[2026-10-20T01:10:05Z] instruments: 798
+[2026-10-20T01:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-20T01:11:04Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 0.99, 'mean_bybit_bps': np.float64(-13.82), 'mean_binance_bps': np.float64(-11.95), 'mean_abs_diff_bps': 4.18}
+[2026-10-20T01:11:09Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-20T01:11:09Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-20T01:15:49Z] REBALANCE done in 345s | eq 10,010.85 K=2.00 (K 1.00x base (buffer 101% of allowance)) lev 0.51 (VT realised 0.62%/d (unlevered 1.18%)) | targets 60 gross 6,828 (0.68x) L32/S28 | orders maker 64 market 4 errors 2 | positions 58 gross 6,117 net +109
+[2026-10-20T09:10:06Z] instruments: 798
+[2026-10-20T09:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-20T09:11:03Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-20T09:11:03Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-20T09:15:41Z] REBALANCE done in 336s | eq 9,992.35 K=2.00 (K 1.00x base (buffer 99% of allowance)) lev 0.51 (VT realised 0.62%/d (unlevered 1.18%)) | targets 62 gross 7,375 (0.74x) L29/S33 | orders maker 49 market 3 errors 2 | positions 60 gross 6,670 net -131
+[2026-10-20T17:10:05Z] instruments: 798
+[2026-10-20T17:10:05Z] binance onboard dates: 658
+[2026-10-20T17:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-20T17:11:05Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-20T17:11:05Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-20T17:15:50Z] REBALANCE done in 346s | eq 9,917.57 K=1.00 (K 1.00x base (buffer 92% of allowance) + daily throttle (-1.04%)) lev 0.51 (VT realised 0.62%/d (unlevered 1.18%)) | targets 60 gross 5,030 (0.50x) L27/S33 | orders maker 94 market 11 errors 2 | positions 58 gross 5,114 net -110
+[2026-10-21T01:10:05Z] instruments: 798
+[2026-10-21T01:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-21T01:11:04Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 0.99, 'mean_bybit_bps': np.float64(-7.99), 'mean_binance_bps': np.float64(-6.53), 'mean_abs_diff_bps': 2.92}
+[2026-10-21T01:11:10Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-21T01:11:10Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-21T01:15:54Z] REBALANCE done in 350s | eq 9,969.48 K=2.00 (K 1.00x base (buffer 97% of allowance)) lev 0.50 (VT realised 0.63%/d (unlevered 1.20%)) | targets 68 gross 7,261 (0.73x) L30/S38 | orders maker 62 market 4 errors 2 | positions 66 gross 6,378 net -68
+[2026-10-21T09:10:05Z] instruments: 798
+[2026-10-21T09:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-21T09:11:07Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-21T09:11:07Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-21T09:15:48Z] REBALANCE done in 343s | eq 9,904.14 K=2.00 (K 1.00x base (buffer 90% of allowance)) lev 0.50 (VT realised 0.63%/d (unlevered 1.20%)) | targets 64 gross 6,498 (0.65x) L27/S37 | orders maker 64 market 6 errors 2 | positions 62 gross 5,905 net -133
+[2026-10-21T10:10:05Z] SCALE PASS: K 2.00 -> 1.00 (K 1.00x base (buffer 82% of allowance) + daily throttle (-1.41%)); scaling book x0.50
+[2026-10-21T12:40:49Z] STOP: DOODUSDT short closed at mark 0.0039678 (entry 0.00247489, upnl -34)
+[2026-10-21T13:06:05Z] STOP: IOSTUSDT short closed at mark 0.0015686 (entry 0.0009709999999999999, upnl -27)
+[2026-10-21T17:10:05Z] instruments: 799
+[2026-10-21T17:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-21T17:11:00Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-21T17:11:00Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-21T17:15:38Z] REBALANCE done in 334s | eq 9,764.59 K=1.00 (K 1.00x base (buffer 76% of allowance) + daily throttle (-1.93%)) lev 0.50 (VT realised 0.63%/d (unlevered 1.20%)) | targets 55 gross 4,130 (0.41x) L27/S30 | orders maker 51 market 3 errors 2 | positions 53 gross 3,358 net +194
+[2026-10-22T01:10:05Z] instruments: 799
+[2026-10-22T01:10:06Z] binance onboard dates: 658
+[2026-10-22T01:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-22T01:11:04Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 0.66, 'mean_bybit_bps': np.float64(-47.08), 'mean_binance_bps': np.float64(-35.38), 'mean_abs_diff_bps': 33.64}
+[2026-10-22T01:11:10Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-22T01:15:55Z] REBALANCE done in 351s | eq 9,752.15 K=2.00 (K 1.00x base (buffer 75% of allowance)) lev 0.45 (VT realised 0.71%/d (unlevered 1.32%)) | targets 60 gross 6,362 (0.64x) L27/S35 | orders maker 92 market 12 errors 1 | positions 59 gross 5,302 net +280
+[2026-10-22T09:10:06Z] instruments: 799
+[2026-10-22T09:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-22T09:11:11Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-22T09:11:11Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-22T09:15:51Z] REBALANCE done in 347s | eq 9,676.15 K=2.00 (K 1.00x base (buffer 68% of allowance)) lev 0.45 (VT realised 0.71%/d (unlevered 1.32%)) | targets 67 gross 6,472 (0.65x) L29/S40 | orders maker 65 market 1 errors 2 | positions 65 gross 5,474 net +98
+[2026-10-22T13:21:20Z] STOP: MAGMAUSDT short closed at mark 0.53521 (entry 0.334, upnl -58)
+[2026-10-22T17:10:06Z] instruments: 802
+[2026-10-22T17:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-22T17:11:19Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-22T17:11:19Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-22T17:16:05Z] REBALANCE done in 360s | eq 9,695.00 K=2.00 (K 1.00x base (buffer 69% of allowance)) lev 0.45 (VT realised 0.71%/d (unlevered 1.32%)) | targets 62 gross 6,404 (0.64x) L30/S33 | orders maker 83 market 13 errors 2 | positions 60 gross 5,365 net +308
+[2026-10-23T01:10:05Z] instruments: 802
+[2026-10-23T01:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-23T01:11:07Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 1.0, 'mean_bybit_bps': np.float64(-13.63), 'mean_binance_bps': np.float64(-13.83), 'mean_abs_diff_bps': 2.14}
+[2026-10-23T01:11:14Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-23T01:11:14Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-23T01:15:56Z] REBALANCE done in 352s | eq 9,708.28 K=2.00 (K 1.00x base (buffer 71% of allowance)) lev 0.46 (VT realised 0.71%/d (unlevered 1.29%)) | targets 63 gross 5,732 (0.57x) L31/S33 | orders maker 89 market 10 errors 2 | positions 61 gross 5,058 net +304
+[2026-10-23T07:41:45Z] STOP: IRYSUSDT short closed at mark 0.031188 (entry 0.01913637, upnl -89)
+[2026-10-23T09:10:05Z] instruments: 802
+[2026-10-23T09:10:05Z] binance onboard dates: 658
+[2026-10-23T09:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-23T09:11:14Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-23T09:15:56Z] REBALANCE done in 351s | eq 9,695.42 K=2.00 (K 1.00x base (buffer 70% of allowance)) lev 0.46 (VT realised 0.71%/d (unlevered 1.29%)) | targets 61 gross 5,775 (0.58x) L30/S33 | orders maker 79 market 8 errors 1 | positions 60 gross 4,925 net +325
+[2026-10-23T15:47:02Z] STOP: BIRBUSDT short closed at mark 0.09964 (entry 0.06207, upnl -12)
+[2026-10-23T17:10:05Z] instruments: 808
+[2026-10-23T17:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-23T17:11:28Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-23T17:16:10Z] REBALANCE done in 366s | eq 9,684.11 K=2.00 (K 1.00x base (buffer 68% of allowance)) lev 0.46 (VT realised 0.71%/d (unlevered 1.29%)) | targets 60 gross 6,478 (0.65x) L28/S33 | orders maker 67 market 13 errors 1 | positions 59 gross 5,630 net +330
+[2026-10-24T01:10:05Z] instruments: 808
+[2026-10-24T01:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-24T01:11:07Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 0.97, 'mean_bybit_bps': np.float64(-58.04), 'mean_binance_bps': np.float64(-47.15), 'mean_abs_diff_bps': 23.58}
+[2026-10-24T01:11:12Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-24T01:11:12Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-24T01:15:54Z] REBALANCE done in 350s | eq 9,737.21 K=2.00 (K 1.00x base (buffer 74% of allowance)) lev 0.46 (VT realised 0.71%/d (unlevered 1.30%)) | targets 60 gross 5,770 (0.58x) L27/S34 | orders maker 72 market 8 errors 2 | positions 58 gross 5,438 net +31
+[2026-10-24T01:16:24Z] state push fail: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=30)
+[2026-10-24T02:36:43Z] STOP: BMTUSDT short closed at mark 0.039171 (entry 0.02436811, upnl -39)
+[2026-10-24T09:10:05Z] instruments: 808
+[2026-10-24T09:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-24T09:11:18Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-24T09:16:01Z] REBALANCE done in 356s | eq 9,633.61 K=1.00 (K 1.00x base (buffer 63% of allowance) + daily throttle (-1.20%)) lev 0.46 (VT realised 0.71%/d (unlevered 1.30%)) | targets 53 gross 3,270 (0.33x) L26/S27 | orders maker 95 market 9 errors 1 | positions 52 gross 3,328 net +102
+[2026-10-24T14:21:11Z] STOP: JCTUSDT short closed at mark 0.0055313 (entry 0.00335958, upnl -44)
+[2026-10-24T17:10:05Z] instruments: 808
+[2026-10-24T17:10:06Z] binance onboard dates: 658
+[2026-10-24T17:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-24T17:11:13Z] BABAUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-24T17:15:54Z] REBALANCE done in 349s | eq 9,579.15 K=1.00 (K 1.00x base (buffer 58% of allowance) + daily throttle (-1.75%)) lev 0.46 (VT realised 0.71%/d (unlevered 1.30%)) | targets 58 gross 3,190 (0.32x) L27/S32 | orders maker 56 market 2 errors 1 | positions 57 gross 3,150 net +93
+[2026-10-25T01:10:06Z] instruments: 808
+[2026-10-25T01:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-25T01:11:14Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 0.79, 'mean_bybit_bps': np.float64(-118.33), 'mean_binance_bps': np.float64(-31.95), 'mean_abs_diff_bps': 90.72}
+[2026-10-25T01:11:20Z] BABAUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-25T01:11:20Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-25T01:16:04Z] REBALANCE done in 360s | eq 9,592.98 K=2.00 (K 1.00x base (buffer 59% of allowance)) lev 0.41 (VT realised 0.77%/d (unlevered 1.47%)) | targets 63 gross 5,209 (0.52x) L32/S32 | orders maker 76 market 11 errors 2 | positions 61 gross 4,755 net +96
+[2026-10-25T01:16:34Z] state push fail: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=30)
+[2026-10-25T04:56:38Z] STOP: APRUSDT short closed at mark 0.04327 (entry 0.0269, upnl -82)
+[2026-10-25T09:10:06Z] instruments: 808
+[2026-10-25T09:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-25T09:11:08Z] BABAUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-25T09:11:08Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-25T09:15:52Z] REBALANCE done in 347s | eq 9,554.73 K=2.00 (K 1.00x base (buffer 55% of allowance)) lev 0.41 (VT realised 0.77%/d (unlevered 1.47%)) | targets 57 gross 4,856 (0.49x) L29/S30 | orders maker 82 market 10 errors 2 | positions 55 gross 4,206 net +177
+[2026-10-25T17:10:06Z] instruments: 808
+[2026-10-25T17:10:06Z] binance onboard dates: 659
+[2026-10-25T17:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-25T17:10:57Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-25T17:15:38Z] REBALANCE done in 333s | eq 9,499.41 K=2.00 (K 1.00x base (buffer 50% of allowance)) lev 0.41 (VT realised 0.77%/d (unlevered 1.47%)) | targets 54 gross 4,590 (0.46x) L30/S25 | orders maker 63 market 7 errors 1 | positions 53 gross 4,325 net +395
+[2026-10-25T23:10:05Z] SCALE PASS: K 2.00 -> 1.00 (K 1.00x base (buffer 48% of allowance) + daily throttle (-1.01%)); scaling book x0.50
+[2026-10-26T01:10:05Z] instruments: 808
+[2026-10-26T01:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-26T01:11:15Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 0.76, 'mean_bybit_bps': np.float64(-132.67), 'mean_binance_bps': np.float64(-25.08), 'mean_abs_diff_bps': 107.86}
+[2026-10-26T01:11:34Z] EWZUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-26T01:11:34Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-26T01:16:13Z] REBALANCE done in 369s | eq 9,476.15 K=2.00 (K 1.00x base (buffer 48% of allowance)) lev 0.41 (VT realised 0.77%/d (unlevered 1.46%)) | targets 49 gross 3,965 (0.40x) L30/S20 | orders maker 57 market 2 errors 2 | positions 47 gross 3,100 net +150
+[2026-10-26T09:10:06Z] instruments: 808
+[2026-10-26T09:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-26T09:11:35Z] EWZUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-26T09:11:35Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-26T09:16:17Z] REBALANCE done in 373s | eq 9,486.88 K=2.00 (K 1.00x base (buffer 49% of allowance)) lev 0.41 (VT realised 0.77%/d (unlevered 1.46%)) | targets 48 gross 3,864 (0.39x) L27/S21 | orders maker 51 market 2 errors 2 | positions 46 gross 3,201 net +10
+[2026-10-26T17:10:05Z] instruments: 811
+[2026-10-26T17:10:05Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-26T17:11:01Z] EWZUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-26T17:15:40Z] REBALANCE done in 336s | eq 9,455.01 K=2.00 (K 1.00x base (buffer 46% of allowance)) lev 0.41 (VT realised 0.77%/d (unlevered 1.46%)) | targets 51 gross 4,590 (0.46x) L28/S23 | orders maker 47 market 3 errors 1 | positions 50 gross 3,846 net +50
+[2026-10-26T18:36:30Z] STOP: QUSDT short closed at mark 0.094516 (entry 0.05881, upnl -44)
+[2026-10-27T01:10:05Z] instruments: 811
+[2026-10-27T01:10:05Z] binance onboard dates: 659
+[2026-10-27T01:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-27T01:11:04Z] funding basis Bybit vs Binance (24h, top 20): {'n': 20, 'corr': 0.87, 'mean_bybit_bps': np.float64(-47.28), 'mean_binance_bps': np.float64(-31.95), 'mean_abs_diff_bps': 17.79}
+[2026-10-27T01:11:09Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-27T01:11:09Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-27T01:15:52Z] REBALANCE done in 347s | eq 9,442.99 K=2.00 (K 1.00x base (buffer 44% of allowance)) lev 0.41 (VT realised 0.76%/d (unlevered 1.46%)) | targets 57 gross 4,962 (0.50x) L31/S27 | orders maker 69 market 5 errors 2 | positions 55 gross 4,237 net +89
+[2026-10-27T09:10:06Z] instruments: 810
+[2026-10-27T09:10:06Z] delisting announcements mention: ['ACXUSDT', 'AERGOUSDT', 'ASPUSDT', 'BLASTUSDT', 'BOBBOBUSDT', 'ESUSDT', 'GIGAUSDT', 'HFTUSDT', 'HIGHUSDT', 'ICXUSDT']
+[2026-10-27T09:11:00Z] MSTRUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-27T09:11:00Z] OKTAUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-27T09:11:00Z] SOXSUSDT: permanent block 110126 You must sign the required agreement before trading this contract.
+[2026-10-27T09:15:41Z] REBALANCE done in 337s | eq 9,392.22 K=2.00 (K 1.00x base (buffer 39% of allowance)) lev 0.41 (VT realised 0.76%/d (unlevered 1.46%)) | targets 53 gross 5,212 (0.52x) L28/S26 | orders maker 46 market 5 errors 3 | positions 50 gross 4,153 net +93
