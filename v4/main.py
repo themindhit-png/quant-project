@@ -635,7 +635,7 @@ class Bot:
         for n in range(len(sleeps) + 1):
             try:
                 self.start(); return
-            except (requests.RequestException, ApiError) as e:
+            except (requests.RequestException, ConnectionError, TimeoutError, RuntimeError) as e:   # Bybit._req wraps network errors in RuntimeError; ApiError is one too
                 if n == len(sleeps):
                     raise
                 log(f'start failed ({e}); retry {n + 1}/{len(sleeps)} in {sleeps[n]}s')

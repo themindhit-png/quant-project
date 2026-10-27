@@ -258,6 +258,15 @@ try:
 except ApiError:
     ex18b = True
 check('T18b SystemExit is not retried; persistent ApiError is raised after the last attempt', ex18 and ex18b)
+eq18c = _Eq()
+def _st18c():                                       # what the real client raises after its own retries
+    try:
+        eq18c.equity()
+    except requests.ConnectionError as e:
+        raise RuntimeError(f'/v5/account/wallet-balance: {e}')
+b18.start = _st18c
+b18.start_with_retry(sleeps=(0, 0))
+check('T18d RuntimeError from Bybit._req (wrapped network error) is retried', eq18c.n == 3)
 import main as _main
 src = inspect.getsource(_main.main)
 check('T18c main(): start_with_retry before the watchdog thread; trading loop in the main thread', 0 <= src.index('start_with_retry') < src.index('watchdog_loop') < src.index('bot.loop_body'))
