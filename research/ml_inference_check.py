@@ -5,8 +5,9 @@ from scipy.stats import spearmanr
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, 'v4'))
 from ml_features import compute_features, rank_norm, FEATURES, NEED_H
-feats = [f for f in FEATURES if f != 'age_d']
-mdl = {hz: lgb.Booster(model_file=os.path.join(ROOT, f'v4/models/ml_h{hz}_noage.txt')) for hz in (3, 7)}
+DROP = [f for f in os.environ.get('DROP_FEATS', 'age_d').split(',') if f]; MDIR = os.environ.get('MODEL_DIR', 'v4/models'); MSUF = os.environ.get('MODEL_SUF', '')   # Phase 4.4b: свои модели/признаки
+feats = [f for f in FEATURES if f not in DROP]
+mdl = {hz: lgb.Booster(model_file=os.path.join(ROOT, f'{MDIR}/ml_h{hz}_noage{MSUF}.txt')) for hz in (3, 7)}
 P = lambda n: pd.read_parquet(os.path.join(ROOT, f'data/panels/{n}.parquet'))
 B = {k: P(n) for k, n in dict(c='close', h='high', l='low', q='qvol', f='funding', p='premium').items()}
 # Bybit из дампа
