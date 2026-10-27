@@ -74,7 +74,7 @@ class Data:
         # inside a gap (invalid bars after a close_event) no return accrues
         r[~self.valid] = np.nan
         self.ret = r
-        self.hh = (self.idx.asi8 // 10**9 // 3600).astype(np.int64)
+        self.hh = (self.idx.as_unit('s').asi8 // 3600).astype(np.int64)  # unit-safe (pandas 3 indexes are us, not ns)
         self.start_i = int(self.idx.searchsorted(pd.Timestamp(start, tz='UTC'))) if start else 0
         self.high = self.low = self.prem = None
         if load_hl:
