@@ -33,7 +33,7 @@ A = ap.parse_args()
 # ---- environment for the bot BEFORE importing config
 os.environ.update(dict(FIRM=A.firm, MODE=A.mode, ACCOUNT_SIZE=str(A.account), BYBIT_API_KEY='x', BYBIT_API_SECRET='x',
                        MAKER_WAIT_S='0', USE_BINANCE_CLOCK='0', STATE_FILE=f'/tmp/harness_v4_{A.firm}_{A.mode}.json',
-                       MODEL_DIR=os.path.join(ROOT, 'models'), TG_BOT_TOKEN='', SET_LEVERAGE='10'))
+                       MODEL_DIR=os.environ.get('MODEL_DIR') or os.path.join(ROOT, 'models'), TG_BOT_TOKEN='', SET_LEVERAGE='10'))
 if A.pure:
     os.environ.update(dict(BASE_SCALE='1.0', CPPI_FRAC='0', DAILY_HALT_FRAC='100', DAILY_THROTTLE_PCT='100',
                            TOTAL_DD_PCT='90', DAILY_DD_PCT='90', TARGETS='1000'))
@@ -323,6 +323,7 @@ def run_once(i0, phase=1, quiet=False, max_days=0):
     eqs = pd.Series(eq_path, index=pd.DatetimeIndex(ts_path))
     return dict(outcome=outcome, days=(i - i0) / 24.0, i_end=i, eq_end=api.equity(), eqs=eqs, stats=api.stat, n_reb=n_reb, paid=paid,
                 min_eq=float(eqs.min()) if len(eqs) else np.nan, gx=pd.Series([g for _, g in gx_path], index=pd.DatetimeIndex([t for t, _ in gx_path])),
+                attrib=list(mem.get('sleeve_pnl_hist') or []),
                 ml8=dict(changes=mem.get('ml8_changes') or [], audit=mem.get('ml8_audit') or [], mult=mem.get('ml8_mult', 1.0)))
 
 
@@ -371,6 +372,8 @@ def run():
     if gx is not None and len(gx):
         print('  gross/equity by year (mean, p90): ' + '  '.join(f'{y}: {g.mean():.2f} ({g.quantile(.9):.2f})' for y, g in gx.groupby(gx.index.year))
               + f' | equity end/initial {r["eq_end"]/A.account:.2f}x | NOTIONAL_BASE={C.NOTIONAL_BASE}')
+    if r.get('attrib'):
+        pd.DataFrame(r['attrib']).to_csv(os.path.join(ROOT, f'out_harness_attrib_{A.firm}_{A.mode}.csv'), index=False)
     eqs.to_csv(os.path.join(ROOT, f'out_harness_v4_{A.firm}_{A.mode}{"_pure" if A.pure else ""}.csv'))
     print('DONE')
 
