@@ -14,6 +14,7 @@ DEV = ('2022-01-01', '2026-02-28'); HOLD = ('2026-03-01', '2026-10-26')
 SCEN = {  # name: (lag_h, cost key)
     'lag0_x1': (0, 'x1'), 'lag1_x1': (1, 'x1'), 'lag1_x1.5': (1, 'x1.5'), 'lag1_taker': (1, 'taker')}
 STD = 'lag1_x1'
+DSR_SC = 'lag0_x1'   # DSR: the 490 selection trials were measured at lag 0 / costs x1, so SR0 is in those units (review 4.1)
 
 def sharpe(x):
     x = np.asarray(x, float); x = x[np.isfinite(x)]
@@ -68,7 +69,10 @@ def n_trials():
     return n
 def trials_std():
     t = []
-    for f in glob.glob('out_exp19*.csv') + glob.glob('out_exp20*.csv') + glob.glob('out_exp22*.csv') + glob.glob('out_exp24*.csv'):
+    # trial Sharpes of the selection (lag 0, costs x1); the old result files moved to archive/out (root alone = 27 rows -> sd too low)
+    fs = {os.path.basename(f): f for f in glob.glob('archive/out/out_exp*.csv') + glob.glob('out_exp*.csv')}   # root copy wins over archive
+    for b, f in sorted(fs.items()):
+        if not any(k in b for k in ('exp19', 'exp20', 'exp22', 'exp24')): continue
         try:
             df = pd.read_csv(f); t += list(df.sharpe.dropna().values) if 'sharpe' in df else []
         except Exception: pass
@@ -85,10 +89,10 @@ def compare(base, cand, kind, step, name, write=True):
     p, lo, hi = boot_p(win(base[STD], DEV), win(cand[STD], DEV))
     st = {sc: S(cand, sc, DEV) - S(base, sc, DEV) for sc in ('lag1_x1.5', 'lag1_taker')}
     sth = {sc: S(cand, sc, HOLD) - S(base, sc, HOLD) for sc in ('lag1_x1.5', 'lag1_taker')}
-    Ntr = n_trials() + 1; D, sr0 = dsr(win(cand[STD], DEV), Ntr, trials_std())
+    Ntr = n_trials() + 1; D, sr0 = dsr(win(cand[DSR_SC], DEV), Ntr, trials_std())   # same scenario as the trial Sharpes (lag 0, x1)
     if kind == 'improve':
         c1 = dev_c > dev_b and p < 0.10; c2 = hol_c >= hol_b - 0.10; c3 = min(st.values()) >= -0.10 and min(sth.values()) >= -0.10; c4 = D >= 0.95
-        ok = c1 and c2 and c3 and c4; det = f'DEV Δ{dev_c-dev_b:+.2f} p={p:.3f}; HOLD Δ{hol_c-hol_b:+.2f}; стресс Δ(x1.5 {st["lag1_x1.5"]:+.2f}, taker {st["lag1_taker"]:+.2f}); DSR {D:.3f} (N={Ntr}, SR0 {sr0:.2f})'
+        ok = c1 and c2 and c3 and c4; det = f'DEV Δ{dev_c-dev_b:+.2f} p={p:.3f}; HOLD Δ{hol_c-hol_b:+.2f}; стресс Δ(x1.5 {st["lag1_x1.5"]:+.2f}, taker {st["lag1_taker"]:+.2f}); DSR {D:.3f} (lag 0, N={Ntr}, SR0 {sr0:.2f})'
     else:
         ok = dev_c - dev_b >= -0.10 and hol_c - hol_b >= -0.10; det = f'DEV Δ{dev_c-dev_b:+.2f} (p={p:.3f}); HOLD Δ{hol_c-hol_b:+.2f}; стресс Δ(x1.5 {st["lag1_x1.5"]:+.2f}, taker {st["lag1_taker"]:+.2f})'
     verdict = 'ПРИНЯТ' if ok else 'ОТКЛОНЁН'
