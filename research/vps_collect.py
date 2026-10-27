@@ -86,12 +86,26 @@ def find_bot():
     return info
 
 
-def file_hashes():
-    out = {}
-    for p in sorted(glob.glob(os.path.join(ROOT, 'v4', '*.py')) + glob.glob(os.path.join(ROOT, 'v4', 'models', '*'))):
-        out[os.path.relpath(p, ROOT)] = hashlib.sha256(open(p, 'rb').read()).hexdigest()[:16]
-    out['_git_head'] = sh(f'cd {ROOT} && git rev-parse HEAD').strip()
-    out['_git_dirty'] = sh(f'cd {ROOT} && git status --short v4').strip()
+def file_hashes(bot):
+    """Сравнение развёрнутого кода (папка процесса) с v4/ из репозитория: хэши + diff."""
+    import difflib
+    out, diffs = {}, []
+    cwd = bot.get('cwd') or ''
+    mdir = next((d for d in (os.path.join(cwd, 'models'), os.path.join(os.path.dirname(cwd), 'models')) if os.path.isdir(d)), '')
+    out['deployed_dir'], out['deployed_models_dir'] = cwd, mdir
+    pairs = [(p, os.path.join(cwd, os.path.basename(p))) for p in sorted(glob.glob(os.path.join(ROOT, 'v4', '*.py')))]
+    pairs += [(p, os.path.join(mdir, os.path.basename(p))) for p in sorted(glob.glob(os.path.join(ROOT, 'v4', 'models', '*')))]
+    for repo_p, dep_p in pairs:
+        name = os.path.relpath(repo_p, ROOT)
+        rh = hashlib.sha256(open(repo_p, 'rb').read()).hexdigest()[:16]
+        dh = hashlib.sha256(open(dep_p, 'rb').read()).hexdigest()[:16] if os.path.isfile(dep_p) else None
+        out[name] = {'repo': rh, 'deployed': dh, 'same': rh == dh}
+        if dh and rh != dh and name.endswith('.py'):
+            d = difflib.unified_diff(open(repo_p, errors='replace').read().splitlines(), open(dep_p, errors='replace').read().splitlines(),
+                                     'repo/' + name, 'deployed/' + name, lineterm='', n=2)
+            diffs.append(redact('\n'.join(d)))
+    open(os.path.join(OUT, 'code_diff.txt'), 'w', encoding='utf-8').write('\n\n'.join(diffs) or 'no .py differences')
+    out['_repo_git_head'] = sh(f'cd {ROOT} && git rev-parse HEAD').strip()
     return out
 
 
@@ -104,26 +118,27 @@ def get_status(bot):
 
 
 def read_logs(bot):
-    """Лог: journalctl (systemd) -> файл из /proc/PID/fd/1 -> любой *.log рядом."""
-    text, src = '', None
-    pid = bot.get('pid')
+    """Лог: самый длинный из journalctl / файла stdout процесса / log*.txt|log рядом с ботом."""
+    cands, pid = [], bot.get('pid')
     if pid:
         m = re.search(r'([^/]+\.service)', bot.get('cgroup', ''))
         if m:
-            text = sh(f'journalctl -u {m.group(1)} --since "-30 days" --no-pager -o short-iso 2>/dev/null', timeout=120)
-            src = f'journalctl -u {m.group(1)}'
-        if not text.strip():
-            try:
-                fd = os.readlink(f'/proc/{pid}/fd/1')
-                if os.path.isfile(fd):
-                    text, src = open(fd, errors='replace').read(), fd
-            except Exception:
-                pass
-    if not text.strip():
-        cands = glob.glob(os.path.join(ROOT, '**', '*.log'), recursive=True) + glob.glob(os.path.join(ROOT, '**', 'nohup.out'), recursive=True)
-        for p in sorted(cands, key=os.path.getmtime, reverse=True)[:1]:
-            text, src = open(p, errors='replace').read(), p
-    return text, src
+            cands.append((f'journalctl -u {m.group(1)}', sh(f'journalctl -u {m.group(1)} --since "-60 days" --no-pager -o short-iso 2>/dev/null', timeout=120)))
+        try:
+            fd = os.readlink(f'/proc/{pid}/fd/1')
+            if os.path.isfile(fd):
+                cands.append((fd, open(fd, errors='replace').read()))
+        except Exception:
+            pass
+    cwd = bot.get('cwd') or ROOT
+    for d in {cwd, os.path.dirname(cwd)}:
+        for p in glob.glob(os.path.join(d, 'log*')) + glob.glob(os.path.join(d, 'nohup.out')):
+            if os.path.isfile(p):
+                cands.append((p, open(p, errors='replace').read()))
+    if not cands:
+        return '', None
+    src, text = max(cands, key=lambda x: len(x[1]))
+    return text, src + ' (из: ' + ', '.join(c[0] for c in cands) + ')'
 
 
 KEYWORDS = ['REBALANCE ABORTED', 'Traceback', 'ERROR', 'WARN', 'empty sleeves', 'halt', 'HALT', 'kill', 'funding basis',
@@ -246,9 +261,12 @@ def main():
     meta = {'collected_utc': datetime.now(timezone.utc).isoformat(), 'host': sh('hostname').strip(), 'root': ROOT}
     bot = find_bot()
     meta['bot'] = {k: v for k, v in bot.items() if not k.startswith('_')}
-    meta['hashes'] = file_hashes()
+    meta['hashes'] = file_hashes(bot)
     meta['status'] = get_status(bot)
     st = (bot.get('_env') or {}).get('STATE_FILE')
+    if not st:
+        sf = glob.glob(os.path.join(os.path.dirname(bot.get('cwd') or ROOT), 'state', '*.json')) + glob.glob(os.path.join(bot.get('cwd') or ROOT, 'state', '*.json'))
+        st = max(sf, key=os.path.getmtime) if sf else None
     if st and os.path.isfile(st):
         try:
             meta['state_file'] = json.load(open(st))
@@ -259,6 +277,8 @@ def main():
     summ, tail = summarize_logs(text)
     meta['log_summary'] = summ
     open(os.path.join(OUT, 'log_tail.txt'), 'w', encoding='utf-8').write(tail)
+    with gzip.open(os.path.join(OUT, 'log_full_redacted.txt.gz'), 'wt', encoding='utf-8') as f:
+        f.write(redact(text))
     meta['bybit'] = collect_bybit()
     # страховка: значения секретов не должны попасть в дамп
     blob = json.dumps(meta, ensure_ascii=False, default=str, indent=1)
@@ -269,7 +289,7 @@ def main():
     print('Дамп готов:', OUT, flush=True)
 
     out = sh(f'cd {ROOT} && git checkout -B vps-dump && git add -f research/vps_dump && '
-             f'git commit -m "vps dump {meta["collected_utc"][:16]}" && git push -u origin vps-dump --force 2>&1', timeout=180)
+             f'git -c user.name=vps -c user.email=vps@example.com commit -m "vps dump {meta["collected_utc"][:16]}" && git push -u origin vps-dump --force 2>&1', timeout=180)
     print(out[-600:])
     sh(f'cd {ROOT} && git checkout -')
     if 'vps-dump' not in out or 'fatal' in out or 'rejected' in out:
