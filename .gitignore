@@ -13,3 +13,4 @@ vps_dump/
 /data/raw_oct/
 /data/panels_orig/
 /.venv-tests/
+/data/bybit_funding.csv
