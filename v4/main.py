@@ -152,7 +152,7 @@ class Bot:
         """Pre-registered: trailing-window Sharpe of the ml8 contribution <= 0 -> multiplier 1.0 -> 0.5; <= HARD -> 0.0;
         restore one step after RESTORE_D days of contribution Sharpe > 0.5; at most one change per MIN_GAP_D days."""
         m = self.mem; hist = m.get('sleeve_pnl_hist') or []
-        mult = float(m.get('ml8_mult', 1.0)); last = m.get('ml8_mult_date')
+        mult = m.get('ml8_mult'); mult = 1.0 if mult is None else float(mult); last = m.get('ml8_mult_date')
         if len(hist) < C.ML8_KILL_WIN_D:
             C.SLEEVE_SCALES['ml8'] = C.ML8_BASE_SCALE * mult; return
         win = hist[-C.ML8_KILL_WIN_D:]

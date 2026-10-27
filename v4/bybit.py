@@ -320,6 +320,7 @@ class Bybit:
             for p in orders[k:k + 10]:
                 p = dict(p); p['orderLinkId'] = self.oid(); chunk.append(p)
             j = self._req('POST', '/v5/order/create-batch', {'category': 'linear', 'request': chunk}, auth=True, retries=2, raw=True)
+            time.sleep(0.1 * len(chunk))
             codes = ((j.get('retExtInfo') or {}).get('list') or [])
             for n in range(len(chunk)):
                 c = codes[n] if n < len(codes) else {}

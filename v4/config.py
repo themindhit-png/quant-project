@@ -172,7 +172,8 @@ def effective_config():
     hash (PREREG.md). Secrets, connection settings and model bytes are excluded; models are hashed separately."""
     import hashlib, json
     skip = {'BYBIT_API_KEY', 'BYBIT_API_SECRET', 'TG_BOT_TOKEN', 'TG_CHAT_ID', 'STATUS_TOKEN', 'BYBIT_BASE_URL', 'STATE_FILE', 'MODEL_DIR', 'DRY_RUN', 'KILL_SWITCH',
-            'RESET_TOTAL_STOP', 'EQ_PEAK', 'PHASE_BASE', 'EXPECTED_CONFIG_HASH', 'FIRM_PRESETS', 'DEFAULT_BLACKLIST'}
+            'RESET_TOTAL_STOP', 'EQ_PEAK', 'PHASE_BASE', 'EXPECTED_CONFIG_HASH', 'FIRM_PRESETS', 'DEFAULT_BLACKLIST',
+            'API_KEY', 'API_SECRET', 'TG_TOKEN', 'TG_CHAT', 'STATE_BACKUP_FILE', 'PORT'}
     out = {}
     for k, v in sorted(globals().items()):
         if k.startswith('_') or k in skip or not k.isupper() or callable(v):
