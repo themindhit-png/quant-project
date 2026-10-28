@@ -23,7 +23,7 @@ policy() {   # $1 = challenge|funded: CPPI / ABANDON / K_MIN_FRAC / drawdown mod
 
 run() {   # $1 = challenge|funded, rest = extra harness args
   local mode=$1; shift
-  ( set -a; . <(grep -v "$FILT" evns/base.env); . <(grep -v "$FILT" evns/$mode.env); set +a
+  ( set -a; . <(grep -v "$FILT" evns/base.env); . <(grep -v "$FILT" archive/evns_old/$mode.env); set +a
     export MODEL_DIR=$PWD/v4/models HIVOL_MULT=0.5 VT_TARGET_DVOL=$VT
     policy $mode
     python3 v4/harness_v4.py --mode $mode "${COMMON[@]}" --out-tag _r3b_$TAG "$@" )
