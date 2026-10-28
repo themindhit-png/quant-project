@@ -20,7 +20,7 @@ KMAX=$(python3 -c "print($B * 1.5)")
     python3 v4/harness_v4.py --mode challenge --phases 2 "${COMMON[@]}" --starts "$STARTS" --out-tag _t_$TAG
   else
     export CPPI_FRAC=0.75
-    STARTS=$(python3 -c "import pandas as pd; print(','.join(str(d.date()) for d in pd.date_range('2022-01-03', '2025-10-20', freq='14D')))")
+    STARTS=${FU_STARTS:-$(python3 -c "import pandas as pd; print(','.join(str(d.date()) for d in pd.date_range('2022-01-03', '2025-10-20', freq='14D')))")}
     python3 v4/harness_v4.py --mode funded "${COMMON[@]}" --starts "$STARTS" --max-days 365 --payout-days 28 --mubite-payouts \
       --keep-buffer 0.02 --out-tag _t_$TAG
   fi ) > logs/t_${MODE:0:2}_$TAG.log 2>&1
