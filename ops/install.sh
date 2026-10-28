@@ -26,7 +26,7 @@ python3 -c 'import sys; assert sys.version_info >= (3, 10), sys.version' || die 
 
 MEM_GB=$(awk '/MemTotal/ {printf "%.1f", $2/1e6}' /proc/meminfo); DISK_GB=$(df -BG --output=avail / | tail -1 | tr -dc 0-9)
 echo "сервер: RAM ${MEM_GB} ГБ, свободно на диске ${DISK_GB} ГБ"
-awk "BEGIN {exit !($MEM_GB < 7.5)}" && echo "!! RAM меньше 8 ГБ: бот работать будет, но автоматическое переобучение моделей может не поместиться (тогда оно сообщит в Telegram)"
+awk "BEGIN {exit !($MEM_GB < 3.8)}" && echo "!! RAM меньше 4 ГБ: бот работать будет, но автоматическое переобучение моделей может не поместиться (тогда оно сообщит в Telegram)"
 
 say "2/7 Каталоги и venv"
 mkdir -p "$APP"/{src/v4,models,state,backup,data,ops}
