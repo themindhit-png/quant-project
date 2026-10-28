@@ -42,10 +42,10 @@ def sha12(p):
 
 def resources():
     mem = {k: int(v.split()[0]) for k, v in (l.split(':', 1) for l in open('/proc/meminfo'))}
-    avail_gb = mem.get('MemAvailable', 0) / 1e6; free_gb = shutil.disk_usage(REPO).free / 1e9
-    say(f'resources: RAM available {avail_gb:.1f} GB, disk free {free_gb:.1f} GB')
+    avail_gb = (mem.get('MemAvailable', 0) + mem.get('SwapFree', 0)) / 1e6; free_gb = shutil.disk_usage(REPO).free / 1e9
+    say(f'resources: RAM+swap available {avail_gb:.1f} GB (swap {mem.get("SwapFree", 0) / 1e6:.1f}), disk free {free_gb:.1f} GB')
     if avail_gb < float(os.environ.get('RETRAIN_MIN_RAM_GB', '3.0')) or free_gb < 5:
-        raise RuntimeError(f'не хватает ресурсов (RAM {avail_gb:.1f} ГБ, диск {free_gb:.1f} ГБ; нужно ~3 ГБ свободной RAM и 5 ГБ диска)')
+        raise RuntimeError(f'не хватает ресурсов (RAM+подкачка {avail_gb:.1f} ГБ, диск {free_gb:.1f} ГБ; нужно ~3 ГБ и 5 ГБ диска)')
 
 
 def vision_symbols():

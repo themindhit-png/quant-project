@@ -26,7 +26,17 @@ python3 -c 'import sys; assert sys.version_info >= (3, 10), sys.version' || die 
 
 MEM_GB=$(awk '/MemTotal/ {printf "%.1f", $2/1e6}' /proc/meminfo); DISK_GB=$(df -BG --output=avail / | tail -1 | tr -dc 0-9)
 echo "сервер: RAM ${MEM_GB} ГБ, свободно на диске ${DISK_GB} ГБ"
-awk "BEGIN {exit !($MEM_GB < 3.8)}" && echo "!! RAM меньше 4 ГБ: бот работать будет, но автоматическое переобучение моделей может не поместиться (тогда оно сообщит в Telegram)"
+awk "BEGIN {exit !($MEM_GB < 3.8)}" && echo "RAM меньше 4 ГБ: бот поместится; для переобучения моделей будет создан файл подкачки (ниже)"
+
+# мало памяти (VPS nano: 2 ГБ) -> файл подкачки 4 ГБ: бот помещается и так, а переобучению моделей (~2.7 ГБ) нужен запас
+if awk "BEGIN {exit !($MEM_GB < 6)}" && ! swapon --show | grep -q .; then
+  if [[ -z "${SKIP_SYSTEMD:-}" ]]; then
+    fallocate -l 4G /swapfile && chmod 600 /swapfile && mkswap /swapfile >/dev/null && swapon /swapfile
+    grep -q '^/swapfile' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
+    sysctl -q vm.swappiness=10; echo 'vm.swappiness=10' > /etc/sysctl.d/99-propsleeves.conf
+    echo "создан файл подкачки 4 ГБ (переобучение моделей поместится, но будет медленнее)"
+  fi
+fi
 
 say "2/7 Каталоги и venv"
 mkdir -p "$APP"/{src/v4,models,state,backup,data,ops}
