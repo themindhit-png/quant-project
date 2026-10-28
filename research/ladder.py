@@ -22,6 +22,8 @@ T = R.shape[2]
 P_CH = fs.pvec(VT=0.006, BASE=2.0, BASE_P2=2.0, KMAX=3.0, CPPI=1.0, DD_BUF=0.3, THROTTLE=0.5, HALT_FRAC=0.5, FG=0.03, BOOK=0, RAT=0.35)
 P_FU = fs.pvec(VT=0.006, BASE=2.0, KMAX=3.0, CPPI=0.75, DD_BUF=0.3, THROTTLE=0.5, HALT_FRAC=0.5, FG=0.03, BOOK=0, KEEP_BUF=0.02)
 _cache = {}
+SCALE_ALL = os.environ.get('SCALE_ALL', '1') == '1'     # scaling plan on intermediate accounts too
+n_scale = [0]
 
 
 def challenge(i0, t1, dd):
@@ -78,26 +80,24 @@ def run(i0, start_size, path, addons, horizon_d, q, rng, reserve=0.0):
         nxt = next((s for s in steps if s > size), None)
         if final and reached is None:
             reached = (tf - i0) / 24
-        refund_done = False; scale = 1.0; base_size = size; last_scale_t = tf
-        # walk the funded account day by day until switch / death / horizon
+        refund_done = False; scale = 1.0; base_size = size; last_scale_t = tf; got = 0.0; prev = 0.0
+        scale_on = final or SCALE_ALL
+        # walk the funded account day by day until switch / death / horizon; payouts are added incrementally at the current size
         for tt in range(tf + 24, i_h + 1, 24):
             if dead is not None and tt >= dead:
                 break
-            paid_frac = rp[tt]
-            if final:                                       # scaling plan at the last size
-                if tt - last_scale_t >= 90 * 24 and rw[tt] - rw[tt - 90 * 24] >= 0.10 and base_size * (scale + 0.25) <= CAP:
-                    scale += 0.25; last_scale_t = tt
-            got = paid_frac * base_size * split * (scale if final else 1.0)
+            if scale_on and tt - last_scale_t >= 90 * 24 and rw[tt] - rw[tt - 90 * 24] >= 0.10 and scale + 0.25 <= 2.0 \
+                    and base_size * (scale + 0.25) <= CAP:                     # scaling plan: +25 % of the start size, max 2x / CAP
+                scale += 0.25; last_scale_t = tt; n_scale[0] += 1
+            got += (rp[tt] - prev) * base_size * split * scale; prev = rp[tt]
             if got > 0 and not refund_done:
                 cash += fee; refund_done = True
             if not final and nxt is not None and cash + got >= price(nxt, addons) + reserve:
                 cash += got; size = nxt; fee = price(size, addons); cash -= fee; t = tt; break
         else:
-            tt = i_h
-            cash += rp[min(tt, T - 1)] * base_size * split * (scale if final else 1.0)
-            return cash, int(base_size * scale), reached
+            return cash + got, int(base_size * scale), reached
         if dead is not None and tt >= dead:                  # account died: keep the cash, buy the largest affordable challenge
-            cash += rp[dead] * base_size * split * (scale if final else 1.0)
+            cash += got
             aff = [s for s in PRICE if price(s, addons) <= cash]
             if not aff:
                 return cash, 0, reached
