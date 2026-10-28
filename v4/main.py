@@ -77,6 +77,9 @@ class Bot:
             self.ex.flatten_all(self.instr, 'KILL_SWITCH'); return False
         if m['halt_total']:
             return False
+        if self.pause_step(equity):
+            return False
+        self.transfer_check()                          # before the limits: a withdrawal must not look like a loss
         met = self.risk.observe_equity(equity, self.now())
         if met.get('rolled'):
             m.save()                                   # day rollover (daily PnL, trading days) must survive a restart
@@ -103,7 +106,9 @@ class Bot:
         if C.MODE == 'challenge' and not m['target_hit']:
             tgt, trig = self.risk.phase_target()
             min_days = C.RULES['min_days'][min(C.PHASE, len(C.RULES['min_days'])) - 1]
-            if equity >= trig and int(m['trading_days']) >= min_days and (C.RULES['consistency'] <= 0 or self.risk.consistency_ok()):
+            prof_days = C.RULES['profit_days'][min(C.PHASE, len(C.RULES['profit_days'])) - 1]
+            if equity >= trig and int(m['trading_days']) >= min_days and int(m.get('profit_days', 0)) >= prof_days \
+                    and (C.RULES['consistency'] <= 0 or self.risk.consistency_ok()):
                 n = self.ex.flatten_all(self.instr, f'PHASE TARGET {tgt:,.0f} reached')
                 time.sleep(15)
                 try:
@@ -120,6 +125,72 @@ class Bot:
         if m['target_hit']:
             return False
         return True
+
+    # ------------------------------------------------------------ cash flows: payout pause (PAUSE_FILE) and transfers
+    def pause_step(self, equity):
+        """True while PAUSE_FILE exists: positions are closed, nothing trades, and any change of the FLAT equity is booked as a cash
+        flow (Mubite payout / withdrawal / deposit), not as PnL. On resume the last change is booked and trading continues."""
+        m = self.mem
+        paused = os.path.exists(C.PAUSE_FILE)
+        if not paused and m.get('pause_eq') is None:
+            return False
+        if paused and self.api.positions():
+            self.ex.flatten_all(self.instr, 'PAUSE: closing everything for a payout / transfer')
+            m['pause_eq'] = None; m.save(); return True
+        if m.get('pause_eq') is None:                          # flat now: remember the equity, tell the owner it is safe
+            m['pause_eq'] = float(self.equity()); m['transfer_ts'] = int(time.time() * 1000); m.save()
+            log(f'PAUSE: flat at {m["pause_eq"]:,.2f}; waiting')
+            tg(f'⏸ Пауза: все позиции закрыты, equity {m["pause_eq"]:,.2f}. Можно запрашивать выплату / выводить. '
+               f'Продолжить: ops/bot.sh resume')
+            return True
+        eq_now = float(self.equity()); flow = eq_now - float(m['pause_eq'])
+        if abs(flow) >= max(1.0, 1e-4 * eq_now):
+            self.risk.note_cash_flow(flow); m['pause_eq'] = eq_now
+            log(f'CASH FLOW {flow:+,.2f} booked during the pause (equity {eq_now:,.2f})')
+            tg(f'💸 Учтено движение денег {flow:+,.2f} USDT (не убыток). Equity {eq_now:,.2f}.')
+        if not paused:
+            m['pause_eq'] = None; m['transfer_ts'] = int(time.time() * 1000); m.save()
+            log('PAUSE: resumed'); tg('▶️ Пауза снята, бот торгует.')
+            return False
+        m.save(); return True
+
+    def transfer_check(self):
+        """Book Bybit transfer-log entries (withdrawals / deposits made while the bot trades) as cash flows (checked every minute)."""
+        m = self.mem
+        if not C.TRANSFER_CHECK or not hasattr(getattr(self, 'api', None), 'transfers_since'):
+            return
+        now_ms = int(time.time() * 1000)
+        if m.get('transfer_ts') is None:
+            m['transfer_ts'] = now_ms; return
+        if now_ms - int(m.get('transfer_chk_ms') or 0) < 55 * 1000:
+            return
+        m['transfer_chk_ms'] = now_ms
+        try:
+            flow, last = self.api.transfers_since(int(m['transfer_ts']) + 1)
+        except Exception as e:
+            log(f'transfer check failed: {e}'); return
+        if abs(flow) >= 1.0:
+            self.risk.note_cash_flow(flow)
+            log(f'CASH FLOW {flow:+,.2f} from the transfer log'); tg(f'💸 Перевод {flow:+,.2f} USDT учтён как движение денег (не убыток/прибыль).')
+        m['transfer_ts'] = max(int(m['transfer_ts']), int(last)); m.save()
+
+    def key_expiry_check(self):
+        """Once a day: Telegram reminder KEY_EXPIRY_WARN_D days before the API key expires (Mubite keys live 93 days)."""
+        m = self.mem; today = self.now().date().isoformat()
+        if m.get('key_chk_date') == today or not hasattr(getattr(self, 'api', None), 'api_key_expiry'):
+            return
+        m['key_chk_date'] = today
+        try:
+            exp = self.api.api_key_expiry()
+        except Exception as e:
+            log(f'api key expiry check failed: {e}'); return
+        if exp is None:
+            return
+        left = (exp - self.now()).total_seconds() / 86400.0
+        m['key_expires'] = exp.isoformat()
+        if left <= C.KEY_EXPIRY_WARN_D:
+            tg(f'🔑 API-ключ истекает через {left:.0f} дн. ({exp:%Y-%m-%d}). Продлить по ссылке из письма фирмы, ключ НЕ удалять и не создавать новый '
+               f'субаккаунт (docs/GUIDE.md).')
 
     # ------------------------------------------------------------ daily rebalance
     # ------------------------------------------------------------ per-sleeve attribution & ml8 kill rule (PREREG.md rule 1)
@@ -374,7 +445,7 @@ class Bot:
                        n_targets=len(targets), n_positions=len(poss2), gross=round(g, 0), net=round(net, 0), gross_x_initial=round(g / self.risk.initial, 3),
                        orders=stats, errors=[e[2] for e in errors][:10], data_bad=bad[:20], cycles=m['cycles'],
                        last_cycle_utc=self.now().isoformat(), total_floor=round(self.risk.total_floor(), 2), daily_floor=round(self.risk.daily_floor(), 2),
-                       trading_days=m['trading_days'], day_pnls_n=len(m['day_pnls']), consistency_ok=self.risk.consistency_ok(), ok=True)
+                       trading_days=m['trading_days'], profit_days=m.get('profit_days', 0), day_pnls_n=len(m['day_pnls']), consistency_ok=self.risk.consistency_ok(), ok=True)
             log(f'REBALANCE done in {time.time() - t0:.0f}s | eq {equity:,.2f} K={k:.2f} ({why}) lev {lev:.2f} ({vt_why}) | '
                 f'targets {len(targets)} gross {tinfo["gross"]:,.0f} ({tinfo["gross_x_initial"]:.2f}x) L{tinfo["n_long"]}/S{tinfo["n_short"]} | '
                 f'orders maker {stats["maker_sent"]} market {stats["market_sent"]} errors {len(errors)} | positions {len(poss2)} gross {g:,.0f} net {net:+,.0f}')
@@ -717,6 +788,7 @@ class Bot:
             time.sleep(C.WATCHDOG_SEC)
             try:
                 self.watchdog()
+                self.key_expiry_check()
                 lc = self.mem.get('last_rebal_date')
                 if lc and (self.now().date() - datetime.fromisoformat(lc).date()).days >= 2:
                     tg_once('silent', '⚠️ Ребаланс не выполнялся 2 дня — проверь логи.', 12)

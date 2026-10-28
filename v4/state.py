@@ -37,7 +37,7 @@ def tg_once(key, text, hours=24.0):
 class Memory(dict):
     """Persistent bot memory (JSON). Atomic save; conservative defaults on loss."""
     PERSIST = ('initial', 'eq_peak', 'day_date', 'day_anchor', 'day_peak', 'halted_day', 'halt_total', 'phase_base',
-               'target_hit', 'trading_days', 'td_date', 'day_pnls', 'day_pnl_dates', 'lev', 'w_prev', 'eq_daily',
+               'target_hit', 'trading_days', 'td_date', 'profit_days', 'pause_eq', 'transfer_ts', 'transfer_chk_ms', 'key_chk_date', 'key_expires', 'day_pnls', 'day_pnl_dates', 'lev', 'w_prev', 'eq_daily',
                'mult_daily', 'mult_day_sum', 'mult_day_n', 'clip_n', 'reb_n', 'flow_daily', 'flow_today', 'attrib_shadow_ml8',
                'fund_days', 'fund_settlements', 'fund_total', 'ml8_audit', 'ml8_audit_day', 'ml8_changes',
                'attrib_share', 'attrib_px', 'attrib_notional', 'attrib_day', 'sleeve_pnl_day', 'sleeve_pnl_hist', 'ml8_mult', 'ml8_mult_date',

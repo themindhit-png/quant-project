@@ -25,7 +25,7 @@ class RiskEngine:
         m.setdefault('day_date', None); m.setdefault('day_anchor', None); m.setdefault('day_peak', None)
         m.setdefault('halted_day', None); m.setdefault('halt_total', False)
         m.setdefault('phase_base', None); m.setdefault('target_hit', False)
-        m.setdefault('trading_days', 0); m.setdefault('td_date', None)
+        m.setdefault('trading_days', 0); m.setdefault('td_date', None); m.setdefault('profit_days', 0)
         m.setdefault('day_pnls', []); m.setdefault('day_pnl_dates', [])
         m.setdefault('lev', 1.0); m.setdefault('w_prev', {}); m.setdefault('eq_daily', [])
         m.setdefault('mult_daily', []); m.setdefault('mult_day_sum', 0.0); m.setdefault('mult_day_n', 0)
@@ -42,6 +42,10 @@ class RiskEngine:
             m['day_peak'] = float(m['day_peak']) + amount
         if C.RULES['total_dd_mode'] == 'static':          # static floors are on the initial balance; a payout does not create a drawdown
             m['eq_peak'] = float(m['eq_peak']) + amount
+        if C.FIRM == 'personal':                           # own account: the money base itself moves (own floors / limits follow it)
+            m['initial'] = max(float(m['initial']) + amount, 1.0)
+            if C.RULES['total_dd_mode'] != 'static':
+                m['eq_peak'] = max(float(m['eq_peak']) + amount, 1.0)
         m.setdefault('cooldown', {}); m.setdefault('k_last', 0.0); m.setdefault('k_reason', '')
 
     # ------------------------------------------------------------ firm geometry
@@ -97,6 +101,8 @@ class RiskEngine:
                 m['mult_day_sum'] = 0.0; m['mult_day_n'] = 0
                 if abs(pnl) >= 0.0025 * self.initial and m['td_date'] != m['day_date']:
                     m['trading_days'] = int(m['trading_days']) + 1; m['td_date'] = m['day_date']
+                    if pnl >= C.PROFIT_DAY_PCT / 100.0 * self.initial:
+                        m['profit_days'] = int(m.get('profit_days', 0)) + 1
             m['day_date'] = today; m['day_anchor'] = equity; m['day_peak'] = equity; m['halted_day'] = None
         m['day_peak'] = max(float(m['day_peak'] or equity), equity)
         m['eq_peak'] = max(float(m['eq_peak']), equity)

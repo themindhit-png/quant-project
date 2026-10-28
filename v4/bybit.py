@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Bybit v5 REST client (linear USDT perps, UTA). Market data is public; account/order calls signed."""
+from datetime import datetime
 import time, hmac, hashlib, uuid, json
 from decimal import Decimal
 from urllib.parse import urlencode
@@ -306,6 +307,36 @@ class Bybit:
             cursor = r.get('nextPageCursor', '')
             if not cursor:
                 return total
+
+    def transfers_since(self, start_ms):
+        """(sum of TRANSFER_IN / TRANSFER_OUT changes in the unified account since start_ms, ms of the latest entry seen)."""
+        total, last, cursor = 0.0, int(start_ms), ''
+        while True:
+            p = {'accountType': 'UNIFIED', 'startTime': int(start_ms), 'limit': 50}
+            if cursor:
+                p['cursor'] = cursor
+            r = self._req('GET', '/v5/account/transaction-log', p, auth=True)
+            for it in r.get('list', []):
+                if 'TRANSFER' not in str(it.get('type') or '').upper():
+                    continue
+                try:
+                    total += float(it.get('change') or 0); last = max(last, int(it.get('transactionTime') or 0))
+                except (TypeError, ValueError):
+                    pass
+            cursor = r.get('nextPageCursor', '')
+            if not cursor:
+                return total, last
+
+    def api_key_expiry(self):
+        """Expiry of the API key in use (datetime, UTC) or None when it does not expire / is unknown."""
+        r = self._req('GET', '/v5/user/query-api', {}, auth=True)
+        exp = str(r.get('expiredAt') or '').strip()
+        if not exp or exp.startswith('0001') or exp == '0':
+            return None
+        try:
+            return datetime.fromisoformat(exp.replace('Z', '+00:00'))
+        except ValueError:
+            return None
 
     # ------------------------------------------------------------ orders (signed)
     @staticmethod

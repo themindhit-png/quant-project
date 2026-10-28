@@ -523,5 +523,40 @@ h28 = [_cfg_hash(K_MIN_FRAC='0'), _cfg_hash(DD_HIVOL_MULT='0.3'), _cfg_hash(K_MI
 check('T28c hash: K_MIN_FRAC=0 and DD_HIVOL_* with DD_HIVOL_BUF=0 = baseline; turning either on changes it',
       h28[0] == ha and h28[1] == ha and h28[2] != ha and h28[3] != ha and h28[2] != h28[3], ' '.join(h28))
 
+# T29: Mubite profitable days (3 + 2): counted at the day roll when the day's PnL >= PROFIT_DAY_PCT % of initial; preset values
+mem29 = Memory(); mem29.save = lambda: None; R29 = RiskEngine(mem29, log=lambda *a: None)
+t29 = datetime(2025, 9, 1, 0, 10, tzinfo=timezone.utc); R29.observe_equity(10000.0, t29)
+for k_, e_ in enumerate((10060.0, 10070.0, 10200.0, 10180.0)):          # day pnl +60 (+0.6 %), +10, +130 (+1.3 %), -20
+    R29.observe_equity(e_, t29 + timedelta(hours=12 + 24 * k_)); R29.observe_equity(e_, t29 + timedelta(days=k_ + 1))
+check('T29 profitable days: +0.6 % and +1.3 % days counted, +0.1 % / loss days not; Mubite presets require 3 + 2',
+      mem29['profit_days'] == 2 and C.FIRM_PRESETS['mubite_8_dd10']['profit_days'] == [3, 2] and 'profit_days' in Memory.PERSIST,
+      f"profit_days {mem29['profit_days']} trading_days {mem29['trading_days']}")
+
+# T30: payout pause (PAUSE_FILE): flat + any equity change booked as a cash flow (daily anchor moves, no DAILY HALT); transfers while trading
+import tempfile as _tf30
+_pf = os.path.join(_tf30.mkdtemp(), 'state.json.pause'); _old_pf = C.PAUSE_FILE; C.PAUSE_FILE = _pf
+class _Api30:
+    def __init__(s): s.eq = 10300.0; s.pos = {'BTCUSDT': {'qty': 1}}; s.tr = (0.0, 0)
+    def equity(s): return s.eq
+    def positions(s): return s.pos
+    def transfers_since(s, ms): return s.tr
+b30 = Bot.__new__(Bot); b30.mem = Memory(); b30.mem.save = lambda: None; b30.risk = RiskEngine(b30.mem, lambda *a: None); b30.api = _Api30()
+b30.instr = {}; b30.ex = types.SimpleNamespace(flatten_all=lambda *a, **k: b30.api.pos.clear())
+t30 = datetime(2026, 5, 3, 10, 0, tzinfo=timezone.utc); b30.now = lambda: t30
+b30.mem['day_date'] = '2026-05-03'; b30.mem['day_anchor'] = 10250.0; b30.mem['day_peak'] = 10300.0
+open(_pf, 'w').close()
+r1 = b30.guards(10300.0)                       # paused: closes positions
+r2 = b30.guards(10300.0)                       # flat: remembers equity 10300
+b30.api.eq = 10050.0                           # payout of 250 processed by the firm
+r3 = b30.guards(10050.0)                       # booked as a cash flow
+os.remove(_pf); r4 = b30.guards(10050.0)       # resumed: trades again, no daily halt
+anchor_ok = abs(b30.mem['day_anchor'] - 10000.0) < 1e-6 and b30.mem.get('halted_day') is None
+b30.mem['transfer_chk_ms'] = 0; b30.api.tr = (-500.0, int(time.time() * 1000)); b30.api.eq = 9550.0
+r5 = b30.guards(9550.0)                        # own-account style withdrawal while trading, from the transfer log
+C.PAUSE_FILE = _old_pf
+check('T30 payout pause: flatten -> flat equity remembered -> payout booked as cash flow (anchor -250, no halt) -> resume; transfer-log withdrawal booked',
+      (r1, r2, r3, r4) == (False, False, False, True) and not b30.api.pos and anchor_ok and r5 is True and abs(b30.mem['day_anchor'] - 9500.0) < 1e-6
+      and abs(b30.mem['flow_today'] + 750.0) < 1e-6, f"anchor {b30.mem['day_anchor']} flow {b30.mem['flow_today']} halted {b30.mem.get('halted_day')}")
+
 print(f'\n{sum(1 for _, ok in res if ok)}/{len(res)} passed')
 sys.exit(0 if all(ok for _, ok in res) else 1)

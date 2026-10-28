@@ -28,6 +28,10 @@ ap.add_argument('--phases', type=int, default=1, help='challenge: run phase 1 th
 ap.add_argument('--payout-days', type=int, default=0, help='funded: withdraw profit above initial every N days')
 ap.add_argument('--keep-buffer', type=float, default=0.0, help='funded: keep this fraction of initial as cushion above initial before paying out')
 ap.add_argument('--max-days', type=int, default=0, help='stop a run after N days (0 = to end of data)')
+ap.add_argument('--mubite-payouts', action='store_true', help='funded: Mubite payout model — every --payout-days since the last payout, '
+               'caps 2.5/3/3.5/4/4.5/5 %% of the account then none, Funded Score < 40 %% (best day / profitable days of the cycle), min $50, '
+               'all positions closed before the request and no trading for --payout-pause-h hours')
+ap.add_argument('--payout-pause-h', type=int, default=48)
 ap.add_argument('--out-tag', default='', help='suffix for the output csv files (parallel runs)')
 ap.add_argument('--gx-every-h', type=int, default=24, help='gross/equity diagnostic every N hours (1 = hourly, for research/fastsim)')
 ap.add_argument('--exec-lag-h', type=int, default=0, help='execution delay: decide on bar i-lag (panel, clock), fill at bar i prices (Opus stress)')
@@ -49,6 +53,7 @@ execution.time.sleep = lambda x: None          # no real waiting in simulation
 botstate.tg = lambda *a, **k: None
 botmain.tg = lambda *a, **k: None
 botmain.tg_once = lambda *a, **k: None
+MUB_CAPS = (2.5, 3.0, 3.5, 4.0, 4.5, 5.0)            # Mubite: % of the account per payout request, none from the 7th
 RHO = []                                          # (ts, realised exposure / lev*K) per rebalance, --gx-every-h 1
 STOP_EVENTS = []                                  # (sim time, line) for short-stop closes (invisible without --verbose otherwise)
 def _quiet_log(*a, **k):
@@ -133,6 +138,12 @@ class FakeApi:
 
     def announcements_delisting(self):
         return set()
+
+    def transfers_since(self, start_ms):
+        return 0.0, int(start_ms)
+
+    def api_key_expiry(self):
+        return None
 
     def transaction_log_sum(self, start_ms):
         return 0.0
@@ -294,6 +305,7 @@ def run_once(i0, phase=1, quiet=False, max_days=0):
     if C.MODE == 'challenge':
         mem['phase_base'] = A.account
     t0 = time.time(); n_reb = 0; paid = 0.0; outcome = 'end'; last_payout_day = None
+    pause_until = None; n_pay = 0; last_pay_d = 0; n_dp0 = 0; C.KILL_SWITCH = False
     for i in range(i0, T - 1):
         SIM['i'] = i; SIM['dec'] = i - A.exec_lag_h
         api.apply_funding(i); api.apply_close_events(i)
@@ -301,7 +313,22 @@ def run_once(i0, phase=1, quiet=False, max_days=0):
         if (i - i0) % A.gx_every_h == 12 % A.gx_every_h:   # gross/equity diagnostic (daily by default: does the notional cap bind?)
             gx_path.append((d.idx[i], sum(abs(q) * api.px(s) for s, q in api.qty.items() if q) / max(eq, 1e-9)))
         dt = now_dt()
-        if A.payout_days and C.MODE == 'funded' and dt.hour == 0 and (i - i0) // 24 > 0 and ((i - i0) // 24) % A.payout_days == 0 and last_payout_day != (i - i0) // 24:
+        if pause_until is not None and i >= pause_until:
+            C.KILL_SWITCH = False; pause_until = None
+        if A.mubite_payouts and C.MODE == 'funded' and dt.hour == 0 and pause_until is None and (i - i0) // 24 - last_pay_d >= A.payout_days:
+            dp = list(mem.get('day_pnls') or [])[n_dp0:]
+            pos = [x for x in dp if x > 0]
+            fs_ok = not pos or max(pos) < 0.40 * sum(pos)
+            cap = (MUB_CAPS[n_pay] if n_pay < len(MUB_CAPS) else 1e9) / 100.0 * A.account
+            want = min(api.equity() - A.account * (1.0 + A.keep_buffer), cap)
+            if want >= 50 and fs_ok:
+                bot.ex.flatten_all(bot.instr, 'PAYOUT: positions closed before the request')
+                amt = min(api.wallet - A.account * (1.0 + A.keep_buffer), cap)
+                if amt >= 50:
+                    api.wallet -= amt; paid += amt; n_pay += 1; last_pay_d = (i - i0) // 24; n_dp0 = len(mem.get('day_pnls') or [])
+                    bot.risk.note_cash_flow(-amt)
+                C.KILL_SWITCH = True; pause_until = i + A.payout_pause_h     # no trading while the payout is reviewed
+        if A.payout_days and not A.mubite_payouts and C.MODE == 'funded' and dt.hour == 0 and (i - i0) // 24 > 0 and ((i - i0) // 24) % A.payout_days == 0 and last_payout_day != (i - i0) // 24:
             last_payout_day = (i - i0) // 24
             floor_keep = A.account * (1.0 + A.keep_buffer)
             profit = api.wallet + api.upnl() - floor_keep
@@ -336,7 +363,8 @@ def run_once(i0, phase=1, quiet=False, max_days=0):
         if not quiet and (i - i0) % (24 * 90) == 0 and i > i0:
             print(f'  {d.idx[i].date()} eq {eq:,.0f} rebalances {n_reb} maker {api.stat["maker_filled"]}/{api.stat["maker_tried"]} market {api.stat["market"]} ({time.time()-t0:.0f}s)', flush=True)
     eqs = pd.Series(eq_path, index=pd.DatetimeIndex(ts_path))
-    return dict(outcome=outcome, days=(i - i0) / 24.0, i_end=i, eq_end=api.equity(), eqs=eqs, stats=api.stat, n_reb=n_reb, paid=paid,
+    C.KILL_SWITCH = False
+    return dict(outcome=outcome, days=(i - i0) / 24.0, i_end=i, eq_end=api.equity(), eqs=eqs, stats=api.stat, n_reb=n_reb, paid=paid, n_pay=n_pay,
                 min_eq=float(eqs.min()) if len(eqs) else np.nan, gx=pd.Series([g for _, g in gx_path], index=pd.DatetimeIndex([t for t, _ in gx_path])),
                 attrib=list(mem.get('sleeve_pnl_hist') or []),
                 ml8=dict(changes=mem.get('ml8_changes') or [], audit=mem.get('ml8_audit') or [], mult=mem.get('ml8_mult', 1.0)))
@@ -354,7 +382,7 @@ def run():
                 r2 = run_once(r1['i_end'] + 1, phase=2, quiet=True, max_days=A.max_days)
                 row.update(p2=r2['outcome'], p2_days=round(r2['days']), p2_min_eq=round(r2['min_eq']), total_days=round(r1['days'] + r2['days']))
             if C.MODE == 'funded':
-                row.update(paid=round(r1['paid']), paid_pct_yr=round(r1['paid'] / A.account / max(r1['days'] / 365.0, 1e-9) * 100, 1))
+                row.update(n_pay=r1.get('n_pay', 0), paid=round(r1['paid']), paid_pct_yr=round(r1['paid'] / A.account / max(r1['days'] / 365.0, 1e-9) * 100, 1))
             row.update(ml8_changes=len(r1['ml8']['changes']), ml8_mult_end=r1['ml8']['mult'])
             rows.append(row)
             print(row, flush=True)

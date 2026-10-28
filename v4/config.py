@@ -45,14 +45,14 @@ FIRM_PRESETS = {
     # funded: 2x per position / 3x cumulative of initial. No consistency rule found on official pages.
     'mubite_2step': dict(targets=[10.0, 5.0], total_dd=8.0, daily_dd=5.0, total_dd_mode='static',
                          daily_dd_mode='static', consistency=0.0, min_days=[10, 3], per_trade_loss=3.0,
-                         notional_x=3.0, position_x=2.0, margin_pct=100.0, lowcap_pct=100.0, lowcap_turn=0.0),
+                         notional_x=3.0, position_x=2.0, margin_pct=100.0, lowcap_pct=100.0, lowcap_turn=0.0, profit_days=[3, 2]),
     'mubite_2step_8': dict(targets=[8.0, 5.0], total_dd=8.0, daily_dd=5.0, total_dd_mode='static',
                            daily_dd_mode='static', consistency=0.0, min_days=[10, 3], per_trade_loss=3.0,
-                           notional_x=3.0, position_x=2.0, margin_pct=100.0, lowcap_pct=100.0, lowcap_turn=0.0),
+                           notional_x=3.0, position_x=2.0, margin_pct=100.0, lowcap_pct=100.0, lowcap_turn=0.0, profit_days=[3, 2]),
     # Mubite with both add-ons: Easier Target (8%) + Extra 2% Drawdown Room (10% static) — +40% fee (~$154 for $10k)
     'mubite_8_dd10': dict(targets=[8.0, 5.0], total_dd=10.0, daily_dd=5.0, total_dd_mode='static',
                           daily_dd_mode='static', consistency=0.0, min_days=[10, 3], per_trade_loss=3.0,
-                          notional_x=3.0, position_x=2.0, margin_pct=100.0, lowcap_pct=100.0, lowcap_turn=0.0),
+                          notional_x=3.0, position_x=2.0, margin_pct=100.0, lowcap_pct=100.0, lowcap_turn=0.0, profit_days=[3, 2]),
     # HyroTrader 1-step with the Swing upgrade (static daily DD from day-start balance; max-loss mode not published -> trailing kept)
     'hyrotrader_1step_swing': dict(targets=[10.0], total_dd=6.0, daily_dd=4.0, total_dd_mode='trailing',
                                    daily_dd_mode='static', consistency=40.0, min_days=[5], per_trade_loss=3.0,
@@ -85,6 +85,8 @@ RULES = dict(
     daily_dd_mode=_env('DAILY_DD_MODE', _P['daily_dd_mode']),
     consistency=_env('CONSISTENCY_PCT', _P['consistency'], float),
     min_days=[int(x) for x in _env('MIN_DAYS', ','.join(str(t) for t in _P['min_days'])).split(',')],
+    # profitable days needed to pass each phase (Mubite catalogue: 3 + 2; a day with net PnL >= PROFIT_DAY_PCT % of initial)
+    profit_days=[int(x) for x in _env('PROFIT_DAYS', ','.join(str(t) for t in _P.get('profit_days', [0]))).split(',')],
     per_trade_loss=_env('PER_TRADE_LOSS_PCT', _P['per_trade_loss'], float),
     notional_x=_env('NOTIONAL_X', _P['notional_x'], float),
     position_x=_env('POSITION_X', _P.get('position_x', 2.0), float),
@@ -97,6 +99,7 @@ RULES = dict(
 MODE = _env('MODE', 'challenge').strip().lower()          # challenge | funded
 PHASE = _env('PHASE', 1, int)                                # 1..len(targets)
 ACCOUNT_SIZE = _env('ACCOUNT_SIZE', 10000.0, float)          # INITIAL balance of the prop account
+PROFIT_DAY_PCT = _env('PROFIT_DAY_PCT', 0.5, float)              # Mubite 'profitable day': net profit >= 0.5 % of initial
 PHASE_BASE = _env('PHASE_BASE', 0.0, float)                  # 0 = snapshot equity at first cycle of the phase
 TARGET_BUFFER_PCT = _env('TARGET_BUFFER_PCT', 0.30, float)   # aim above target to cover closing costs
 
@@ -185,7 +188,8 @@ def effective_config():
             'RESET_TOTAL_STOP', 'EQ_PEAK', 'PHASE_BASE', 'EXPECTED_CONFIG_HASH', 'FIRM_PRESETS', 'DEFAULT_BLACKLIST',
             'API_KEY', 'API_SECRET', 'TG_TOKEN', 'TG_CHAT', 'STATE_BACKUP_FILE', 'PORT',
             # connection / operations, not strategy: demo -> live or a blacklist edit must not change the registered hash
-            'BASE_URL', 'BLACKLIST', 'BLACKLIST_PATTERNS', 'STATE_PUSH_H', 'WATCHDOG_SEC', 'VERSION'}
+            'BASE_URL', 'BLACKLIST', 'BLACKLIST_PATTERNS', 'STATE_PUSH_H', 'WATCHDOG_SEC', 'VERSION',
+            'PAUSE_FILE', 'TRANSFER_CHECK', 'KEY_EXPIRY_WARN_D'}
     out = {}
     for k, v in sorted(globals().items()):
         if k.startswith('_') or k in skip or not k.isupper() or callable(v):
@@ -286,6 +290,12 @@ TG_CHAT = _env('TG_CHAT_ID', '')
 STATUS_TOKEN = _env('STATUS_TOKEN', '')
 PORT = _env('PORT', 10000, int)
 STATE_FILE = _env('STATE_FILE', f'/tmp/propsleeves_{FIRM}_{MODE}_p{PHASE}_{int(ACCOUNT_SIZE)}.json')
+# cash flows (payouts, withdrawals, deposits) — see docs/GUIDE.md: while PAUSE_FILE exists the bot closes everything, does not trade and
+# books any change of the (flat) equity as a cash flow, not as PnL (Mubite payout procedure); TRANSFER_CHECK: book Bybit transfer-log
+# entries (TRANSFER_IN / TRANSFER_OUT) as cash flows while trading (own account withdrawals / deposits without stopping the bot)
+PAUSE_FILE = _env('PAUSE_FILE', STATE_FILE + '.pause')
+TRANSFER_CHECK = _env('TRANSFER_CHECK', 1, int)
+KEY_EXPIRY_WARN_D = _env('KEY_EXPIRY_WARN_D', 10, int)          # Telegram reminder this many days before the API key expires
 BLACKLIST_PATTERNS = ('STOCK', 'XAU', 'XAG', 'USDC', 'EURUSD', '-')
 DEFAULT_BLACKLIST = {
     'AAOIUSDT', 'AAPLUSDT', 'ALABUSDT', 'AMZNUSDT', 'AXTIUSDT', 'BEUSDT', 'BMNRUSDT', 'BSPUSDT', 'BZUSDT', 'CBRSUSDT',
