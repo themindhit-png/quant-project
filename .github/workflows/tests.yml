@@ -18,3 +18,4 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt
       - run: python3 v4/tests_v4.py
+      - run: python3 ops/tests_ops.py
