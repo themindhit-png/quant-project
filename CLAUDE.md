@@ -1,9 +1,9 @@
 # CLAUDE.md — карта проекта (читать первым)
 
-Проект: рыночно-нейтральный бот PROP-SLEEVES v4 (книга F2, 7 рукавов, перпы Bybit) для проп-челленджей (Mubite, HyroTrader). Владелец — не программист: объяснять просто, действия давать пошагово. Язык общения — русский.
+Проект: рыночно-нейтральный бот PROP-SLEEVES v4 (книга F2, 7 рукавов, перпы Bybit) для проп-челленджей Mubite (из Беларуси доступна только она — `docs/FIRMS.md`) и своего счёта Bybit. Владелец — не программист: объяснять просто, действия давать пошагово. Язык общения — русский.
 
 ## Правила работы (экономия лимитов)
-- Начинай с `docs/STATUS.md`: там текущая фаза и следующий шаг. План целиком: `docs/PLAN_AUDIT.md`.
+- Начинай с `docs/STATUS.md`: там текущая фаза и следующий шаг. Руководство владельца (одна версия): `docs/GUIDE.md`. План: `docs/PHASE_T_PLAN.md`.
 - Одна фаза = одна сессия. В конце фазы обнови `docs/STATUS.md`, закоммить, запушь, скажи владельцу: что ввести (`/clear`, нужная `/model`).
 - Модели: Opus — решения, план, ревью диффов; Sonnet — исполнение. Чтение больших объёмов — субагентам Sonnet (Explore). Долгие расчёты — в фоне, вывод в `logs/`, в контекст не тянуть.
 - Ветка разработки: `claude/capabilities-environment-limits-3w4yfe`. PR не создавать без просьбы.
@@ -16,7 +16,10 @@
 ## Структура
 - `v4/` — живой бот. `v4/models/` — обученные LightGBM + spec_*.json.
 - Корень — ядро исследования (пока не двигать, пути заданы через `__file__`): `bt.py` (движок), `build_panels.py`, `dl_binance.py`, `exp_common.py`, `ml_features*.py`, обучение (`exp6_ml`, `exp21c_ml_noage`, `exp17_intraday_ml`, `exp17b_final_8h`, `exp24b_slow_ml`, `exp6b_noage_final`), финал (`exp24f`, `exp26`), проверки (`exp15_leak`, `exp21e_lag_fix`, `exp30`).
-- `docs/` — документация и аудит. `archive/` — старые эксперименты, цепочки запуска, результаты (`archive/out`). `evns/` — env-пресеты для VPS.
+- `docs/` — документация и аудит. `archive/` — старые эксперименты, пресеты (`archive/evns_old`), результаты (`archive/out`).
+- `evns/` — действующие профили: `base.env` (стратегия) + `mubite_challenge.env` / `mubite_funded.env` / `personal.env`; собирает `ops/stage.sh`.
+- `ops/` — `deploy.sh` (код на VPS), `stage.sh` (смена стадии), `bot.sh` (status/pause/resume/logs), `add_personal.sh` (второй бот).
+- `research/fastsim*.py` — быстрый симулятор риск-слоя (Фаза T), `research/ladder.py` — экономика лестницы счетов.
 - Не в git (см. `.gitignore`): `data/raw`, `data/panels`, `logs`, `*.npy`.
 
 ## Команды (из корня репо)
