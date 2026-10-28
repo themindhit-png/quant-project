@@ -18,7 +18,7 @@ P_NAMES = ['VT', 'BASE', 'BASE_P2', 'KMAX', 'CPPI', 'KMIN', 'FG', 'ABANDON', 'TH
            'VT_MAX', 'MAXG', 'SAFETY', 'BOOK', 'DD_BOOK', 'KEEP_BUF']
 P = {n: i for i, n in enumerate(P_NAMES)}
 F_NAMES = ['T1', 'T2', 'TOTAL_DD', 'DAILY_DD', 'TRAIL', 'TRAIL_LOCK', 'MIN_D1', 'MIN_D2', 'PROF_D1', 'PROF_D2', 'NOTIONAL_X',
-           'PAY_EVERY', 'FSCORE', 'MIN_PAY', 'CONSIST', 'NOCAP']
+           'PAY_EVERY', 'FSCORE', 'MIN_PAY', 'CONSIST', 'NOCAP', 'PAUSE_H', 'PAY_COST']
 F = {n: i for i, n in enumerate(F_NAMES)}
 PAY_CAPS = np.array([2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 1e9])   # Mubite: % of initial per payout, uncapped from the 7th
 
@@ -118,7 +118,7 @@ def _k(p, f, eq, init, floor, dd_amt, day_ref, halted, mode, phase, tdays, tgt):
 
 
 @njit(cache=True)
-def sim(R, G, V, RH, hour, day, i0, p, f, mode, phase, max_h, init, rec=np.zeros(1), rec_w=np.zeros(1)):
+def sim(R, G, V, RH, hour, day, i0, p, f, mode, phase, max_h, init, rec=np.zeros(1), rec_w=np.zeros(1), rec_p=np.zeros(1)):
     """mode 0 = challenge (phase 1/2), 1 = funded. Returns (outcome, i_end, min_eq, eq_end, paid, n_pay, fs_blocked_days).
     outcome: 0 end of data / max_h, 1 target passed, 2 bot halt (floor guard / abandon latch), 3 firm breach (total or daily)."""
     T = R.shape[2]
@@ -134,9 +134,10 @@ def sim(R, G, V, RH, hour, day, i0, p, f, mode, phase, max_h, init, rec=np.zeros
     nd_max = (i_end - i0) // 24 + 3
     eqd = np.zeros(nd_max); mld = np.zeros(nd_max); fld = np.zeros(nd_max); nd = 0     # bot's eq_daily / mult_daily / flow_daily
     msum = 0.0; mn_ = 0; flow_today = 0.0; lev = 1.0; kl = 0.0
+    pause_until = 0                                       # Mubite payout: all positions closed, no trading while it is reviewed
     for i in range(i0 + 1, i_end + 1):
         # ---- P&L of the hour with the exposure set before it (gross cap: equity multiple and firm notional of INITIAL)
-        if E > 0 and not halted:
+        if E > 0 and not halted and i >= pause_until:
             gw = _at(G, book, E, i)
             e_eff = E
             if gw > 1e-9:
@@ -148,6 +149,8 @@ def sim(R, G, V, RH, hour, day, i0, p, f, mode, phase, max_h, init, rec=np.zeros
         min_eq = min(min_eq, eq)
         if rec_w.shape[0] > i:
             rec_w[i] = eq + paid                          # wealth: equity + payouts so far (funded scaling rule)
+        if rec_p.shape[0] > i:
+            rec_p[i] = paid
         # ---- day roll (00:00 UTC): trading / profitable days, payouts in funded
         if day[i] != cur_day:
             pnl = eq - anchor
@@ -166,6 +169,9 @@ def sim(R, G, V, RH, hour, day, i0, p, f, mode, phase, max_h, init, rec=np.zeros
                     if amt >= f[13] and fs_ok:
                         eq -= amt; paid += amt; n_pay += 1; flow_today -= amt; last_pay_day = day[i]; cyc_best = 0.0; cyc_pos = 0.0
                         peak = max(init, peak - amt)
+                        if f[16] > 0 and E > 0:               # close everything before the request (taker cost on the gross) and wait
+                            eq -= f[17] * E * _at(G, book, E, i) * eq
+                            pause_until = i + int(f[16]); E = 0.0; kref = 0.0
                     elif amt >= f[13]:
                         fs_block += 1
             eqd[nd] = eq; fld[nd] = flow_today; mld[nd] = msum / mn_ if mn_ > 0 else max(lev * max(kl, 0.05), 1e-6); nd += 1
@@ -195,7 +201,7 @@ def sim(R, G, V, RH, hour, day, i0, p, f, mode, phase, max_h, init, rec=np.zeros
             pd_req = f[8] if phase == 1 else f[9]
             if eq >= trig and tdays >= md and pdays >= pd_req:
                 return 1, i, min_eq, eq, paid, n_pay, fs_block
-        if halted:
+        if halted or i < pause_until:
             continue
         # ---- rebalance every 8 h (01/09/17 UTC): book choice (P3), K, vol target; otherwise the hourly de-risk-only scale pass
         k = _k(p, f, eq, init, floor, dd_amt, anchor, halted, mode, phase, tdays, tgt)
