@@ -118,7 +118,7 @@ def _k(p, f, eq, init, floor, dd_amt, day_ref, halted, mode, phase, tdays, tgt):
 
 
 @njit(cache=True)
-def sim(R, G, V, RH, hour, day, i0, p, f, mode, phase, max_h, init, rec=np.zeros(1)):
+def sim(R, G, V, RH, hour, day, i0, p, f, mode, phase, max_h, init, rec=np.zeros(1), rec_w=np.zeros(1)):
     """mode 0 = challenge (phase 1/2), 1 = funded. Returns (outcome, i_end, min_eq, eq_end, paid, n_pay, fs_blocked_days).
     outcome: 0 end of data / max_h, 1 target passed, 2 bot halt (floor guard / abandon latch), 3 firm breach (total or daily)."""
     T = R.shape[2]
@@ -146,6 +146,8 @@ def sim(R, G, V, RH, hour, day, i0, p, f, mode, phase, max_h, init, rec=np.zeros
             if rec.shape[0] > i:
                 rec[i] = e_eff * _at(G, book, e_eff, i)
         min_eq = min(min_eq, eq)
+        if rec_w.shape[0] > i:
+            rec_w[i] = eq + paid                          # wealth: equity + payouts so far (funded scaling rule)
         # ---- day roll (00:00 UTC): trading / profitable days, payouts in funded
         if day[i] != cur_day:
             pnl = eq - anchor
