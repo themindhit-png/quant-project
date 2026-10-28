@@ -345,6 +345,19 @@ except SystemExit:
     bad_dir = True
 C.STATE_FILE = _old_sf
 check('T22c state dir is created; an unwritable one aborts the start', okdir and bad_dir)
+# T22d: restart round-trip. An old state with nulls for container keys (save() wrote absent PERSIST keys as null) must not
+# break the cycle: bad_n = None crashed every rebalance on 2026-10-28 ('NoneType' object is not iterable in bad_data_split)
+_old_sf, _old_bf = C.STATE_FILE, C.STATE_BACKUP_FILE; C.STATE_FILE = os.path.join(tempfile.mkdtemp(), 'state.json'); C.STATE_BACKUP_FILE = ''
+with open(C.STATE_FILE, 'w') as f:
+    json.dump({'created': 1.0, 'bad_n': None, 'ml8_audit': None, 'sleeve_pnl_day': None, 'halted_day': None, 'k_ref': 2.0}, f)
+b22d = Bot.__new__(Bot); b22d.mem = Memory(); b22d.mem.load()
+r22d = b22d.bad_data_split(['XUSDT'], {'XUSDT': dict(qty=1.0)}, set())
+b22d.mem.setdefault('ml8_audit', []).append(1)
+m22e = Memory(); m22e.save(); saved22 = json.load(open(C.STATE_FILE))
+C.STATE_FILE, C.STATE_BACKUP_FILE = _old_sf, _old_bf
+check('T22d state with null containers loads and rebalance helpers work; save() writes no nulls for absent keys',
+      r22d == (set(), {'XUSDT'}) and b22d.mem['ml8_audit'] == [1] and 'halted_day' in b22d.mem and b22d.mem['k_ref'] == 2.0
+      and 'bad_n' not in saved22 and 'sleeve_pnl_hist' not in saved22 and saved22.get('k_ref', 0) is None, f'{r22d} keys {sorted(saved22)}')
 
 # T23: a name with long Binance age but <30d of bars on the trading exchange is outside the ML universes
 S.uni.prev = {}; mm_a = S.ml_universe(panel, age_h); j23 = int(np.flatnonzero(mm_a)[0])

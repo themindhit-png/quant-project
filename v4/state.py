@@ -72,7 +72,7 @@ class Memory(dict):
                 if path and os.path.exists(path):
                     with open(path) as f:
                         d = json.load(f)
-                    self.update({k: v for k, v in d.items() if k in self.PERSIST}); self.loaded = True
+                    self.update(self._restorable(d)); self.loaded = True
                     log(f'state restored from {path} ({kind}; created {datetime.fromtimestamp(d.get("created", 0), timezone.utc):%Y-%m-%d})')
                     return
             except Exception as e:
@@ -82,16 +82,24 @@ class Memory(dict):
             try:
                 import base64
                 d = json.loads(base64.b64decode(b64).decode())
-                self.update({k: v for k, v in d.items() if k in self.PERSIST}); self.loaded = True
+                self.update(self._restorable(d)); self.loaded = True
                 log('state restored from STATE_JSON_B64')
             except Exception as e:
                 log(f'state load fail (STATE_JSON_B64): {e}')
+
+    # keys the code initialises with setdefault(k, container): a null saved by an older version (save() used to write every
+    # PERSIST key, absent ones as null) would come back as None and break setdefault -> drop it on load (2026-10-28 incident)
+    CONTAINERS = ('bad_n', 'sleeve_pnl_day', 'sleeve_pnl_hist', 'attrib_day', 'ml8_audit', 'ml8_changes', 'cooldown', 'blocked',
+                  'last_targets', 'w_prev', 'day_pnls', 'day_pnl_dates', 'eq_daily', 'mult_daily', 'flow_daily')
+
+    def _restorable(self, d):
+        return {k: v for k, v in d.items() if k in self.PERSIST and not (v is None and k in self.CONTAINERS)}
 
     _last_push = 0.0
 
     def save(self):
         try:
-            data = {k: self.get(k) for k in self.PERSIST}
+            data = {k: self[k] for k in self.PERSIST if k in self}     # absent keys are not written as null
             blob = json.dumps(data, default=float)
             for path in (C.STATE_FILE, C.STATE_BACKUP_FILE):
                 if not path:
