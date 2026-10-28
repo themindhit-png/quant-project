@@ -4,7 +4,7 @@
 #   bash ops/stage.sh phase2 10000     # фаза 2 того же челленджа (после письма фирмы о прохождении фазы 1)
 #   bash ops/stage.sh funded 10000     # funded-счёт $10k (после прохождения обеих фаз и KYC)
 #   bash ops/stage.sh personal 5000    # свой счёт Bybit (сумма = сколько на нём сейчас USDT)
-#   bash ops/stage.sh keys             # вставить новые API-ключи (новый субаккаунт / продление), без смены стадии
+#   bash ops/stage.sh keys             # записать новые API-ключи (новый субаккаунт / продление); бот не перезапускается
 # Что делает: берёт из текущего env-файла службы только «свои» строки (ключи Bybit, Telegram, порт, токен, MODEL_DIR; всё прочее
 # отбрасывается — одна версия настроек), добавляет стратегию
 # (evns/base.env) и профиль стадии (evns/mubite_challenge.env / mubite_funded.env / personal.env), ставит PHASE / MODE /
@@ -25,7 +25,9 @@ if [[ "$STAGE" == keys ]]; then
   cp -a "$ENVF" "$ENVF.bak.$TS"
   sed -i -E '/^[[:space:]]*(export[[:space:]]+)?BYBIT_API_(KEY|SECRET)=/d' "$ENVF"
   printf 'BYBIT_API_KEY=%s\nBYBIT_API_SECRET=%s\n' "$K" "$S" >> "$ENVF"
-  systemctl restart "$UNIT"; echo "ключи заменены, бот перезапущен (бэкап env: $ENVF.bak.$TS)"; exit 0
+  echo "ключи записаны (бэкап env: $ENVF.bak.$TS). Бот НЕ перезапущен:"
+  echo "  новая стадия / новый счёт -> bash ops/stage.sh <phase1|phase2|funded|personal> <размер>"
+  echo "  та же стадия (продление ключа) -> bash ops/bot.sh restart"; exit 0
 fi
 
 case "$STAGE" in
