@@ -22,6 +22,7 @@ ap.add_argument('--mode', default='funded'); ap.add_argument('--verbose', action
 ap.add_argument('--ml-panels', action='store_true', help='use walk-forward prediction panels (out_exp6_pred_h*.npy) instead of final models (fair OOS)')
 ap.add_argument('--panels-prefix', default='out_exp6_pred', help='prefix of prediction panels (e.g. out_exp16_pred, with --panels-suffix _k)')
 ap.add_argument('--panels-suffix', default='')
+ap.add_argument('--panels-8h', default='out_exp17_pred_8h_p0.npy', help='8h prediction panel (file in repo root) used with --ml-panels, e.g. out_exp17_pred_8h_oct_noconst.npy')
 ap.add_argument('--starts', default='', help='comma list of start dates for rolling challenge/funded simulations (one Data load)')
 ap.add_argument('--phases', type=int, default=1, help='challenge: run phase 1 then phase 2 from the pass date')
 ap.add_argument('--payout-days', type=int, default=0, help='funded: withdraw profit above initial every N days')
@@ -260,10 +261,10 @@ if A.ml_panels:
         pth = os.path.join(ROOT, f'{A.panels_prefix}_h{hz}{A.panels_suffix}.npy')
         if os.path.exists(pth) and (hz in (3, 7) or f'ml{hz}' in C.SLEEVES):
             PANELS[hz] = np.load(pth)
-    p8 = os.path.join(ROOT, 'out_exp17_pred_8h_p0.npy')
+    p8 = os.path.join(ROOT, A.panels_8h)
     if os.path.exists(p8):
         PANELS[8] = np.load(p8)
-    assert PANELS[3].shape == (T, N), 'prediction panel shape mismatch — rebuild with the same Data window'
+    assert all(v.shape == (T, N) for v in PANELS.values()), 'prediction panel shape mismatch — rebuild with the same Data window'
 
     def ml_from_panel(self, panel, mask, age_h, hz):
         P = PANELS[hz]; i = SIM['dec']
