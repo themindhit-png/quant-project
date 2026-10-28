@@ -57,7 +57,7 @@ NEW="$(mktemp)"
   [[ "$STAGE" == trial ]] && { echo "TARGETS=5"; echo "MIN_DAYS=0"; echo "PROFIT_DAYS=0"; }
   echo "STATE_FILE=$APP/state/${STAGE}_${SIZE}_$TS.json"; echo "STATE_BACKUP_FILE=$APP/state/${STAGE}_${SIZE}_$TS.backup.json"
 } > "$NEW"
-grep -q '^BYBIT_API_KEY=' "$NEW" || die "в прежнем env нет BYBIT_API_KEY — сначала: bash ops/stage.sh keys"
+grep -q '^BYBIT_API_KEY=..' "$NEW" || die "нет API-ключа — сначала: bash ops/stage.sh keys"
 [[ -n "${STAGE_DRY:-}" ]] || mkdir -p "$APP/state"
 
 # хэш конфигурации новым env (тем же способом, что ops/deploy.sh)
@@ -80,7 +80,7 @@ echo "EXPECTED_CONFIG_HASH=$HASH" >> "$NEW"
 if [[ -n "${STAGE_DRY:-}" ]]; then sed -E 's/^(BYBIT_API_SECRET|BYBIT_API_KEY|TG_BOT_TOKEN|STATUS_TOKEN)=.*/\1=***/' "$NEW"; rm -f "$NEW"; exit 0; fi
 cp -a "$ENVF" "$ENVF.bak.$TS"; install -m 600 "$NEW" "$ENVF"; rm -f "$NEW"
 echo "стадия: $STAGE, счёт $SIZE, хэш $HASH (бэкап прежнего env: $ENVF.bak.$TS)"
-systemctl restart "$UNIT"
+systemctl enable -q "$UNIT"; systemctl restart "$UNIT"
 PORT="$(grep -E '^PORT=' "$ENVF" | tail -1 | cut -d= -f2)"; PORT="${PORT:-8080}"
 TOKEN="$(grep -E '^STATUS_TOKEN=' "$ENVF" | tail -1 | cut -d= -f2)"
 for i in $(seq 1 36); do

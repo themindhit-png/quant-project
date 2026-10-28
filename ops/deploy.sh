@@ -122,6 +122,10 @@ cp -a "$SRC" "$SRC.bak.$TS"; cp -a "$ENVF" "$ENVF.bak.$TS"
 echo "бэкап кода: $SRC.bak.$TS ; бэкап env: $ENVF.bak.$TS"
 for f in "$REPO"/v4/*.py "$REPO"/v4/requirements.txt; do cp -f "$f" "$SRC/"; done
 rm -rf "$SRC/__pycache__"
+if [[ -d "$APP/ops" ]]; then                     # сервисные скрипты (Telegram, бэкап, сборщик) — ставит ops/install.sh
+  cp -f "$REPO"/ops/opslib.py "$REPO"/ops/tg_control.py "$REPO"/ops/daily.py "$REPO"/ops/collect_bybit.py "$APP/ops/"
+  systemctl is-enabled -q propsleeves-tg 2>/dev/null && systemctl restart propsleeves-tg || true
+fi
 ROLLBACK="rm -rf $SRC && cp -a $SRC.bak.$TS $SRC && cp -a $ENVF.bak.$TS $ENVF"
 if [[ $MODELS -eq 1 && $MODELS_DIFF -eq 1 ]]; then
   case "$(realpath -m "$MD")/" in
