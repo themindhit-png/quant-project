@@ -20,6 +20,6 @@ case "${1:-status}" in
   pause)   touch "$PAUSE"; echo "Пауза включена. Через 1-2 минуты в Telegram придёт «все позиции закрыты». Потом запрашивай выплату / выводи деньги." ;;
   resume)  rm -f "$PAUSE"; echo "Пауза снята. Бот учтёт изменение баланса как вывод (не убыток) и продолжит торговать." ;;
   restart) systemctl restart "$UNIT"; sleep 5; systemctl --no-pager -l status "$UNIT" | head -5 ;;
-  logs)    LOG="${LOG:-/opt/propsleeves/log_bot.txt}"; [[ -f "$LOG" ]] && tail -60 "$LOG" || journalctl -u "$UNIT" -n 60 --no-pager ;;
+  logs)    [[ "$UNIT" == *personal* ]] && DEF=/opt/propsleeves/log_personal.txt || DEF=/opt/propsleeves/log_bot.txt; LOG="${LOG:-$DEF}"; [[ -f "$LOG" ]] && tail -60 "$LOG" || journalctl -u "$UNIT" -n 60 --no-pager ;;
   *) echo "команды: status | pause | resume | restart | logs"; exit 1 ;;
 esac

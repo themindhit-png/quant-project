@@ -58,13 +58,15 @@ class RiskEngine:
         return float(equity) if C.NOTIONAL_BASE == 'equity' else self.initial
 
     def dd_amount(self):
+        if C.RULES['total_dd_mode'] == 'trailing_pct':        # own account: allowance is a % of the equity peak (grows with the account)
+            return float(self.mem['eq_peak']) * C.RULES['total_dd'] / 100.0
         return self.initial * C.RULES['total_dd'] / 100.0
 
     def daily_amount(self):
         return self.initial * C.RULES['daily_dd'] / 100.0
 
     def total_floor(self):
-        base = self.mem['eq_peak'] if C.RULES['total_dd_mode'] == 'trailing' else self.initial
+        base = self.mem['eq_peak'] if C.RULES['total_dd_mode'] in ('trailing', 'trailing_pct') else self.initial
         return float(base) - self.dd_amount()
 
     def daily_floor(self):

@@ -161,7 +161,7 @@ def sim(R, G, V, RH, hour, day, i0, p, f, mode, phase, max_h, init, rec=np.zeros
             if mode == 1:
                 if pnl > 0:
                     cyc_pos += pnl; cyc_best = max(cyc_best, pnl)
-                if day[i] - last_pay_day >= f[11]:
+                if f[11] > 0 and day[i] - last_pay_day >= f[11]:
                     avail = eq - init * (1.0 + p[18])
                     cap = PAY_CAPS[min(n_pay, 6)] / 100.0 * init if f[15] <= 0 else 1e18
                     amt = min(avail, cap)
@@ -179,6 +179,8 @@ def sim(R, G, V, RH, hour, day, i0, p, f, mode, phase, max_h, init, rec=np.zeros
             cur_day = day[i]; anchor = eq; halted = False
         peak = max(peak, eq)
         # ---- firm floors (static on initial, or trailing from the peak, optionally locked at the initial balance)
+        if f[4] >= 2:                                     # own account: allowance = % of the equity peak (risk 'trailing_pct')
+            dd_amt = peak * f[2] / 100.0
         if f[4] > 0:
             floor = peak - dd_amt
             if f[5] > 0:

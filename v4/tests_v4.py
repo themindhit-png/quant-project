@@ -558,5 +558,17 @@ check('T30 payout pause: flatten -> flat equity remembered -> payout booked as c
       (r1, r2, r3, r4) == (False, False, False, True) and not b30.api.pos and anchor_ok and r5 is True and abs(b30.mem['day_anchor'] - 9500.0) < 1e-6
       and abs(b30.mem['flow_today'] + 750.0) < 1e-6, f"anchor {b30.mem['day_anchor']} flow {b30.mem['flow_today']} halted {b30.mem.get('halted_day')}")
 
+# T31: own account (trailing_pct): the drawdown allowance is 25 % of the equity PEAK (grows with the account), withdrawals move the base
+_rules31 = dict(C.RULES); _firm31 = C.FIRM
+C.RULES = dict(C.RULES, total_dd=25.0, total_dd_mode='trailing_pct'); C.FIRM = 'personal'
+try:
+    m31 = Memory(); m31.save = lambda: None; R31 = RiskEngine(m31, lambda *a: None); m31['initial'] = 5000.0; m31['eq_peak'] = 5000.0
+    R31.observe_equity(15000.0, datetime(2026, 1, 1, 1, tzinfo=timezone.utc)); f1 = R31.total_floor(); d1 = R31.dd_amount()
+    R31.note_cash_flow(-3000.0); f2 = R31.total_floor()
+finally:
+    C.RULES = _rules31; C.FIRM = _firm31
+check('T31 own account: floor 25 % below the peak (15000 -> 11250), a 3000 withdrawal lowers peak and floor (12000 -> 9000)',
+      abs(f1 - 11250.0) < 1e-6 and abs(d1 - 3750.0) < 1e-6 and abs(f2 - 9000.0) < 1e-6 and abs(m31['initial'] - 2000.0) < 1e-6, f'{f1} {d1} {f2}')
+
 print(f'\n{sum(1 for _, ok in res if ok)}/{len(res)} passed')
 sys.exit(0 if all(ok for _, ok in res) else 1)

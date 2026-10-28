@@ -672,7 +672,7 @@ class Bot:
         if not m.loaded:
             anchor, src = self.recover_day_anchor(equity)
             m['day_date'] = self.now().date().isoformat(); m['day_anchor'] = anchor; m['day_peak'] = max(anchor, equity)
-            if C.RULES['total_dd_mode'] == 'trailing':
+            if C.RULES['total_dd_mode'] in ('trailing', 'trailing_pct'):
                 m['eq_peak'] = max(float(os.environ.get('EQ_PEAK', 0) or 0), float(C.ACCOUNT_SIZE), equity)
                 tg_once('peak_reset', f'⚠️ Память бота пуста: пик equity для trailing-просадки взят как {m["eq_peak"]:,.2f}. '
                                       f'Если реальный пик выше — задай EQ_PEAK в env и перезапусти.', 24)

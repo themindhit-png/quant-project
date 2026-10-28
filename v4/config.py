@@ -65,9 +65,10 @@ FIRM_PRESETS = {
     'ptb_bybit_funded': dict(targets=[5.0], total_dd=4.0, daily_dd=100.0, total_dd_mode='trailing',
                              daily_dd_mode='static', consistency=0.0, min_days=[7], per_trade_loss=0.0,
                              notional_x=10.0, position_x=10.0, margin_pct=100.0, lowcap_pct=100.0, lowcap_turn=0.0),
-    # OWN account (no firm): the only floors are self-imposed — a 25% trailing drawdown stop (total) and no daily halt;
+    # OWN account (no firm): the only floors are self-imposed — a 25% drawdown stop from the equity PEAK (trailing_pct: the allowance
+    # grows with the account, unlike a firm's allowance on the initial balance) and no daily halt;
     # use with MODE=funded, NOTIONAL_BASE=equity, higher VT_TARGET_DVOL (see PLAN §5). Funding accrues on a real account.
-    'personal': dict(targets=[1e9], total_dd=25.0, daily_dd=100.0, total_dd_mode='trailing',
+    'personal': dict(targets=[1e9], total_dd=25.0, daily_dd=100.0, total_dd_mode='trailing_pct',
                      daily_dd_mode='static', consistency=0.0, min_days=[0], per_trade_loss=0.0,
                      notional_x=5.0, position_x=5.0, margin_pct=100.0, lowcap_pct=100.0, lowcap_turn=0.0),
 }

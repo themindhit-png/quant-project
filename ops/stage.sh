@@ -44,10 +44,11 @@ NEW="$(mktemp)"
 {
   echo "# собрано ops/stage.sh $STAGE $SIZE ($TS UTC); свои строки (ключи, Telegram, порт) сохранены из прежнего env"
   grep -E '^[[:space:]]*(export[[:space:]]+)?[A-Z0-9_]+=' "$ENVF" | sed -E 's/^[[:space:]]*(export[[:space:]]+)?//' \
-    | grep -E '^(BYBIT_|TG_|STATUS_TOKEN|PORT|MODEL_DIR|DRY_RUN)[A-Z0-9_]*='      # only own lines; any other old setting is dropped
+    | grep -E '^(BYBIT_API_|TG_|STATUS_TOKEN|PORT|MODEL_DIR|DRY_RUN)[A-Z0-9_]*='  # only own lines; any other old setting is dropped
   echo; echo "# --- стратегия (evns/base.env)"; grep -E '^[A-Z0-9_]+=' "$REPO/evns/base.env" | grep -vE "$LOCAL_RE" | grep -vE '^(ACCOUNT_SIZE|MODE|PHASE|FIRM)='
   echo; echo "# --- профиль (evns/$PROFILE)"; grep -E '^[A-Z0-9_]+=' "$REPO/evns/$PROFILE" | grep -vE '^(MODE|PHASE)='
   echo; echo "# --- стадия"
+  [[ "$STAGE" == personal ]] && echo "BYBIT_BASE_URL=https://api.bybit.com" || echo "BYBIT_BASE_URL=https://api-demo.bybit.com"
   echo "MODE=$MODE"; echo "PHASE=$PHASE"; echo "ACCOUNT_SIZE=$SIZE"
   echo "STATE_FILE=$APP/state/${STAGE}_${SIZE}_$TS.json"; echo "STATE_BACKUP_FILE=$APP/state/${STAGE}_${SIZE}_$TS.backup.json"
 } > "$NEW"
