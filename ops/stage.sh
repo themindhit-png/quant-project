@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Смена стадии бота одной командой (запускать от root из клона репо, обычно /root/quant-project). Подробно — docs/GUIDE.md.
+#   bash ops/stage.sh trial 10000      # бесплатная проба Mubite (7 дней, цель 5 %, просадка 10 %) — проверка механики
 #   bash ops/stage.sh phase1 10000     # новый челлендж Mubite $10k, фаза 1
 #   bash ops/stage.sh phase2 10000     # фаза 2 того же челленджа (после письма фирмы о прохождении фазы 1)
 #   bash ops/stage.sh funded 10000     # funded-счёт $10k (после прохождения обеих фаз и KYC)
@@ -31,11 +32,12 @@ if [[ "$STAGE" == keys ]]; then
 fi
 
 case "$STAGE" in
+  trial)  PROFILE=mubite_challenge.env; MODE=challenge; PHASE=1 ;;
   phase1) PROFILE=mubite_challenge.env; MODE=challenge; PHASE=1 ;;
   phase2) PROFILE=mubite_challenge.env; MODE=challenge; PHASE=2 ;;
   funded) PROFILE=mubite_funded.env;    MODE=funded;    PHASE=1 ;;
   personal) PROFILE=personal.env;       MODE=funded;    PHASE=1 ;;
-  *) die "стадия: phase1 | phase2 | funded | personal | keys" ;;
+  *) die "стадия: trial | phase1 | phase2 | funded | personal | keys" ;;
 esac
 [[ "$SIZE" =~ ^[0-9]+$ ]] || die "укажи размер счёта числом, например: bash ops/stage.sh $STAGE 10000"
 [[ -f "$REPO/evns/$PROFILE" ]] || die "нет профиля evns/$PROFILE"
@@ -52,6 +54,7 @@ NEW="$(mktemp)"
   echo; echo "# --- стадия"
   [[ "$STAGE" == personal ]] && echo "BYBIT_BASE_URL=https://api.bybit.com" || echo "BYBIT_BASE_URL=https://api-demo.bybit.com"
   echo "MODE=$MODE"; echo "PHASE=$PHASE"; echo "ACCOUNT_SIZE=$SIZE"
+  [[ "$STAGE" == trial ]] && { echo "TARGETS=5"; echo "MIN_DAYS=0"; echo "PROFIT_DAYS=0"; }
   echo "STATE_FILE=$APP/state/${STAGE}_${SIZE}_$TS.json"; echo "STATE_BACKUP_FILE=$APP/state/${STAGE}_${SIZE}_$TS.backup.json"
 } > "$NEW"
 grep -q '^BYBIT_API_KEY=' "$NEW" || die "в прежнем env нет BYBIT_API_KEY — сначала: bash ops/stage.sh keys"
