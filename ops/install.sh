@@ -6,7 +6,8 @@
 #   propsleeves          — бот проп-счёта (запускается командой ops/stage.sh, не здесь);
 #   propsleeves-tg       — управление из Telegram (/status /pause /resume);
 #   propsleeves-daily    — 00:30 UTC: бэкап состояния и сводка в Telegram;
-#   propsleeves-collect  — каждый час :05: данные Bybit на диск (/opt/propsleeves/data/bybit).
+#   propsleeves-collect  — каждый час :05: данные Bybit на диск (/opt/propsleeves/data/bybit);
+#   propsleeves-retrain  — 5 января и 5 июля 03:30 UTC: переобучение моделей с проверками и откатом (ops/retrain.py).
 # Повторный запуск ничего не ломает (обновляет код и службы, env-файл не трогает).
 set -euo pipefail
 APP="${APP:-/opt/propsleeves}"; UNIT=propsleeves
@@ -22,6 +23,10 @@ if [[ -z "${SKIP_APT:-}" ]]; then
   apt-get install -y -qq python3 python3-venv python3-pip git curl libgomp1 logrotate ca-certificates >/dev/null
 fi
 python3 -c 'import sys; assert sys.version_info >= (3, 10), sys.version' || die "нужен Python 3.10+"
+
+MEM_GB=$(awk '/MemTotal/ {printf "%.1f", $2/1e6}' /proc/meminfo); DISK_GB=$(df -BG --output=avail / | tail -1 | tr -dc 0-9)
+echo "сервер: RAM ${MEM_GB} ГБ, свободно на диске ${DISK_GB} ГБ"
+awk "BEGIN {exit !($MEM_GB < 7.5)}" && echo "!! RAM меньше 8 ГБ: бот работать будет, но автоматическое переобучение моделей может не поместиться (тогда оно сообщит в Telegram)"
 
 say "2/7 Каталоги и venv"
 mkdir -p "$APP"/{src/v4,models,state,backup,data,ops}
@@ -94,6 +99,28 @@ StandardError=append:$APP/log_tg.txt
 [Install]
 WantedBy=multi-user.target
 EOF
+cat > /etc/systemd/system/propsleeves-retrain.service <<EOF
+[Unit]
+Description=PROP-SLEEVES model retrain (gates + rollback)
+[Service]
+Type=oneshot
+Environment=APP=$APP
+WorkingDirectory=$REPO
+Nice=10
+TimeoutStartSec=10h
+ExecStart=$REPO/.venv-tests/bin/python $REPO/ops/retrain.py
+StandardOutput=append:$APP/log_retrain.txt
+StandardError=append:$APP/log_retrain.txt
+EOF
+cat > /etc/systemd/system/propsleeves-retrain.timer <<'EOF'
+[Unit]
+Description=PROP-SLEEVES model retrain twice a year
+[Timer]
+OnCalendar=*-01,07-05 03:30:00 UTC
+Persistent=true
+[Install]
+WantedBy=timers.target
+EOF
 for job in daily collect; do
   cat > /etc/systemd/system/propsleeves-$job.service <<EOF
 [Unit]
@@ -135,8 +162,8 @@ $APP/log_*.txt {
 }
 EOF
 systemctl daemon-reload
-systemctl enable -q propsleeves-tg propsleeves-daily.timer propsleeves-collect.timer     # сам бот включает ops/stage.sh
-systemctl restart propsleeves-tg; systemctl start propsleeves-daily.timer propsleeves-collect.timer
+systemctl enable -q propsleeves-tg propsleeves-daily.timer propsleeves-collect.timer propsleeves-retrain.timer   # бот включает ops/stage.sh
+systemctl restart propsleeves-tg; systemctl start propsleeves-daily.timer propsleeves-collect.timer propsleeves-retrain.timer
 echo "службы установлены; бот propsleeves запустится после выбора стадии (ops/stage.sh)"
 
 say "7/7 Готово. Дальше (docs/GUIDE.md):"

@@ -70,7 +70,7 @@ def download(key):
 
 
 def main():
-    syms = json.load(open(os.path.join(os.path.dirname(ROOT), '..', 'symbols.json')))['klines']
+    syms = json.load(open(os.environ.get('SYMBOLS_FILE') or os.path.join(os.path.dirname(ROOT), '..', 'symbols.json')))['klines']
     syms = [s for s in syms if s.isascii()]
     print(f'symbols: {len(syms)}  kinds: {KINDS}', flush=True)
     t0 = time.time()

@@ -7,7 +7,8 @@ sys.path.insert(0, 'v4')
 from bt import Data
 from ml_features_8h import compute_features_8h, FEATURES_8H, rank_norm, NEED_H
 
-START, END = '2021-01-01', '2026-08-31 23:00'
+START, END = '2021-01-01', os.environ.get('TRAIN_END', '2026-08-31 23:00')   # ops/retrain.py sets TRAIN_END
+OUT = os.environ.get('OUT_DIR', 'models')
 d = Data(start=START, end=END, min_turn_ever=5e6, load_hl=True, load_premium=True)
 T, N = d.ret.shape; jbtc = int(np.flatnonzero(d.cols == 'BTCUSDT')[0])
 dec = np.flatnonzero(d.hh % 8 == 0); dec = dec[(dec >= NEED_H) & (dec < T - 16)]
@@ -30,14 +31,15 @@ params = dict(objective='regression', learning_rate=0.03, num_leaves=31, min_dat
               lambda_l2=10.0, verbose=-1, num_threads=2, seed=1)
 ok = np.isfinite(tab['y'].values); y = tab['y'].values[ok]; lo, hi = np.nanpercentile(y, [0.5, 99.5])
 mdl = lgb.train(params, lgb.Dataset(tab.loc[ok, FEATURES_8H].values, np.clip(y, lo, hi)), num_boost_round=300)
-os.makedirs('models', exist_ok=True); mdl.save_model('models/ml_8h.txt')
+os.makedirs(OUT, exist_ok=True); mdl.save_model(os.path.join(OUT, 'ml_8h.txt'))
 json.dump(dict(features=FEATURES_8H, need_h=NEED_H, universe=dict(min_age_h=720, min_turn=1e7, top_n=150), horizon_h=8,
                target='log 8h fwd return minus funding paid (long), demeaned', grid='decision bars open 00/08/16 UTC (closed 01/09/17)',
-               train_end=str(d.idx[dec[-1]].date()), params=params), open('models/spec_8h.json', 'w'), indent=1)
+               train_end=str(d.idx[dec[-1]].date()), params=params), open(os.path.join(OUT, 'spec_8h.json'), 'w'), indent=1)
 fi = pd.Series(mdl.feature_importance('gain'), index=FEATURES_8H).sort_values(ascending=False)
 print('top features: ' + ', '.join(f'{k} {v/fi.sum():.3f}' for k, v in fi.head(10).items()), flush=True)
-P8 = np.load('out_exp17_pred_8h_p0.npy')
-last = tab[tab.dec >= tab.dec.max() - 200]
-p_new = mdl.predict(last[FEATURES_8H].values); p_old = P8[dec[last.dec.values], last.sym.values]; okc = np.isfinite(p_old)
-print(f'corr(final 8h model, walk-forward panel) last 200 decisions: {np.corrcoef(p_new[okc], p_old[okc])[0,1]:.3f}')
+if os.path.exists('out_exp17_pred_8h_p0.npy') and END == '2026-08-31 23:00':
+    P8 = np.load('out_exp17_pred_8h_p0.npy')
+    last = tab[tab.dec >= tab.dec.max() - 200]
+    p_new = mdl.predict(last[FEATURES_8H].values); p_old = P8[dec[last.dec.values], last.sym.values]; okc = np.isfinite(p_old)
+    print(f'corr(final 8h model, walk-forward panel) last 200 decisions: {np.corrcoef(p_new[okc], p_old[okc])[0,1]:.3f}')
 print('DONE')
