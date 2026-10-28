@@ -77,6 +77,7 @@ class Sleeves:
         self.uni = Universe()
         self.models = {}
         self.held = {}          # daily sleeve name -> {symbol: weight} held between daily updates
+        self.hivol_mult = None  # per-cycle override of HIVOL_MULT (P3 drawdown mode, set by main); None = config value
         if lgb is not None:
             for hz in sorted({int(s[2:]) for s in C.SLEEVES if s.startswith('ml') and s[2:].isdigit() and s != 'ml8'} | {3, 7}):
                 p = os.path.join(C.MODEL_DIR, f'ml_h{hz}{C.ML_MODEL_SUFFIX}.txt')
@@ -237,13 +238,15 @@ class Sleeves:
 
     def damp_hivol(self, w, panel, info):
         """V2 (research/exp_r2.py): HIVOL_MULT on the top-vol third of held names; long and short sums are restored."""
-        if C.HIVOL_MULT == 1.0:
+        mult = C.HIVOL_MULT if self.hivol_mult is None else float(self.hivol_mult)
+        if mult == 1.0:
             return w
         vol = self.ml8_vol(panel); nz = np.flatnonzero((w != 0) & np.isfinite(vol))
         if len(nz) < 10:
             return w
         w = w.copy(); L, S = w[w > 0].sum(), -w[w < 0].sum()
-        w[nz[np.argsort(vol[nz])[int(len(nz) * 2 / 3):]]] *= C.HIVOL_MULT
+        w[nz[np.argsort(vol[nz])[int(len(nz) * 2 / 3):]]] *= mult
+        info['hivol_mult'] = mult
         L2, S2 = w[w > 0].sum(), -w[w < 0].sum()
         if L2 > 0: w[w > 0] *= L / L2
         if S2 > 0: w[w < 0] *= S / S2

@@ -261,7 +261,11 @@ class Bot:
                         panel_daily = self.md.panel([s for s in symbols if s in self.md.bars], day0_ms); panel_daily['delist'] = self.md.delist
                     except Exception as e:
                         log(f'daily panel on the 00:00 bar failed ({e}); using the current bar')
+            dd_mode = self.risk.dd_mode(equity)             # P3: the top-vol third gets DD_HIVOL_MULT while the buffer is thin
+            self.sleeves.hivol_mult = C.DD_HIVOL_MULT if dd_mode else None
             w, parts, info = self.sleeves.combined(panel, age_h, held, age_ml=age_ml, daily_update=daily_update, hour_utc=now_.hour, panel_daily=panel_daily)
+            if dd_mode:
+                info['dd_mode'] = True
             # fail-safe: a signal-bearing sleeve that produced NO weights means broken data/model/alignment -> alert and
             # do not trade this cycle (keep current positions) instead of silently trading the remainder of the book.
             empty = [s for s in C.SLEEVES if s in parts and not np.any(parts[s] != 0.0)]

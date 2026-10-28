@@ -121,6 +121,9 @@ FLOOR_GUARD_FRAC = _env('FLOOR_GUARD_FRAC', 0.05, float)
 # challenge only: when the buffer to the firm floor <= ABANDON_FRAC * allowance, flatten, latch and notify —
 # statistically it is faster to buy a new challenge than to crawl out with a tiny K (exp10h). 0 = off.
 ABANDON_FRAC = _env('ABANDON_FRAC', 0.0, float)
+# Phase R3-bis P2: K never falls below K_MIN_FRAC x base while the buffer is above the floor guard (no 'freezing' near the
+# floor; the floor guard stays the last line). 0 = off (pure CPPI down to 0; the key is then left out of the config hash).
+K_MIN_FRAC = _env('K_MIN_FRAC', 0.0, float)
 SAFETY_MARGIN = _env('SAFETY_MARGIN', 0.85, float)              # use at most this fraction of firm notional/margin limits
 # base for the firm's notional / margin / per-position limits: 'initial' (firm rules are written on the initial balance)
 # or 'equity' (research-style comparison: limits scale with the account; harness --pure uses this)
@@ -150,6 +153,10 @@ VT_SMOOTH = _env('VT_SMOOTH', 0.0, float)          # EMA on the vol-target lever
 # Phase R2 winner V2 (research/exp_r2.py): weight multiplier for the most volatile third of held names in the combined book
 # (side sums L/S preserved). 1.0 = off (default; the key is then left out of the config hash), 0.5 = V2.
 HIVOL_MULT = _env('HIVOL_MULT', 1.0, float)
+# Phase R3-bis P3 'drawdown mode': while the buffer to the firm floor < DD_HIVOL_BUF x allowance, the top-vol third gets
+# DD_HIVOL_MULT instead of HIVOL_MULT (0 = the book shrinks to the steadier two thirds, R1). DD_HIVOL_BUF=0 = off (out of the hash).
+DD_HIVOL_BUF = _env('DD_HIVOL_BUF', 0.0, float)
+DD_HIVOL_MULT = _env('DD_HIVOL_MULT', 0.0, float)
 # book-beta constraint (Opus review): beta of the combined weights to BTC (30d hourly betas); the EXCESS beyond ±BETA_CAP is
 # hedged with BTC. -1 = off, 0 = full neutralisation (research exp21a/22c: +0.05..+0.2 Sharpe, lower turnover), 0.1 = soft cap.
 BETA_CAP = _env('BETA_CAP', -1.0, float)
@@ -184,6 +191,8 @@ def effective_config():
         if k.startswith('_') or k in skip or not k.isupper() or callable(v):
             continue
         if k == 'HIVOL_MULT' and v == 1.0:    # off = registered hash unchanged
+            continue
+        if (k == 'K_MIN_FRAC' and v == 0.0) or (k.startswith('DD_HIVOL_') and DD_HIVOL_BUF == 0.0):
             continue
         if isinstance(v, (set, frozenset)):
             v = sorted(v)

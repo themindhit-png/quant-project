@@ -28,6 +28,7 @@ ap.add_argument('--phases', type=int, default=1, help='challenge: run phase 1 th
 ap.add_argument('--payout-days', type=int, default=0, help='funded: withdraw profit above initial every N days')
 ap.add_argument('--keep-buffer', type=float, default=0.0, help='funded: keep this fraction of initial as cushion above initial before paying out')
 ap.add_argument('--max-days', type=int, default=0, help='stop a run after N days (0 = to end of data)')
+ap.add_argument('--out-tag', default='', help='suffix for the rolling output csv (parallel runs)')
 ap.add_argument('--exec-lag-h', type=int, default=0, help='execution delay: decide on bar i-lag (panel, clock), fill at bar i prices (Opus stress)')
 A = ap.parse_args()
 
@@ -350,7 +351,7 @@ def run():
             rows.append(row)
             print(row, flush=True)
         df = pd.DataFrame(rows)
-        df.to_csv(os.path.join(ROOT, f'out_harness_rolling_{A.firm}_{A.mode}.csv'), index=False)
+        df.to_csv(os.path.join(ROOT, f'out_harness_rolling_{A.firm}_{A.mode}{A.out_tag}.csv'), index=False)
         if C.MODE == 'challenge':
             ok = df[df.p1 == 'pass']
             print(f'\nphase1: pass {len(ok)}/{len(df)} | halts {(df.p1 == "halt").sum()} | timeouts {(df.p1 == "timeout").sum()} | '

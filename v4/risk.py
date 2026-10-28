@@ -120,6 +120,8 @@ class RiskEngine:
             base = C.BASE_SCALE_P2
         kmax = max(C.K_MAX, base) if C.K_MAX > 0 else base
         k = base * min(kmax / base, buf / (C.CPPI_FRAC * dd_amt)) if C.CPPI_FRAC > 0 else base
+        if C.K_MIN_FRAC > 0:
+            k = max(k, C.K_MIN_FRAC * base)
         reason = f'K {k / base:.2f}x base (buffer {buf / dd_amt * 100:.0f}% of allowance)'
         today = now.date().isoformat()
         if m['halted_day'] == today:
@@ -141,6 +143,10 @@ class RiskEngine:
                 k *= 0.5; reason += ' + consistency rule not yet satisfied'
         m['k_last'] = k; m['k_reason'] = reason
         return k, reason
+
+    def dd_mode(self, equity):
+        """P3 drawdown mode: buffer to the firm floor below DD_HIVOL_BUF x allowance (off when DD_HIVOL_BUF = 0)."""
+        return C.DD_HIVOL_BUF > 0 and equity - self.total_floor() < C.DD_HIVOL_BUF * self.dd_amount()
 
     def consistency_ok(self):
         dp = list(self.mem['day_pnls'])

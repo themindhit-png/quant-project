@@ -499,5 +499,29 @@ check('T27a HIVOL_MULT=1 is identity; =0.5 equals research v2 (side sums kept, t
       f'hv {len(hv27)}')
 check('T27b hash: HIVOL_MULT off = baseline hash, on = new hash', h_off == ha and h_on != ha and len(h_on) == 16, f'{ha} {h_off} {h_on}')
 
+# T28: R3-bis P2 (K_MIN_FRAC: K floor above the floor guard) and P3 (drawdown mode: top-vol third x DD_HIVOL_MULT when the buffer is thin)
+mem28 = Memory(); mem28.save = lambda: None; R28 = RiskEngine(mem28, log=lambda *a: None)
+t28 = datetime(2025, 9, 1, 0, 10, tzinfo=timezone.utc); R28.observe_equity(10000.0, t28); t28b = t28 + timedelta(days=1)
+dd28 = R28.dd_amount(); eq_thin = R28.total_floor() + 0.10 * dd28; eq_wide = R28.total_floor() + 0.80 * dd28
+R28.observe_equity(eq_thin, t28b)
+K0, B0, G0 = C.K_MIN_FRAC, C.DD_HIVOL_BUF, C.DD_HIVOL_MULT
+try:
+    C.K_MIN_FRAC = 0.0; k_off28, _ = R28.multiplier(eq_thin, t28b)
+    C.K_MIN_FRAC = 0.3; k_on28, _ = R28.multiplier(eq_thin, t28b); k_guard28, _ = R28.multiplier(R28.total_floor() + 0.5 * C.FLOOR_GUARD_FRAC * dd28, t28b)
+    C.DD_HIVOL_BUF = 0.0; dm_off28 = R28.dd_mode(eq_thin)
+    C.DD_HIVOL_BUF = 0.5; dm_thin28, dm_wide28 = R28.dd_mode(eq_thin), R28.dd_mode(eq_wide)
+    C.DD_HIVOL_MULT = 0.0; S.hivol_mult = C.DD_HIVOL_MULT; inf28 = {}; on28 = S.damp_hivol(w27, panel, inf28)
+finally:
+    C.K_MIN_FRAC, C.DD_HIVOL_BUF, C.DD_HIVOL_MULT = K0, B0, G0; S.hivol_mult = None
+ref28 = w27.copy(); ref28[hv27] = 0.0
+ref28[ref28 > 0] *= w27[w27 > 0].sum() / ref28[ref28 > 0].sum(); ref28[ref28 < 0] *= w27[w27 < 0].sum() / ref28[ref28 < 0].sum()
+check('T28a K_MIN_FRAC: off = CPPI, 0.3 = K >= 0.3 x base above the guard, guard still K=0',
+      abs(k_off28 - C.BASE_SCALE * 0.10 / C.CPPI_FRAC) < 1e-9 and abs(k_on28 - 0.3 * C.BASE_SCALE) < 1e-9 and k_guard28 == 0.0, f'{k_off28:.3f} {k_on28:.3f} {k_guard28}')
+check('T28b drawdown mode: off by default, on below DD_HIVOL_BUF x allowance, override zeroes the top-vol third (side sums kept)',
+      not dm_off28 and dm_thin28 and not dm_wide28 and np.allclose(on28, ref28) and inf28.get('hivol_mult') == 0.0 and S.hivol_mult is None)
+h28 = [_cfg_hash(K_MIN_FRAC='0'), _cfg_hash(DD_HIVOL_MULT='0.3'), _cfg_hash(K_MIN_FRAC='0.3'), _cfg_hash(DD_HIVOL_BUF='0.5')]
+check('T28c hash: K_MIN_FRAC=0 and DD_HIVOL_* with DD_HIVOL_BUF=0 = baseline; turning either on changes it',
+      h28[0] == ha and h28[1] == ha and h28[2] != ha and h28[3] != ha and h28[2] != h28[3], ' '.join(h28))
+
 print(f'\n{sum(1 for _, ok in res if ok)}/{len(res)} passed')
 sys.exit(0 if all(ok for _, ok in res) else 1)
