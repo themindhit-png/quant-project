@@ -481,5 +481,23 @@ if S.models:
 else:
     print('SKIP  T26 (no ML models)')
 
+# T27: V2 (HIVOL_MULT, Phase R2): off = identity and registered hash unchanged; on = research v2() (top-vol third x mult, side sums kept)
+rng27 = np.random.default_rng(27); vol27 = S.ml8_vol(panel); w27 = np.zeros(len(syms)); ok27 = np.flatnonzero(np.isfinite(vol27))
+pick27 = rng27.choice(ok27, size=min(60, len(ok27)), replace=False); half = len(pick27) // 2
+w27[pick27[:half]] = rng27.random(half); w27[pick27[half:]] = -rng27.random(len(pick27) - half); w27 /= np.abs(w27).sum() / 2
+C0 = C.HIVOL_MULT
+try:
+    C.HIVOL_MULT = 1.0; off27 = S.damp_hivol(w27, panel, {})
+    C.HIVOL_MULT = 0.5; inf27 = {}; on27 = S.damp_hivol(w27, panel, inf27)
+finally:
+    C.HIVOL_MULT = C0
+nz27 = np.flatnonzero(w27 != 0); hv27 = nz27[np.argsort(vol27[nz27])[int(len(nz27) * 2 / 3):]]; ref27 = w27.copy(); ref27[hv27] *= 0.5
+ref27[ref27 > 0] *= w27[w27 > 0].sum() / ref27[ref27 > 0].sum(); ref27[ref27 < 0] *= w27[w27 < 0].sum() / ref27[ref27 < 0].sum()
+h_off = _cfg_hash(HIVOL_MULT='1.0'); h_on = _cfg_hash(HIVOL_MULT='0.5')
+check('T27a HIVOL_MULT=1 is identity; =0.5 equals research v2 (side sums kept, top-vol third down-weighted)',
+      np.array_equal(off27, w27) and np.allclose(on27, ref27) and abs(on27[on27 > 0].sum() - w27[w27 > 0].sum()) < 1e-12 and abs(on27[hv27]).sum() < abs(w27[hv27]).sum() and inf27.get('hivol_n') == len(hv27),
+      f'hv {len(hv27)}')
+check('T27b hash: HIVOL_MULT off = baseline hash, on = new hash', h_off == ha and h_on != ha and len(h_on) == 16, f'{ha} {h_off} {h_on}')
+
 print(f'\n{sum(1 for _, ok in res if ok)}/{len(res)} passed')
 sys.exit(0 if all(ok for _, ok in res) else 1)

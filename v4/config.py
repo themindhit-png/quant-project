@@ -147,6 +147,9 @@ ML8_MIN_AGE_D = _env('ML8_MIN_AGE_D', 180, int)
 ML8_INV_VOL = _env('ML8_INV_VOL', 1, int)
 ML8_VOL_H = _env('ML8_VOL_H', 168, int)
 VT_SMOOTH = _env('VT_SMOOTH', 0.0, float)          # EMA on the vol-target leverage (0 = none)
+# Phase R2 winner V2 (research/exp_r2.py): weight multiplier for the most volatile third of held names in the combined book
+# (side sums L/S preserved). 1.0 = off (default; the key is then left out of the config hash), 0.5 = V2.
+HIVOL_MULT = _env('HIVOL_MULT', 1.0, float)
 # book-beta constraint (Opus review): beta of the combined weights to BTC (30d hourly betas); the EXCESS beyond ±BETA_CAP is
 # hedged with BTC. -1 = off, 0 = full neutralisation (research exp21a/22c: +0.05..+0.2 Sharpe, lower turnover), 0.1 = soft cap.
 BETA_CAP = _env('BETA_CAP', -1.0, float)
@@ -179,6 +182,8 @@ def effective_config():
     out = {}
     for k, v in sorted(globals().items()):
         if k.startswith('_') or k in skip or not k.isupper() or callable(v):
+            continue
+        if k == 'HIVOL_MULT' and v == 1.0:    # off = registered hash unchanged
             continue
         if isinstance(v, (set, frozenset)):
             v = sorted(v)

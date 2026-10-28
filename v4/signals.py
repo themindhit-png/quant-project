@@ -235,6 +235,21 @@ class Sleeves:
             info['beta_hedge_btc_w'] = round(float(w[syms.index('BTCUSDT')]), 4)
         return w
 
+    def damp_hivol(self, w, panel, info):
+        """V2 (research/exp_r2.py): HIVOL_MULT on the top-vol third of held names; long and short sums are restored."""
+        if C.HIVOL_MULT == 1.0:
+            return w
+        vol = self.ml8_vol(panel); nz = np.flatnonzero((w != 0) & np.isfinite(vol))
+        if len(nz) < 10:
+            return w
+        w = w.copy(); L, S = w[w > 0].sum(), -w[w < 0].sum()
+        w[nz[np.argsort(vol[nz])[int(len(nz) * 2 / 3):]]] *= C.HIVOL_MULT
+        L2, S2 = w[w > 0].sum(), -w[w < 0].sum()
+        if L2 > 0: w[w > 0] *= L / L2
+        if S2 > 0: w[w < 0] *= S / S2
+        info['hivol_n'] = int(len(nz) - int(len(nz) * 2 / 3))
+        return w
+
     def ml8_weights(self, sig, panel):
         return quantile_ls(sig, C.ML8_TOP_FRAC, inv_vol=self.ml8_vol(panel) if C.ML8_INV_VOL else None)
 
@@ -325,6 +340,7 @@ class Sleeves:
             w += s * v; tot += s
         if tot > 0:
             w /= tot
+        w = self.damp_hivol(w, panel, info)
         w = self.apply_beta_cap(w, panel, info)
         info['gross_w'] = float(np.abs(w).sum())
         return w, parts, info
