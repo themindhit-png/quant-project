@@ -5,3 +5,4 @@ scipy
 lightgbm
 requests
 pytest
+numba>=0.60

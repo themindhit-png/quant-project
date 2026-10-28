@@ -28,7 +28,8 @@ ap.add_argument('--phases', type=int, default=1, help='challenge: run phase 1 th
 ap.add_argument('--payout-days', type=int, default=0, help='funded: withdraw profit above initial every N days')
 ap.add_argument('--keep-buffer', type=float, default=0.0, help='funded: keep this fraction of initial as cushion above initial before paying out')
 ap.add_argument('--max-days', type=int, default=0, help='stop a run after N days (0 = to end of data)')
-ap.add_argument('--out-tag', default='', help='suffix for the rolling output csv (parallel runs)')
+ap.add_argument('--out-tag', default='', help='suffix for the output csv files (parallel runs)')
+ap.add_argument('--gx-every-h', type=int, default=24, help='gross/equity diagnostic every N hours (1 = hourly, for research/fastsim)')
 ap.add_argument('--exec-lag-h', type=int, default=0, help='execution delay: decide on bar i-lag (panel, clock), fill at bar i prices (Opus stress)')
 A = ap.parse_args()
 
@@ -48,6 +49,7 @@ execution.time.sleep = lambda x: None          # no real waiting in simulation
 botstate.tg = lambda *a, **k: None
 botmain.tg = lambda *a, **k: None
 botmain.tg_once = lambda *a, **k: None
+RHO = []                                          # (ts, realised exposure / lev*K) per rebalance, --gx-every-h 1
 STOP_EVENTS = []                                  # (sim time, line) for short-stop closes (invisible without --verbose otherwise)
 def _quiet_log(*a, **k):
     msg = ' '.join(str(x) for x in a)
@@ -296,7 +298,7 @@ def run_once(i0, phase=1, quiet=False, max_days=0):
         SIM['i'] = i; SIM['dec'] = i - A.exec_lag_h
         api.apply_funding(i); api.apply_close_events(i)
         eq = api.equity(); eq_path.append(eq); ts_path.append(d.idx[i])
-        if (i - i0) % 24 == 12:                       # daily gross/equity diagnostic (Opus: does the notional cap bind?)
+        if (i - i0) % A.gx_every_h == 12 % A.gx_every_h:   # gross/equity diagnostic (daily by default: does the notional cap bind?)
             gx_path.append((d.idx[i], sum(abs(q) * api.px(s) for s, q in api.qty.items() if q) / max(eq, 1e-9)))
         dt = now_dt()
         if A.payout_days and C.MODE == 'funded' and dt.hour == 0 and (i - i0) // 24 > 0 and ((i - i0) // 24) % A.payout_days == 0 and last_payout_day != (i - i0) // 24:
@@ -313,7 +315,13 @@ def run_once(i0, phase=1, quiet=False, max_days=0):
             if mem['halt_total'] or mem['target_hit']:
                 pass
             elif ((dt.hour - C.REBAL_HOUR_UTC) % C.REBAL_EVERY_H == 0) and mem.get('last_rebal_slot') != f'{dt.date().isoformat()}T{dt.hour:02d}':
+                n_old, s_old = int(mem.get('mult_day_n', 0)), float(mem.get('mult_day_sum', 0.0))
                 bot.rebalance(); n_reb += 1
+                n_new, s_new = int(mem.get('mult_day_n', 0)), float(mem.get('mult_day_sum', 0.0))
+                if A.gx_every_h == 1 and n_new != n_old:       # fastsim: realised exposure / (lev x K) of this rebalance
+                    mreal = s_new - s_old if n_new == n_old + 1 else s_new
+                    ek = float(mem.get('lev', 1.0)) * float(mem.get('k_last', 1.0))
+                    RHO.append((d.idx[i], mreal / ek if ek > 0 else np.nan))
             else:
                 bot.scale_pass()
         except Exception as e:
@@ -384,7 +392,12 @@ def run():
               + f' | equity end/initial {r["eq_end"]/A.account:.2f}x | NOTIONAL_BASE={C.NOTIONAL_BASE}')
     if r.get('attrib'):
         pd.DataFrame(r['attrib']).to_csv(os.path.join(ROOT, f'out_harness_attrib_{A.firm}_{A.mode}.csv'), index=False)
-    eqs.to_csv(os.path.join(ROOT, f'out_harness_v4_{A.firm}_{A.mode}{"_pure" if A.pure else ""}.csv'))
+    eqs.to_csv(os.path.join(ROOT, f'out_harness_v4_{A.firm}_{A.mode}{"_pure" if A.pure else ""}{A.out_tag}.csv'))
+    if RHO:
+        pd.Series([v for _, v in RHO], index=pd.DatetimeIndex([t for t, _ in RHO])).to_csv(
+            os.path.join(ROOT, f'out_harness_rho_{A.firm}_{A.mode}{"_pure" if A.pure else ""}{A.out_tag}.csv'))
+    if gx is not None and len(gx):
+        gx.to_csv(os.path.join(ROOT, f'out_harness_gx_{A.firm}_{A.mode}{"_pure" if A.pure else ""}{A.out_tag}.csv'))
     print('DONE')
 
 
