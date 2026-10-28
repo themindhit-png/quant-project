@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 import requests
 
 APP = os.environ.get('APP', '/opt/propsleeves')
-SERVICE_UNITS = {'propsleeves-tg', 'propsleeves-daily', 'propsleeves-collect'}
+SERVICE_UNITS = {'propsleeves-tg', 'propsleeves-daily', 'propsleeves-collect', 'propsleeves-retrain'}
 
 
 def bot_units():
@@ -18,8 +18,8 @@ def bot_units():
     except FileNotFoundError:
         return []
     units = [ln.split()[0].removesuffix('.service') for ln in out.splitlines() if ln.strip()]
-    units = [u for u in units if u not in SERVICE_UNITS]
-    return sorted(units, key=lambda u: (u != 'propsleeves', u))
+    units = [u for u in units if u not in SERVICE_UNITS and 'FIRM' in read_env(env_file(u) or '') or u == 'propsleeves']   # bots only
+    return sorted(set(units), key=lambda u: (u != 'propsleeves', u))
 
 
 def short(unit):
