@@ -695,7 +695,7 @@ class Bot:
             log(f'day anchor after downtime: {anchor:,.2f} ({src}), equity {equity:,.2f}')
         self.live_status(equity)
         try:
-            set_status(n_positions=len(self.api.positions()), k=m.get('k_ref', '?'), last_cycle_utc=m.get('last_rebal_date') or '?')
+            set_status(n_positions=len(self.api.positions()), k=round(float(m['k_ref']), 3) if m.get('k_ref') is not None else '?', last_cycle_utc=m.get('last_rebal_date') or '?')
         except Exception as e:
             log(f'positions at start: {e}')
         # leverage on the tradable set (best effort)
