@@ -818,7 +818,7 @@ def main():
     bot = Bot(api)
     bot.start_with_retry()                                  # watchdog only after the state is loaded and the config checked
     wd = threading.Thread(target=bot.watchdog_loop, daemon=True, name='watchdog'); wd.start()
-    threading.Thread(target=HTTPServer(('0.0.0.0', C.PORT), Handler).serve_forever, daemon=True, name='http').start()
+    threading.Thread(target=HTTPServer((C.STATUS_BIND, C.PORT), Handler).serve_forever, daemon=True, name='http').start()
 
     def die(why):
         log(f'FATAL: {why}'); tg(f'🛑 Бот остановлен: {why}. Процесс завершается (код 1), перезапустит супервизор.')

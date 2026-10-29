@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Hourly Bybit data collector (timer propsleeves-collect, :05 every hour; Phase 5.1). Public endpoints only, no keys.
+"""Hourly Bybit data collector (timer propsleeves-collect, :35 every hour, Nice 15; Phase 5.1). Public endpoints only, no keys.
 For the top COLLECT_TOP USDT perps by 24h turnover (+ BTC, ETH) appends closed hourly klines (OHLCV + turnover), premium-index klines,
 funding settlements and open interest (1h) to /opt/propsleeves/data/bybit/<kind>/<YYYY-MM>.csv.gz (gzip members appended, no duplicates:
 the last stored timestamp per kind/symbol is kept in state.json; a new symbol / a gap is back-filled up to BACKFILL_D days).

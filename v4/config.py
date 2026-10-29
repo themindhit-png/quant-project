@@ -187,7 +187,7 @@ def effective_config():
     import hashlib, json
     skip = {'STATUS_TOKEN', 'STATE_FILE', 'MODEL_DIR', 'DRY_RUN', 'KILL_SWITCH',
             'RESET_TOTAL_STOP', 'EQ_PEAK', 'PHASE_BASE', 'EXPECTED_CONFIG_HASH', 'FIRM_PRESETS', 'DEFAULT_BLACKLIST',
-            'API_KEY', 'API_SECRET', 'TG_TOKEN', 'TG_CHAT', 'STATE_BACKUP_FILE', 'PORT',
+            'API_KEY', 'API_SECRET', 'TG_TOKEN', 'TG_CHAT', 'STATE_BACKUP_FILE', 'PORT', 'STATUS_BIND',
             # connection / operations, not strategy: demo -> live or a blacklist edit must not change the registered hash
             'BASE_URL', 'BLACKLIST', 'BLACKLIST_PATTERNS', 'STATE_PUSH_H', 'WATCHDOG_SEC', 'VERSION',
             'PAUSE_FILE', 'TRANSFER_CHECK', 'KEY_EXPIRY_WARN_D'}
@@ -290,6 +290,7 @@ TG_TOKEN = _env('TG_BOT_TOKEN', '')
 TG_CHAT = _env('TG_CHAT_ID', '')
 STATUS_TOKEN = _env('STATUS_TOKEN', '')
 PORT = _env('PORT', 10000, int)
+STATUS_BIND = _env('STATUS_BIND', '127.0.0.1')               # /status listens on localhost only (ops scripts use 127.0.0.1); '0.0.0.0' to expose
 STATE_FILE = _env('STATE_FILE', f'/tmp/propsleeves_{FIRM}_{MODE}_p{PHASE}_{int(ACCOUNT_SIZE)}.json')
 # cash flows (payouts, withdrawals, deposits) — see docs/GUIDE.md: while PAUSE_FILE exists the bot closes everything, does not trade and
 # books any change of the (flat) equity as a cash flow, not as PnL (Mubite payout procedure); TRANSFER_CHECK: book Bybit transfer-log

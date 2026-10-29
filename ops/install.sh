@@ -6,7 +6,7 @@
 #   propsleeves          — бот проп-счёта (запускается командой ops/stage.sh, не здесь);
 #   propsleeves-tg       — управление из Telegram (/status /pause /resume);
 #   propsleeves-daily    — 00:30 UTC: бэкап состояния и сводка в Telegram;
-#   propsleeves-collect  — каждый час :05: данные Bybit на диск (/opt/propsleeves/data/bybit);
+#   propsleeves-collect  — каждый час :35 (вне ребалансов в :10): данные Bybit на диск (/opt/propsleeves/data/bybit);
 #   propsleeves-retrain  — 5 января и 5 июля 03:30 UTC: переобучение моделей с проверками и откатом (ops/retrain.py).
 # Повторный запуск ничего не ломает (обновляет код и службы, env-файл не трогает).
 set -euo pipefail
@@ -138,6 +138,7 @@ Description=PROP-SLEEVES $job
 [Service]
 Type=oneshot
 Environment=APP=$APP
+Nice=15
 ExecStart=$APP/venv/bin/python $APP/ops/$( [[ $job == daily ]] && echo daily.py || echo collect_bybit.py )
 StandardOutput=append:$APP/log_$job.txt
 StandardError=append:$APP/log_$job.txt
@@ -156,7 +157,7 @@ cat > /etc/systemd/system/propsleeves-collect.timer <<'EOF'
 [Unit]
 Description=PROP-SLEEVES hourly Bybit data collector
 [Timer]
-OnCalendar=*-*-* *:05:00 UTC
+OnCalendar=*-*-* *:35:00 UTC
 Persistent=true
 [Install]
 WantedBy=timers.target
@@ -174,6 +175,7 @@ EOF
 systemctl daemon-reload
 systemctl enable -q propsleeves-tg propsleeves-daily.timer propsleeves-collect.timer propsleeves-retrain.timer   # бот включает ops/stage.sh
 systemctl restart propsleeves-tg; systemctl start propsleeves-daily.timer propsleeves-collect.timer propsleeves-retrain.timer
+systemctl try-restart propsleeves propsleeves-personal 2>/dev/null || true   # бот уже работает -> перезапуск на новом коде (состояние сохраняется); не запущен -> ничего
 echo "службы установлены; бот propsleeves запустится после выбора стадии (ops/stage.sh)"
 
 say "7/7 Готово. Дальше (docs/GUIDE.md):"
