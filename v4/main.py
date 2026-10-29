@@ -542,14 +542,22 @@ class Bot:
             m['last_targets'] = targets; m['k_ref'] = k; m.save()
 
     # ------------------------------------------------------------ watchdog
+    def live_status(self, equity):
+        """Equity / floors / day counters for /status between rebalances (after a restart /status had no equity until the next rebalance)."""
+        m = self.mem
+        set_status(equity=round(equity, 2), equity_utc=self.now().isoformat(), total_floor=round(self.risk.total_floor(), 2),
+                   daily_floor=round(self.risk.daily_floor(), 2), trading_days=m['trading_days'], profit_days=m.get('profit_days', 0),
+                   halt_total=m['halt_total'], target_hit=m['target_hit'])
+
     def watchdog(self):
         m = self.mem
-        if m['halt_total'] or m['target_hit']:
-            return
         try:
             equity = self.equity()
         except Exception as e:
             log(f'watchdog equity fail: {e}'); return
+        self.live_status(equity)
+        if m['halt_total'] or m['target_hit']:
+            return
         # a rebalance holds the lock for 5-7 min: do not wait for it; check the hard limits read-only and, if one is hit,
         # stop its execution (abort_event); the flatten itself runs under the lock at the next watchdog tick
         if not self.lock.acquire(timeout=5):
@@ -685,6 +693,11 @@ class Bot:
             anchor, src = self.recover_day_anchor(equity)
             m['day_anchor'] = anchor; m['day_peak'] = max(anchor, equity); m.save()
             log(f'day anchor after downtime: {anchor:,.2f} ({src}), equity {equity:,.2f}')
+        self.live_status(equity)
+        try:
+            set_status(n_positions=len(self.api.positions()), k=m.get('k_ref', '?'), last_cycle_utc=m.get('last_rebal_date') or '?')
+        except Exception as e:
+            log(f'positions at start: {e}')
         # leverage on the tradable set (best effort)
         if not C.DRY_RUN and C.SET_LEVERAGE > 0:
             tk = self.api.tickers()

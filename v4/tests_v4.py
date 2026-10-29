@@ -397,6 +397,10 @@ b24.equity = lambda: eq_floor
 t24 = time.time(); b24.watchdog(); dt24 = time.time() - t24; ab_hit = b24.abort_event.is_set(); b24.lock.release()
 check('T24c lock held: watchdog returns after ~5 s, sets abort only on a breach', not ab_ok and ab_hit and dt24 < 8 and b24.mem['halt_total'] is False,
       f'ok {ab_ok} hit {ab_hit} {dt24:.1f}s {b24.limit_breach(eq_floor)}')
+from state import get_status as _gs32
+st32 = _gs32(True)
+check('T32 /status has equity and floors between rebalances (watchdog, even while a rebalance holds the lock)',
+      st32.get('equity') == round(eq_floor, 2) and st32.get('total_floor') == round(floor24, 2) and 'trading_days' in st32, f'{st32}')
 dl24 = -1.01 * C.DAILY_HALT_FRAC * C.RULES['daily_dd'] / 100.0 * 10000.0
 check('T24d limit_breach: a day loss past the daily halt is detected read-only', b24.limit_breach(10000.0 + dl24) is not None, str(b24.limit_breach(10000.0 + dl24)))
 check('T24e limit_breach healthy equity -> None', b24.limit_breach(10000.0) is None)
