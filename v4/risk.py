@@ -106,6 +106,8 @@ class RiskEngine:
                     m['trading_days'] = int(m['trading_days']) + 1; m['td_date'] = m['day_date']
                     if pnl >= C.PROFIT_DAY_PCT / 100.0 * self.initial:
                         m['profit_days'] = int(m.get('profit_days', 0)) + 1
+                elif C.DAY_MARKER_FRAC > 0 and pnl >= C.PROFIT_DAY_PCT / 100.0 * self.initial:
+                    m['profit_days'] = int(m.get('profit_days', 0)) + 1     # markers stop after the minimum; profit days do not depend on them
             m['day_date'] = today; m['day_anchor'] = equity; m['day_peak'] = equity; m['halted_day'] = None
         m['day_peak'] = max(float(m['day_peak'] or equity), equity)
         m['eq_peak'] = max(float(m['eq_peak']), equity)

@@ -54,7 +54,7 @@ NEW="$(mktemp)"
   echo; echo "# --- стадия"
   [[ "$STAGE" == personal ]] && echo "BYBIT_BASE_URL=https://api.bybit.com" || echo "BYBIT_BASE_URL=https://api-demo.bybit.com"
   echo "MODE=$MODE"; echo "PHASE=$PHASE"; echo "ACCOUNT_SIZE=$SIZE"
-  [[ "$STAGE" == trial ]] && { echo "TARGETS=5"; echo "MIN_DAYS=0"; echo "PROFIT_DAYS=0"; }
+  [[ "$STAGE" == trial ]] && { echo "TARGETS=5"; echo "MIN_DAYS=2"; echo "PROFIT_DAYS=0"; }   # кабинет пробы: минимум 2 торговых дня
   echo "STATE_FILE=$APP/state/${STAGE}_${SIZE}_$TS.json"; echo "STATE_BACKUP_FILE=$APP/state/${STAGE}_${SIZE}_$TS.backup.json"
 } > "$NEW"
 grep -q '^BYBIT_API_KEY=..' "$NEW" || die "нет API-ключа — сначала: bash ops/stage.sh keys"

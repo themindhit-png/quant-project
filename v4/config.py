@@ -291,6 +291,7 @@ DAY_MARKER_HOUR = _env('DAY_MARKER_HOUR', 2, int)                # UTC hour from
 DAY_MARKER_MAX_MIN = _env('DAY_MARKER_MAX_MIN', 120, int)
 DAY_MARKER_PNL_MARGIN = _env('DAY_MARKER_PNL_MARGIN', 0.02, float)   # firm: 1 %; 2 % covers fees
 DAY_MARKER_TRIES = _env('DAY_MARKER_TRIES', 6, int)
+DAY_MARKER_EXTRA = _env('DAY_MARKER_EXTRA', 2, int)              # mark days only until trading days >= firm minimum + this, then stop
 DAY_MARKER_SYMBOLS = ('BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'XRPUSDT')
 
 # ---------------------------------------------------------------- infra

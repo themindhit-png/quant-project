@@ -607,6 +607,9 @@ class Bot:
         if m.get('mk_ok_date') == today or now.hour < C.DAY_MARKER_HOUR or C.KILL_SWITCH or os.path.exists(C.PAUSE_FILE) \
                 or m['halt_total'] or m['target_hit'] or m.get('halted_day') == today:
             return
+        need = C.RULES['min_days'][min(C.PHASE, len(C.RULES['min_days'])) - 1] + C.DAY_MARKER_EXTRA
+        if C.MODE != 'challenge' or int(m['trading_days']) >= need:
+            return                                          # minimum (+ margin) reached: no more markers
         n = int(mk.get('n', 0)) if mk.get('date') == today else 0
         if n >= C.DAY_MARKER_TRIES:
             tg_once('mk_fail', f'⚠️ Отметка дня {today}: {n} попыток, порог P/L не достигнут — торговый день может не засчитаться.', 20); return

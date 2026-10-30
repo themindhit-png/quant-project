@@ -439,6 +439,12 @@ r33.mem['day_date'] = '2026-05-03'; r33.mem['day_anchor'] = 10000.0; r33.mem['da
 r33.observe_equity(10001.0, datetime(2026, 5, 4, 0, 5, tzinfo=timezone.utc)); td1 = r33.mem['trading_days']
 r33.mem['mk_ok_date'] = None; r33.observe_equity(10400.0, datetime(2026, 5, 5, 0, 5, tzinfo=timezone.utc)); td2 = r33.mem['trading_days']
 check('T33e marker on: trading day = marked day (tiny P/L counts, a big move without a marker does not)', td1 == 1 and td2 == 1, f'{td1} {td2}')
+_t[0] = datetime(2026, 5, 5, 2, 0, tzinfo=timezone.utc); b33.mem['mk'] = {}; n0 = len(b33.api.orders)
+b33.mem['trading_days'] = C.RULES['min_days'][0] + C.DAY_MARKER_EXTRA; b33.day_marker_step(); stop_ok = len(b33.api.orders) == n0
+b33.mem['trading_days'] -= 1; b33.day_marker_step(); go_ok = len(b33.api.orders) == n0 + 1
+check('T33f markers stop once trading days >= firm minimum + DAY_MARKER_EXTRA', stop_ok and go_ok, f'{stop_ok} {go_ok}')
+r33.mem['mk_ok_date'] = None; r33.observe_equity(10400.0 + 0.006 * 10000, datetime(2026, 5, 6, 0, 5, tzinfo=timezone.utc))
+check('T33g marker on: a profit day counts without a marker', r33.mem['profit_days'] >= 1 and r33.mem['trading_days'] == 1, f'{r33.mem["profit_days"]} {r33.mem["trading_days"]}')
 C.DAY_MARKER_FRAC = _fr
 dl24 = -1.01 * C.DAILY_HALT_FRAC * C.RULES['daily_dd'] / 100.0 * 10000.0
 check('T24d limit_breach: a day loss past the daily halt is detected read-only', b24.limit_breach(10000.0 + dl24) is not None, str(b24.limit_breach(10000.0 + dl24)))
