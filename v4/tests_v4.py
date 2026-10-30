@@ -401,6 +401,45 @@ from state import get_status as _gs32
 st32 = _gs32(True)
 check('T32 /status has equity and floors between rebalances (watchdog, even while a rebalance holds the lock)',
       st32.get('equity') == round(eq_floor, 2) and st32.get('total_floor') == round(floor24, 2) and 'trading_days' in st32, f'{st32}')
+# T33: trading-day marker (Mubite counts a day only with a close >= 5 % of the starting balance)
+class _Api33:
+    def __init__(self): self.pos = {'AAAUSDT': dict(qty=10.0, mark=100.0, entry=100.0, upnl=0.0)}; self.orders = []
+    def positions(self): return {k: dict(v) for k, v in self.pos.items()}
+    def tickers(self): return {'BTCUSDT': dict(last=100000.0), 'ETHUSDT': dict(last=4000.0)}
+    def market(self, sym, qty, side, reduce_only=False):
+        self.orders.append((sym, qty, side, reduce_only))
+        if reduce_only: self.pos.pop(sym, None)
+        else: px = self.tickers()[sym]['last']; self.pos[sym] = dict(qty=qty if side == 'Buy' else -qty, mark=px, entry=px, upnl=0.0)
+_fr = C.DAY_MARKER_FRAC; C.DAY_MARKER_FRAC = 0.06
+b33 = Bot.__new__(Bot); b33.mem = Memory(); b33.risk = RiskEngine(b33.mem, lambda *a: None); b33.api = _Api33()
+b33.mem['initial'] = 10000.0; b33.mem['eq_peak'] = 10000.0; b33.mem['halt_total'] = False; b33.mem['target_hit'] = False
+b33.mem['last_targets'] = {'BTCUSDT': 500.0}; b33.instr = {'BTCUSDT': dict(qtyStep=0.001, minQty=0.001, maxLeverage=100), 'ETHUSDT': dict(qtyStep=0.01, minQty=0.01, maxLeverage=100)}
+_t = [datetime(2026, 5, 3, 2, 0, tzinfo=timezone.utc)]; b33.now = lambda: _t[0]
+b33.day_marker_step()
+o1 = list(b33.api.orders)
+_t[0] = datetime(2026, 5, 3, 2, 30, tzinfo=timezone.utc); b33.day_marker_step(); still = 'ETHUSDT' in b33.api.pos     # below the threshold: hold
+mg = abs(b33.api.pos['ETHUSDT']['qty']) * 4000.0 / C.SET_LEVERAGE; b33.api.pos['ETHUSDT']['upnl'] = -(C.DAY_MARKER_PNL_MARGIN * mg + 0.01)
+_t[0] = datetime(2026, 5, 3, 2, 40, tzinfo=timezone.utc); b33.day_marker_step()
+n_before = len(b33.api.orders); b33.day_marker_step()                                                                   # marked: nothing more today
+check('T33a marker: symbol outside the book (BTC is a target -> ETH), size >= 6 % of initial, against the book net',
+      o1 and o1[0][0] == 'ETHUSDT' and o1[0][1] * 4000.0 >= 600.0 and o1[0][2] == 'Sell', f'{o1}')
+check('T33b marker held below the P/L threshold, closed reduce-only above it, day marked once',
+      still and b33.api.orders[-1] == ('ETHUSDT', o1[0][1], 'Buy', True) and b33.mem['mk_ok_date'] == '2026-05-03' and len(b33.api.orders) == n_before == 2,
+      f'{b33.api.orders} {b33.mem.get("mk_ok_date")}')
+_t[0] = datetime(2026, 5, 4, 2, 0, tzinfo=timezone.utc); b33.api.pos.clear(); b33.api.pos['AAAUSDT'] = dict(qty=10.0, mark=100.0, entry=100.0, upnl=0.0)
+for _ in range(2):
+    b33.day_marker_step(); _t[0] += timedelta(minutes=C.DAY_MARKER_MAX_MIN + 1); b33.day_marker_step()                # time limit, no threshold
+check('T33c time limit: closed without counting, retried', b33.mem.get('mk_ok_date') == '2026-05-03' and b33.mem['mk']['n'] == 2 and len(b33.api.orders) == 6,
+      f'{b33.api.orders[2:]} {b33.mem["mk"]}')
+_t[0] = datetime(2026, 5, 3, 16, 0, tzinfo=timezone.utc); b33.mem['mk'] = {}; b33.mem['mk_ok_date'] = None; n0 = len(b33.api.orders)
+b33.day_marker_step()
+check('T33d no marker within MAX_MIN+15 min of the next rebalance (17:10)', len(b33.api.orders) == n0)
+r33 = RiskEngine(Memory(), lambda *a: None); r33.mem['initial'] = 10000.0; r33.mem['eq_peak'] = 10000.0
+r33.mem['day_date'] = '2026-05-03'; r33.mem['day_anchor'] = 10000.0; r33.mem['day_peak'] = 10000.0; r33.mem['mk_ok_date'] = '2026-05-03'
+r33.observe_equity(10001.0, datetime(2026, 5, 4, 0, 5, tzinfo=timezone.utc)); td1 = r33.mem['trading_days']
+r33.mem['mk_ok_date'] = None; r33.observe_equity(10400.0, datetime(2026, 5, 5, 0, 5, tzinfo=timezone.utc)); td2 = r33.mem['trading_days']
+check('T33e marker on: trading day = marked day (tiny P/L counts, a big move without a marker does not)', td1 == 1 and td2 == 1, f'{td1} {td2}')
+C.DAY_MARKER_FRAC = _fr
 dl24 = -1.01 * C.DAILY_HALT_FRAC * C.RULES['daily_dd'] / 100.0 * 10000.0
 check('T24d limit_breach: a day loss past the daily halt is detected read-only', b24.limit_breach(10000.0 + dl24) is not None, str(b24.limit_breach(10000.0 + dl24)))
 check('T24e limit_breach healthy equity -> None', b24.limit_breach(10000.0) is None)

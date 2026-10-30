@@ -50,8 +50,10 @@ def main():
               f'{pnl:>9,.0f} {apnl:>11,.0f} {"да" if abs(pnl) >= 0.0025 * init else "нет":>3}')
     ex = api.executions(start.timestamp() * 1000)
     if ex:
-        mk = sum(1 for e in ex if str(e.get('isMaker')).lower() == 'true')
-        print(f'\nисполнений {len(ex)}, maker {mk} ({mk / len(ex):.0%})')
+        isl = lambda e: str(e.get('isMaker')).lower() == 'true'
+        val = lambda e: float(e.get('execValue') or 0)
+        mk = sum(1 for e in ex if isl(e)); vt = sum(val(e) for e in ex); vm = sum(val(e) for e in ex if isl(e))
+        print(f'\nисполнений {len(ex)}, maker {mk} ({mk / len(ex):.0%} по числу, {vm / max(vt, 1e-9):.0%} по объёму; объём {vt:,.0f} USDT)')
 
 
 if __name__ == '__main__':

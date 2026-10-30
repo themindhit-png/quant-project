@@ -101,7 +101,8 @@ class RiskEngine:
                 mult = float(m['mult_day_sum']) / n_ if n_ > 0 else float(m.get('lev', 1.0)) * max(float(m.get('k_last', C.BASE_SCALE)), 0.05)
                 m['mult_daily'].append(max(mult, 1e-6)); m['mult_daily'] = m['mult_daily'][-120:]
                 m['mult_day_sum'] = 0.0; m['mult_day_n'] = 0
-                if abs(pnl) >= 0.0025 * self.initial and m['td_date'] != m['day_date']:
+                traded = (m.get('mk_ok_date') == m['day_date']) if C.DAY_MARKER_FRAC > 0 else abs(pnl) >= 0.0025 * self.initial
+                if traded and m['td_date'] != m['day_date']:
                     m['trading_days'] = int(m['trading_days']) + 1; m['td_date'] = m['day_date']
                     if pnl >= C.PROFIT_DAY_PCT / 100.0 * self.initial:
                         m['profit_days'] = int(m.get('profit_days', 0)) + 1

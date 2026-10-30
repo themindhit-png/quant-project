@@ -197,7 +197,7 @@ def effective_config():
             continue
         if k == 'HIVOL_MULT' and v == 1.0:    # off = registered hash unchanged
             continue
-        if (k == 'K_MIN_FRAC' and v == 0.0) or (k.startswith('DD_HIVOL_') and DD_HIVOL_BUF == 0.0):
+        if (k == 'K_MIN_FRAC' and v == 0.0) or (k.startswith('DD_HIVOL_') and DD_HIVOL_BUF == 0.0) or (k.startswith('DAY_MARKER_') and DAY_MARKER_FRAC == 0.0):
             continue
         if isinstance(v, (set, frozenset)):
             v = sorted(v)
@@ -281,6 +281,17 @@ CAND_POOL = _env('CAND_POOL', 350, int)                 # top-N by turnover fed 
 SET_LEVERAGE = _env('SET_LEVERAGE', 5.0, float)
 DRY_RUN = _bool('DRY_RUN', False)
 KILL_SWITCH = _bool('KILL_SWITCH', False)
+
+# trading-day marker (Mubite, found on the free trial 2026-10-30): a day counts only with a CLOSE of >= 5 % of the starting balance and
+# |P/L| >= 1 % of that position's margin; the book's closes are ~$600-2 000 on $100k, so no day was counted. Once per UTC day the bot
+# opens one liquid position outside the book (DAY_MARKER_FRAC x initial), closes it when |uPnL| >= DAY_MARKER_PNL_MARGIN x margin
+# (or after DAY_MARKER_MAX_MIN, then retries), and counts the trading day itself only then. 0 = off (funded / own account).
+DAY_MARKER_FRAC = _env('DAY_MARKER_FRAC', 0.0, float)
+DAY_MARKER_HOUR = _env('DAY_MARKER_HOUR', 2, int)                # UTC hour from which the marker may open (after the 01:10 rebalance)
+DAY_MARKER_MAX_MIN = _env('DAY_MARKER_MAX_MIN', 120, int)
+DAY_MARKER_PNL_MARGIN = _env('DAY_MARKER_PNL_MARGIN', 0.02, float)   # firm: 1 %; 2 % covers fees
+DAY_MARKER_TRIES = _env('DAY_MARKER_TRIES', 6, int)
+DAY_MARKER_SYMBOLS = ('BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'XRPUSDT')
 
 # ---------------------------------------------------------------- infra
 API_KEY = _env('BYBIT_API_KEY', '')

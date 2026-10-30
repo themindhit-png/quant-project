@@ -7,7 +7,7 @@ Risk: firm presets (static/trailing floors), CPPI, daily throttle/halt, vol targ
 Cycle: daily rebalance at REBAL_HOUR_UTC:REBAL_MINUTE (after the 00:00 funding + bar close); hourly
 scale pass (proportional de-risking when K drops); watchdog every WATCHDOG_SEC.
 """
-import os, sys, time, json, threading, traceback, hashlib
+import os, sys, time, json, math, threading, traceback, hashlib
 from datetime import datetime, timezone, timedelta
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import numpy as np
@@ -568,9 +568,70 @@ class Bot:
             return
         try:
             self.abort_event.clear()
-            self._watchdog_locked(equity)
+            ok = self._watchdog_locked(equity) is not False
+            if ok and C.DAY_MARKER_FRAC > 0:
+                self.day_marker_step()
         finally:
             self.lock.release()
+
+    def day_marker_step(self):
+        """Trading-day marker (config.DAY_MARKER_*), one step per watchdog tick, under the lock. State mem['mk'] = open marker
+        {sym, side, qty, t, date, n}; mem['mk_ok_date'] = UTC day with a qualifying close (counted as a trading day at the day roll)."""
+        m = self.mem; now = self.now(); today = now.date().isoformat()
+        mk = m.get('mk') or {}
+        if mk.get('sym'):                                   # an open marker: close on the P/L threshold or the time limit
+            try:
+                pos = self.api.positions().get(mk['sym'])
+            except Exception as e:
+                log(f'DAY MARKER positions: {e}'); return
+            if not pos or abs(pos['qty']) < 1e-12:          # closed elsewhere (guards / rebalance): not counted, retry
+                log(f'DAY MARKER {mk["sym"]}: position gone, not counted'); m['mk'] = {'date': mk.get('date'), 'n': mk.get('n', 0)}; m.save(); return
+            lev = max(min(C.SET_LEVERAGE, (self.instr.get(mk['sym']) or {}).get('maxLeverage') or C.SET_LEVERAGE), 1.0)
+            margin = abs(pos['qty']) * pos['entry'] / lev
+            hit = abs(pos['upnl']) >= C.DAY_MARKER_PNL_MARGIN * margin
+            age = (now - datetime.fromisoformat(mk['t'])).total_seconds() / 60
+            if not hit and age < C.DAY_MARKER_MAX_MIN:
+                return
+            try:
+                if not C.DRY_RUN:
+                    self.api.market(mk['sym'], abs(pos['qty']), 'Sell' if pos['qty'] > 0 else 'Buy', reduce_only=True)
+            except Exception as e:
+                log(f'DAY MARKER close {mk["sym"]}: {e}'); tg_once('mk_close', f'⚠️ Отметка дня: не закрылась позиция {mk["sym"]} ({e}), повтор через минуту', 1); return
+            if hit and mk.get('date') == today:
+                m['mk_ok_date'] = today
+            log(f'DAY MARKER {mk["sym"]} closed after {age:.0f} min: uPnL {pos["upnl"]:+.2f} vs margin {margin:,.0f} -> '
+                f'{"trading day counted" if m.get("mk_ok_date") == today else "below threshold, retry"}')
+            set_status(day_marker=m.get('mk_ok_date'))
+            m['mk'] = {'date': mk.get('date'), 'n': mk.get('n', 0)}; m.save(); return
+        # open one, if today is not marked yet
+        if m.get('mk_ok_date') == today or now.hour < C.DAY_MARKER_HOUR or C.KILL_SWITCH or os.path.exists(C.PAUSE_FILE) \
+                or m['halt_total'] or m['target_hit'] or m.get('halted_day') == today:
+            return
+        n = int(mk.get('n', 0)) if mk.get('date') == today else 0
+        if n >= C.DAY_MARKER_TRIES:
+            tg_once('mk_fail', f'⚠️ Отметка дня {today}: {n} попыток, порог P/L не достигнут — торговый день может не засчитаться.', 20); return
+        nxt = self.due_slot(now) + timedelta(hours=int(C.REBAL_EVERY_H))
+        if (nxt - now).total_seconds() < (C.DAY_MARKER_MAX_MIN + 15) * 60:
+            return                                          # would still be open at the next rebalance
+        try:
+            poss = self.api.positions(); tk = self.api.tickers()
+        except Exception as e:
+            log(f'DAY MARKER open: {e}'); return
+        busy = set(poss) | set(m.get('last_targets') or {})
+        sym = next((s for s in C.DAY_MARKER_SYMBOLS if s not in busy and s in self.instr and s in tk and tk[s]['last'] > 0), None)
+        if not sym:
+            tg_once('mk_nosym', '⚠️ Отметка дня: все символы-кандидаты заняты книгой', 20); return
+        meta = self.instr[sym]; step = meta['qtyStep'] or meta['minQty']
+        qty = round(math.ceil(C.DAY_MARKER_FRAC * self.risk.initial / tk[sym]['last'] / step) * step, 10)
+        net = sum(p['qty'] * p['mark'] for p in poss.values())
+        side = 'Buy' if net <= 0 else 'Sell'                # leans against the book's small net exposure
+        try:
+            if not C.DRY_RUN:
+                self.api.market(sym, qty, side)
+        except Exception as e:
+            log(f'DAY MARKER open {sym}: {e}'); m['mk'] = {'date': today, 'n': n + 1}; m.save(); return
+        m['mk'] = {'sym': sym, 'side': side, 'qty': qty, 't': now.isoformat(), 'date': today, 'n': n + 1}; m.save()
+        log(f'DAY MARKER open {side} {qty} {sym} (~{qty * tk[sym]["last"]:,.0f} USDT, try {n + 1})')
 
     def limit_breach(self, equity):
         """Read-only (no memory writes, safe without the lock): the hard limit guards() would act on at this equity, or None.
@@ -593,9 +654,10 @@ class Bot:
         return None
 
     def _watchdog_locked(self, equity):
+        """False when a guard stopped trading (no day marker then)."""
         m = self.mem
         if not self.guards(equity):
-            return
+            return False
         try:
             poss = self.api.positions()
         except Exception as e:
