@@ -445,6 +445,14 @@ b33.mem['trading_days'] -= 1; b33.day_marker_step(); go_ok = len(b33.api.orders)
 check('T33f markers stop once trading days >= firm minimum + DAY_MARKER_EXTRA', stop_ok and go_ok, f'{stop_ok} {go_ok}')
 r33.mem['mk_ok_date'] = None; r33.observe_equity(10400.0 + 0.006 * 10000, datetime(2026, 5, 6, 0, 5, tzinfo=timezone.utc))
 check('T33g marker on: a profit day counts without a marker', r33.mem['profit_days'] >= 1 and r33.mem['trading_days'] == 1, f'{r33.mem["profit_days"]} {r33.mem["trading_days"]}')
+a33 = _Api33(); a33.tickers = lambda: {'BTCUSDT': dict(last=1e5, turnover24h=9e9), 'ETHUSDT': dict(last=4e3, turnover24h=8e9),
+                                     'DOGEUSDT': dict(last=0.2, turnover24h=5e8), 'TINYUSDT': dict(last=1.0, turnover24h=1e6), 'XAUTUSDT': dict(last=4e3, turnover24h=9e8)}
+b33.api = a33; b33.mem['trading_days'] = 0; b33.mem['mk'] = {}; b33.mem['last_targets'] = {'BTCUSDT': 1.0, 'ETHUSDT': 1.0}
+b33.instr.update({'DOGEUSDT': dict(qtyStep=1.0, minQty=1.0, maxLeverage=50), 'TINYUSDT': dict(qtyStep=1.0, minQty=1.0, maxLeverage=50),
+                  'XAUTUSDT': dict(qtyStep=0.01, minQty=0.01, maxLeverage=50)})
+_t[0] = datetime(2026, 5, 7, 2, 0, tzinfo=timezone.utc); b33.day_marker_step()
+check('T33h preferred symbols all in the book -> most liquid free symbol (not blacklisted, turnover >= 20M)',
+      a33.orders and a33.orders[0][0] == 'DOGEUSDT' and a33.orders[0][1] * 0.2 >= 600.0, f'{a33.orders}')
 C.DAY_MARKER_FRAC = _fr
 dl24 = -1.01 * C.DAILY_HALT_FRAC * C.RULES['daily_dd'] / 100.0 * 10000.0
 check('T24d limit_breach: a day loss past the daily halt is detected read-only', b24.limit_breach(10000.0 + dl24) is not None, str(b24.limit_breach(10000.0 + dl24)))

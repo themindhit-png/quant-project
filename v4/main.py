@@ -621,9 +621,14 @@ class Bot:
         except Exception as e:
             log(f'DAY MARKER open: {e}'); return
         busy = set(poss) | set(m.get('last_targets') or {})
-        sym = next((s for s in C.DAY_MARKER_SYMBOLS if s not in busy and s in self.instr and s in tk and tk[s]['last'] > 0), None)
+        ok = lambda s: s not in busy and s in self.instr and s in tk and tk[s]['last'] > 0 and s not in C.BLACKLIST \
+            and not any(p in s for p in C.BLACKLIST_PATTERNS)
+        # preferred majors first; the book often holds all of them (69 positions on 2026-10-30) -> the most liquid free USDT perp
+        # with >= 20M USDT 24h turnover (a 6 % marker is a tiny order there)
+        sym = next((s for s in C.DAY_MARKER_SYMBOLS if ok(s)), None) or next(
+            (s for s in sorted(tk, key=lambda s: -tk[s].get('turnover24h', 0)) if s.endswith('USDT') and ok(s) and tk[s].get('turnover24h', 0) >= 2e7), None)
         if not sym:
-            tg_once('mk_nosym', '⚠️ Отметка дня: все символы-кандидаты заняты книгой', 20); return
+            tg_once('mk_nosym', '⚠️ Отметка дня: нет свободного ликвидного символа вне книги', 20); return
         meta = self.instr[sym]; step = meta['qtyStep'] or meta['minQty']
         qty = round(math.ceil(C.DAY_MARKER_FRAC * self.risk.initial / tk[sym]['last'] / step) * step, 10)
         net = sum(p['qty'] * p['mark'] for p in poss.values())
