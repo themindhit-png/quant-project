@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Дописать панели Binance (data/panels) днями с 2026-10-01 по 2026-10-26 из ДНЕВНЫХ архивов data.binance.vision
 (klines, premiumIndexKlines). Фандинг за октябрь на Vision отсутствует -> берётся Bybit из research/vps_dump (прокси, corr ~0.88).
-Оригиналы сохраняются в data/panels_orig. Запуск из корня: python3 research/extend_panels_oct.py"""
+Оригиналы сохраняются в data/panels_orig. Запуск из корня: python3 research/extend_panels_oct.py
+Рег. 4: после дописывания — python3 build_panels.py "2026-10-26 23:00" freeze (замороженные цены -> NaN, и в октябре)."""
 import os, io, zipfile, shutil, gzip, concurrent.futures as cf
 import numpy as np, pandas as pd, requests
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PAN = os.path.join(ROOT, 'data', 'panels'); ORIG = os.path.join(ROOT, 'data', 'panels_orig'); TMP = os.path.join(ROOT, 'data', 'raw_oct')
+PAN = os.environ.get('PANELS_OUT') or os.path.join(ROOT, 'data', 'panels'); ORIG = os.environ.get('PANELS_BASE') or os.path.join(ROOT, 'data', 'panels_orig'); TMP = os.path.join(ROOT, 'data', 'raw_oct')
 DAYS = pd.date_range('2026-10-01', '2026-10-26', freq='D')
 NEW = pd.date_range('2026-10-01 00:00', '2026-10-26 23:00', freq='h', tz='UTC')
 if not os.path.exists(ORIG):

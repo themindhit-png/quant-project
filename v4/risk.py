@@ -209,17 +209,25 @@ class RiskEngine:
         return float(np.std(d, ddof=1)) if len(d) > 5 else None
 
     # ------------------------------------------------------------ targets
-    def build_targets(self, w_raw, symbols, equity, t24_now, k, majors, lowcap_mask=None):
+    def build_targets(self, w_raw, symbols, equity, t24_now, k, majors, lowcap_mask=None, slot=None):
         """w_raw: combined sleeve weights (N,). Returns target notionals (N,) in USDT after smoothing,
         leverage, risk multiplier, caps, neutrality, gross/margin/low-cap guards and dust rule.
         lowcap_mask: bool (N,) — names the firm counts as low-cap (market cap below its threshold); when None, a
-        turnover proxy (RULES.lowcap_turn) is used. Their combined gross is capped at RULES.lowcap_pct % of the notional base."""
+        turnover proxy (RULES.lowcap_turn) is used. Their combined gross is capped at RULES.lowcap_pct % of the notional base.
+        slot: rebalance slot key; a retry of the same slot (aborted / failed execution) smooths from the weights saved BEFORE the
+        slot's first attempt, so the EMA is applied once per slot (reg. 4; before: 0.25/0.75 instead of 0.5/0.5 on a retry)."""
         m = self.mem
         N = len(symbols)
         # EMA smoothing of weights (state keyed by symbol)
         w = np.array(w_raw, dtype=float)
-        if C.SMOOTH > 0 and m['w_prev']:
-            prev = np.array([m['w_prev'].get(s, 0.0) for s in symbols])
+        base = m.get('w_prev') or {}
+        if slot is not None:
+            if m.get('w_prev_slot') == slot:
+                base = m.get('w_prev_base') or {}
+            else:
+                m['w_prev_base'] = dict(base); m['w_prev_slot'] = slot
+        if C.SMOOTH > 0 and base:
+            prev = np.array([base.get(s, 0.0) for s in symbols])
             w = C.SMOOTH * prev + (1 - C.SMOOTH) * w
         m['w_prev'] = {s: float(v) for s, v in zip(symbols, w) if abs(v) > 1e-6}
         lev = float(m['lev'])

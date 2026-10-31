@@ -140,8 +140,9 @@ def main():
         if not A.skip_data:
             sf = vision_symbols()
             run([sys.executable, 'dl_binance.py', 'klines,fundingRate,premiumIndexKlines'], env={'SYMBOLS_FILE': sf}, timeout=6 * 3600)
+            run([sys.executable, 'dl_binance.py', 'gaps'], timeout=2 * 3600)          # reg. 4: truncated monthly archives -> daily files
             pend = (cutoff - timedelta(hours=1)).strftime('%Y-%m-%d %H:00')
-            for mode in ('core', 'ohlc', 'premium'):
+            for mode in ('core', 'ohlc', 'premium', 'freeze'):                         # freeze (reg. 4): frozen post-delisting prices -> NaN
                 run([sys.executable, 'build_panels.py', pend, mode], timeout=3 * 3600)
             run([sys.executable, 'check_panels.py'])
         shutil.rmtree(NEW, ignore_errors=True); os.makedirs(NEW)

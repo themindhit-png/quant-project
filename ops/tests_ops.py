@@ -58,4 +58,21 @@ check('collector: 7 days back-filled + 1 new hour per symbol, no duplicates, onl
       len(keys) == len(set(keys)) and syms == {'BTCUSDT', 'ETHUSDT', 'AAAUSDT'} and len(keys) == 3 * (7 * 24 + 1) and len(rows('oi')) == len(keys)
       and 0 < len(rows('funding')) < len(keys), f'{len(keys)} rows {sorted(syms)}')
 
+# stage.sh (dry run, PREREG reg. 4): the new env points the bot at the previous stage's state file for the ml8 kill-rule memory
+import subprocess
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+app = os.path.join(tmp, 'app'); os.makedirs(os.path.join(app, 'src'), exist_ok=True); os.symlink(os.path.join(REPO, 'v4'), os.path.join(app, 'src', 'v4'))
+old_state = os.path.join(tmp, 'trial_100000_x.json'); open(old_state, 'w').write('{}')
+envf = os.path.join(tmp, 'stage.env')
+open(envf, 'w').write(f'BYBIT_API_KEY=abcd\nBYBIT_API_SECRET=efgh\nTG_BOT_TOKEN=t\nPORT=8080\nSTATE_FILE={old_state}\nMODEL_DIR={REPO}/v4/models\n')
+def stage(*a):
+    e = dict(os.environ, STAGE_DRY='1', ENVF=envf, APP=app, BOTPY=sys.executable)
+    return subprocess.run(['bash', os.path.join(REPO, 'ops', 'stage.sh'), *a], env=e, capture_output=True, text=True, timeout=120)
+r = stage('phase1', '100000')
+check('stage.sh carries the ml8 memory: ML8_CARRY_FROM = previous STATE_FILE, new STATE_FILE, hash computed',
+      r.returncode == 0 and f'ML8_CARRY_FROM={old_state}' in r.stdout and 'STATE_FILE=' + app + '/state/phase1_100000_' in r.stdout
+      and 'EXPECTED_CONFIG_HASH=' in r.stdout and 'abcd' not in r.stdout, (r.stdout[-300:] + r.stderr[-300:]).replace('\n', ' | '))
+os.remove(old_state); r2 = stage('phase1', '100000')
+check('stage.sh without an old state file writes no ML8_CARRY_FROM', r2.returncode == 0 and 'ML8_CARRY_FROM' not in r2.stdout, r2.stderr[-300:])
+
 print(f'\n{sum(res)}/{len(res)} passed'); sys.exit(0 if all(res) else 1)

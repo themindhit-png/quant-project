@@ -179,6 +179,8 @@ ML8_KILL_RESTORE_D = _env('ML8_KILL_RESTORE_D', 60, int)
 ML8_BASE_SCALE = SLEEVE_SCALES.get('ml8', 2.0)
 # funding sleeves (exp24a/e): 'fchg' = contrarian to the 24h funding change (daily, held), 'fcarry' = 72h funding-level carry (8h)
 FUND_TOP_FRAC = _env('FUND_TOP_FRAC', 0.20, float)
+# PREREG reg. 4 (audit 2026-10-31): ties of the funding signals (base rate) -> latest settlement, then 24h turnover; 0 = argsort order
+FUND_TIEBREAK = _env('FUND_TIEBREAK', 1, int)
 
 
 def effective_config():
@@ -190,7 +192,7 @@ def effective_config():
             'API_KEY', 'API_SECRET', 'TG_TOKEN', 'TG_CHAT', 'STATE_BACKUP_FILE', 'PORT', 'STATUS_BIND',
             # connection / operations, not strategy: demo -> live or a blacklist edit must not change the registered hash
             'BASE_URL', 'BLACKLIST', 'BLACKLIST_PATTERNS', 'STATE_PUSH_H', 'WATCHDOG_SEC', 'VERSION',
-            'PAUSE_FILE', 'TRANSFER_CHECK', 'KEY_EXPIRY_WARN_D'}
+            'PAUSE_FILE', 'TRANSFER_CHECK', 'KEY_EXPIRY_WARN_D', 'ML8_CARRY_FROM'}
     out = {}
     for k, v in sorted(globals().items()):
         if k.startswith('_') or k in skip or not k.isupper() or callable(v):
@@ -241,6 +243,9 @@ UNI_MIN_TURN = _env('UNI_MIN_TURN', 1e7, float)        # core/ML universe min 24
 UNI_MIN_AGE_D = _env('UNI_MIN_AGE_D', 30, int)
 # daily ML sleeves: separate minimum age (exp21c/21d: age-free models on names >= 90d beat the 30d/age-feature models)
 ML_MIN_AGE_D = _env('ML_MIN_AGE_D', UNI_MIN_AGE_D, int)
+# ml8 feature ranks (rank_norm) are taken over the TRAINING universe (exp17/exp17b: age >= 30 d, top UNI_TOP_ML by turnover); the sleeve
+# then trades only names >= ML8_MIN_AGE_D (PREREG reg. 4, audit 2026-10-31; before: ranks over the 180 d trade set = ML8_MIN_AGE_D here)
+ML8_RANK_MIN_AGE_D = _env('ML8_RANK_MIN_AGE_D', 30, int)
 # features excluded from the daily ML models (must match the training spec of models/ml_h{3,7}.txt; e.g. 'age_d')
 ML_DROP_FEATS = [f.strip() for f in _env('ML_DROP_FEATS', '').split(',') if f.strip()]
 # model file suffix: '' -> models/ml_h3.txt (age features, uni 30d); '_noage' -> models/ml_h3_noage.txt (exp6b_noage_final;
@@ -304,6 +309,9 @@ STATUS_TOKEN = _env('STATUS_TOKEN', '')
 PORT = _env('PORT', 10000, int)
 STATUS_BIND = _env('STATUS_BIND', '127.0.0.1')               # /status listens on localhost only (ops scripts use 127.0.0.1); '0.0.0.0' to expose
 STATE_FILE = _env('STATE_FILE', f'/tmp/propsleeves_{FIRM}_{MODE}_p{PHASE}_{int(ACCOUNT_SIZE)}.json')
+# reg. 4: state file of the PREVIOUS stage (ops/stage.sh writes it); on a fresh state the ml8 kill-rule memory (180-day shadow history,
+# multiplier, change dates) is copied from it, so the rule keeps counting across trial -> phase1 -> phase2 -> funded. Not in the hash.
+ML8_CARRY_FROM = _env('ML8_CARRY_FROM', '').strip()
 # cash flows (payouts, withdrawals, deposits) — see docs/GUIDE.md: while PAUSE_FILE exists the bot closes everything, does not trade and
 # books any change of the (flat) equity as a cash flow, not as PnL (Mubite payout procedure); TRANSFER_CHECK: book Bybit transfer-log
 # entries (TRANSFER_IN / TRANSFER_OUT) as cash flows while trading (own account withdrawals / deposits without stopping the bot)

@@ -2,7 +2,7 @@
 """Shared research definitions (Data, sleeves, F/F2 books, BASE8/BASE24, go()) — sliced from exp26_opus3.py."""
 import os, time, json, math, glob, itertools, numpy as np, pandas as pd
 from scipy.stats import norm, skew, kurtosis
-from bt import Data, run, quantile_ls, slip_model
+from bt import Data, run, quantile_ls, quantile_ls_tb, last_rate, slip_model
 from strategies import core_signal
 from betautil import rolling_std
 START, END, OOS = '2021-01-01', os.environ.get('END', '2026-08-31 23:00'), '2022-01-01'
@@ -36,8 +36,12 @@ def make_ml(P, top=0.3, min_age_h=720, iv=False):
     return f
 def uni(dd, i): return dd.universe(i, min_age_h=720, min_turn=1e7, top_n=150)
 def q(sig, m, top=0.2): return quantile_ls(np.where(m & np.isfinite(sig), sig, np.nan), top)
-def fund_change(dd, i, mask): return q(-(fsum(i, 24, 0) - fsum(i, 48, 24)), uni(dd, i))
-def fund_level(dd, i, mask): return q(-fsum(i, 72, 0), uni(dd, i))
+FUND_TIEBREAK = os.environ.get('FUND_TIEBREAK', '1') == '1'   # PREREG reg. 4: ties -> latest funding rate, then 24h turnover (0 = old argsort order)
+def qf(sig, m, i, top=0.2):
+    if not FUND_TIEBREAK: return q(sig, m, top)
+    return quantile_ls_tb(np.where(m & np.isfinite(sig), sig, np.nan), -last_rate(FUND0[max(0, i - 71):i + 1]), d.t24[i], top)
+def fund_change(dd, i, mask): return qf(-(fsum(i, 24, 0) - fsum(i, 48, 24)), uni(dd, i), i)
+def fund_level(dd, i, mask): return qf(-fsum(i, 72, 0), uni(dd, i), i)
 ML3n, ML7n, ML14n, ML8 = make_ml(Q3, min_age_h=90 * 24), make_ml(Q7, min_age_h=90 * 24), (make_ml(Q14, min_age_h=90 * 24) if Q14 is not None else None), make_ml(P8, 0.2, 180 * 24, True)
 class Held:
     def __init__(self, fn): self.fn = fn; self.w = np.zeros(N)

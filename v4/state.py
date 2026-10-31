@@ -37,7 +37,7 @@ def tg_once(key, text, hours=24.0):
 class Memory(dict):
     """Persistent bot memory (JSON). Atomic save; conservative defaults on loss."""
     PERSIST = ('initial', 'eq_peak', 'day_date', 'day_anchor', 'day_peak', 'halted_day', 'halt_total', 'phase_base',
-               'target_hit', 'trading_days', 'td_date', 'profit_days', 'mk', 'mk_ok_date', 'pause_eq', 'transfer_ts', 'transfer_chk_ms', 'key_chk_date', 'key_expires', 'day_pnls', 'day_pnl_dates', 'lev', 'w_prev', 'eq_daily',
+               'target_hit', 'trading_days', 'td_date', 'profit_days', 'mk', 'mk_ok_date', 'pause_eq', 'transfer_ts', 'transfer_chk_ms', 'key_chk_date', 'key_expires', 'day_pnls', 'day_pnl_dates', 'lev', 'w_prev', 'w_prev_base', 'w_prev_slot', 'eq_daily',
                'mult_daily', 'mult_day_sum', 'mult_day_n', 'clip_n', 'reb_n', 'flow_daily', 'flow_today', 'attrib_shadow_ml8',
                'fund_days', 'fund_settlements', 'fund_total', 'ml8_audit', 'ml8_audit_day', 'ml8_changes',
                'attrib_share', 'attrib_px', 'attrib_notional', 'attrib_day', 'sleeve_pnl_day', 'sleeve_pnl_hist', 'ml8_mult', 'ml8_mult_date',
@@ -90,7 +90,7 @@ class Memory(dict):
     # keys the code initialises with setdefault(k, container): a null saved by an older version (save() used to write every
     # PERSIST key, absent ones as null) would come back as None and break setdefault -> drop it on load (2026-10-28 incident)
     CONTAINERS = ('bad_n', 'sleeve_pnl_day', 'sleeve_pnl_hist', 'attrib_day', 'ml8_audit', 'ml8_changes', 'cooldown', 'blocked',
-                  'last_targets', 'w_prev', 'day_pnls', 'day_pnl_dates', 'eq_daily', 'mult_daily', 'flow_daily')
+                  'last_targets', 'w_prev', 'w_prev_base', 'day_pnls', 'day_pnl_dates', 'eq_daily', 'mult_daily', 'flow_daily')
 
     def _restorable(self, d):
         return {k: v for k, v in d.items() if k in self.PERSIST and not (v is None and k in self.CONTAINERS)}

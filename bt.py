@@ -20,7 +20,7 @@ warnings.filterwarnings('ignore')
 np.seterr(all='ignore')
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-PAN = os.path.join(ROOT, 'data', 'panels')
+PAN = os.environ.get('PANELS_DIR') or os.path.join(ROOT, 'data', 'panels')   # PANELS_DIR: compare panel versions
 GAP_H = 24
 
 
@@ -136,6 +136,37 @@ def quantile_ls(sig, top_frac=0.2, inv_vol=None, min_n=10):
         wl = np.nan_to_num(iv[longs]); ws = np.nan_to_num(iv[shorts])
         if wl.sum() > 0: w[longs] = wl / wl.sum()
         if ws.sum() > 0: w[shorts] = -ws / ws.sum()
+    return w
+
+
+def last_rate(fw):
+    """Latest non-zero funding settlement per column of the window fw (H, N) (0 = no settlement that hour); 0 if none.
+    Identical copy in v4/signals.py (PREREG reg. 4)."""
+    fw = np.asarray(fw, dtype=np.float64)
+    nz = fw != 0
+    last = fw.shape[0] - 1 - np.argmax(nz[::-1], 0)
+    return np.where(nz.any(0), fw[last, np.arange(fw.shape[1])], 0.0)
+
+
+def quantile_ls_tb(sig, sec, liq, top_frac=0.2, min_n=10, nd=9):
+    """quantile_ls (equal weights) with a deterministic order inside ties (PREREG reg. 4, audit 2026-10-31): many coins sit on
+    the base funding rate, so funding window sums tie and numpy's argsort picked ~20 % of the fcarry short leg by array order.
+    Primary key = sig rounded to nd decimals (sums of equal rates otherwise differ by float noise), then `sec` (same direction
+    as sig), then `liq` with the MORE liquid name first in both legs, then column index; the short leg is chosen first and a name
+    is never in both legs. Identical copy in v4/signals.py."""
+    s = np.where(np.isfinite(sig), np.round(sig, nd), np.nan)
+    ok = np.flatnonzero(np.isfinite(s)); n = len(ok)
+    w = np.zeros(len(s))
+    if n < min_n:
+        return w
+    k = max(2, int(round(n * top_frac)))
+    a = s[ok]
+    b = np.asarray(sec, dtype=np.float64)[ok]; b = np.where(np.isfinite(b), np.round(b, nd), 0.0)
+    c = np.asarray(liq, dtype=np.float64)[ok]; c = np.where(np.isfinite(c), c, -np.inf)
+    shorts = ok[np.lexsort((-c, b, a))[:k]]
+    lo = ok[np.lexsort((-c, -b, -a))]
+    longs = lo[~np.isin(lo, shorts)][:k]          # a tie block spanning both boundaries: a name is never in both legs
+    w[longs] = 1.0 / k; w[shorts] = -1.0 / k
     return w
 
 

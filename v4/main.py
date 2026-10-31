@@ -285,6 +285,7 @@ class Bot:
         with self.lock:
             self.abort_event.clear()                       # guards() below re-checks the limits with fresh equity
             t0 = time.time()
+            slot_key = slot or f'{self.now().date().isoformat()}T{self.now().hour:02d}'     # EMA once per slot (risk.build_targets)
             equity = self.equity()
             m = self.mem
             if C.MODE == 'challenge' and not m.get('phase_base'):
@@ -380,7 +381,7 @@ class Bot:
                     lowcap_mask |= np.asarray(age_h, float) < C.LOWCAP_YOUNG_D * 24.0
                 lowcap_mask &= np.array([s not in C.MAJORS for s in syms])
                 info['lowcap_n'] = int(lowcap_mask.sum()); info['lowcap_src'] = 'mcap+turnover' if mc else 'turnover+age proxy'
-            tgt, tinfo = self.risk.build_targets(w, syms, equity, panel['t24'][i], k, set(C.MAJORS), lowcap_mask=lowcap_mask)
+            tgt, tinfo = self.risk.build_targets(w, syms, equity, panel['t24'][i], k, set(C.MAJORS), lowcap_mask=lowcap_mask, slot=slot_key)
             # exposure multiplier actually in force = realised gross / (equity x gross of raw weights) — not lev*K, because
             # caps / neutrality / firm limits may have cut the book (Opus review); used by the direct vol target
             mult_real = tinfo['gross'] / max(equity * max(info.get('gross_w', 0.0), 1e-9), 1e-9) if info.get('gross_w', 0.0) > 1e-9 else lev * k
@@ -431,7 +432,7 @@ class Bot:
             # ---- bookkeeping
             m['last_targets'] = targets; m['k_ref'] = k; m['last_rebal_date'] = self.now().date().isoformat()
             if not stats.get('aborted'):                   # an aborted slot is retried at the next wake-up (guards decide then)
-                m['last_rebal_slot'] = slot or f'{self.now().date().isoformat()}T{self.now().hour:02d}'
+                m['last_rebal_slot'] = slot_key
             m['k_avg'] = 0.8 * float(m.get('k_avg', k)) + 0.2 * k
             m['cycles'] = int(m.get('cycles', 0)) + 1
             m.save()
@@ -748,6 +749,7 @@ class Bot:
             self.sleeves.held = {k: dict(v) for k, v in m['held_w'].items()}      # restore held daily sleeves
         equity = self.equity()
         if not m.loaded:
+            self.carry_ml8_memory()
             anchor, src = self.recover_day_anchor(equity)
             m['day_date'] = self.now().date().isoformat(); m['day_anchor'] = anchor; m['day_peak'] = max(anchor, equity)
             if C.RULES['total_dd_mode'] in ('trailing', 'trailing_pct'):
@@ -789,6 +791,30 @@ class Bot:
            f'цели {C.RULES["targets"]}, consistency {C.RULES["consistency"]}%, notional ≤{C.RULES["notional_x"]}x\n'
            f'Пол сейчас: {tf:,.2f} | рукава {C.SLEEVES} | BASE {C.BASE_SCALE} CPPI {C.CPPI_FRAC} VT {C.VT_TARGET_DVOL * 100:.2f}%/д\n'
            f'Ребаланс {C.REBAL_HOUR_UTC:02d}:{C.REBAL_MINUTE:02d} UTC | {"DRY_RUN" if C.DRY_RUN else "LIVE"} | {C.BASE_URL}')
+
+    ML8_CARRY_KEYS = ('sleeve_pnl_hist', 'ml8_mult', 'ml8_mult_date', 'ml8_changes', 'ml8_audit', 'ml8_audit_day')
+
+    def carry_ml8_memory(self):
+        """Fresh state of a new stage: copy the ml8 kill-rule memory from the previous stage's state file (C.ML8_CARRY_FROM, set by
+        ops/stage.sh). The rule needs 180 closed days; each day is stored as $ P&L with that day's equity (ratios), so the history is
+        valid across account sizes. Only closed days are copied (not today's partial attribution or the old book's exposures)."""
+        src = C.ML8_CARRY_FROM
+        if not src or os.path.abspath(src) == os.path.abspath(C.STATE_FILE or ''):
+            return 0
+        try:
+            with open(src) as f:
+                old = json.load(f)
+        except Exception as e:
+            log(f'ml8 memory carry-over: cannot read {src}: {e}'); return 0
+        got = {k: old[k] for k in self.ML8_CARRY_KEYS if old.get(k) is not None}
+        if not isinstance(got.get('sleeve_pnl_hist', []), list):
+            got.pop('sleeve_pnl_hist', None)
+        self.mem.update(got)
+        n = len(got.get('sleeve_pnl_hist') or [])
+        log(f'ml8 memory carried over from {src}: {n} days of sleeve history, ml8_mult {got.get("ml8_mult", 1.0)} '
+            f'(changed {got.get("ml8_mult_date") or "never"})')
+        set_status(ml8_carry_days=n)
+        return n
 
     def apply_resets(self):
         """Latches are cleared one by one (Opus: one flag used to clear the total stop AND the phase-passed latch).

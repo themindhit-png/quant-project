@@ -74,4 +74,4 @@ for tag in sys.argv[1:]:
         m, eq, hp = run(d, fn, ret_diag=True, **args)
         de = eq.groupby(eq.index.floor('D')).last(); r = de.pct_change().dropna(); r.index = r.index.tz_localize(None) if r.index.tz is not None else r.index
         res[sc] = r; print(f'{tag} {sc}: Sh {m["sharpe"]:.2f} CAGR {m["cagr"]*100:.1f}% MDD {m["mdd"]*100:.1f}%', flush=True)
-    pd.DataFrame(res).to_csv(f'research/phase4_out/R2_{tag}.csv')
+    pd.DataFrame(res).to_csv(f'research/phase4_out/{os.environ.get("OUT_PREFIX", "R2_")}{tag}.csv')   # reg. 4 runs: OUT_PREFIX=R4_<step>_

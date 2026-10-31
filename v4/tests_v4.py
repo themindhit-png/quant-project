@@ -164,9 +164,12 @@ C.BETA_CAP = -1.0
 FUND0 = np.where(np.isfinite(d.fund), d.fund, 0.0)
 mu = S.fund_universe(panel, age_h); d.prev_mask = None; mu_res = d.universe(i, min_age_h=720, min_turn=1e7, top_n=150)
 check('T12a fund universe == research', (mu == mu_res).all(), f'bot {mu.sum()} res {mu_res.sum()}')
-sig_chg = -(FUND0[i - 23:i + 1].sum(0) - FUND0[i - 47:i - 23].sum(0)); w_chg_res = q_res(np.where(mu_res & np.isfinite(sig_chg), sig_chg, np.nan), 0.2)
+# reg. 4: research exp_common.qf = bt.quantile_ls_tb(sig, -last_rate(72 h), t24) (FUND_TIEBREAK=1, the default of both)
+from bt import quantile_ls_tb as qtb_res, last_rate as lr_res
+sec12 = -lr_res(FUND0[i - 71:i + 1])
+sig_chg = -(FUND0[i - 23:i + 1].sum(0) - FUND0[i - 47:i - 23].sum(0)); w_chg_res = qtb_res(np.where(mu_res & np.isfinite(sig_chg), sig_chg, np.nan), sec12, d.t24[i], 0.2)
 check('T12b fund_change weights == research', np.allclose(S.fund_change(panel, mu), w_chg_res, atol=1e-12), f'n {int((w_chg_res != 0).sum())}')
-sig_lvl = -FUND0[i - 71:i + 1].sum(0); w_lvl_res = q_res(np.where(mu_res & np.isfinite(sig_lvl), sig_lvl, np.nan), 0.2)
+sig_lvl = -FUND0[i - 71:i + 1].sum(0); w_lvl_res = qtb_res(np.where(mu_res & np.isfinite(sig_lvl), sig_lvl, np.nan), sec12, d.t24[i], 0.2)
 check('T12c fund_carry weights == research', np.allclose(S.fund_carry(panel, mu), w_lvl_res, atol=1e-12), f'n {int((w_lvl_res != 0).sum())}')
 
 
@@ -626,6 +629,96 @@ finally:
     C.RULES = _rules31; C.FIRM = _firm31
 check('T31 own account: floor 25 % below the peak (15000 -> 11250), a 3000 withdrawal lowers peak and floor (12000 -> 9000)',
       abs(f1 - 11250.0) < 1e-6 and abs(d1 - 3750.0) < 1e-6 and abs(f2 - 9000.0) < 1e-6 and abs(m31['initial'] - 2000.0) < 1e-6, f'{f1} {d1} {f2}')
+
+# ---------------------------------------------------------------- PREREG reg. 4 (audit 2026-10-31): T34-T37
+# T34: funding-sleeve ties. (a) bot quantile_ls_tb == research copy; (b) last_rate; (c) inside a tie the higher latest rate is
+# shorted first, then the more liquid name; (d) weights do not depend on the panel's symbol order; (e) FUND_TIEBREAK=0 = old order
+import signals as _sig
+rng34 = np.random.default_rng(34); n34 = 300
+sig34 = np.round(rng34.integers(-3, 4, n34) * 1e-4 + rng34.standard_normal(n34) * (rng34.random(n34) < 0.3) * 1e-4, 8); sig34[::11] = np.nan
+sec34 = rng34.integers(-2, 3, n34) * 5e-5; liq34 = rng34.random(n34) * 1e8
+check('T34a quantile_ls_tb bot == research', np.array_equal(_sig.quantile_ls_tb(sig34, sec34, liq34, 0.2), qtb_res(sig34, sec34, liq34, 0.2)))
+fw34 = np.zeros((72, 4)); fw34[7, 0] = 1e-4; fw34[63, 0] = 3e-4; fw34[15, 1] = -2e-4; fw34[71, 3] = 5e-5
+check('T34b last_rate = latest non-zero settlement (0 if none); bot == research',
+      np.allclose(_sig.last_rate(fw34), [3e-4, -2e-4, 0.0, 5e-5]) and np.array_equal(_sig.last_rate(fw34), lr_res(fw34)))
+s34 = np.zeros(20); s34[:4] = [-9e-4, -8e-4, 9e-4, 8e-4]                    # 16 names tie at 0; k = 4 per leg
+sec_c = np.zeros(20); sec_c[4] = -1e-4                                   # name 4: highest latest rate (sec = -rate is lowest)
+liq_c = np.arange(20, dtype=float) * 1e6                                 # liquidity rises with the index
+w34 = qtb_res(s34 + 1e-17 * rng34.standard_normal(20), sec_c, liq_c, 0.2)  # float noise below 1e-9 must not matter
+check('T34c tie order: signal, then latest rate, then turnover (more liquid first in both legs)',
+      set(np.flatnonzero(w34 < 0)) == {0, 1, 4, 19} and set(np.flatnonzero(w34 > 0)) == {2, 3, 18, 17} and abs(w34.sum()) < 1e-12,
+      f'shorts {sorted(np.flatnonzero(w34 < 0))} longs {sorted(np.flatnonzero(w34 > 0))}')
+perm34 = np.random.default_rng(341).permutation(len(syms)); inv34 = np.argsort(perm34)
+pp34 = dict(panel, symbols=[syms[j] for j in perm34], **{k: v[:, perm34] for k, v in panel.items() if isinstance(v, np.ndarray) and v.ndim == 2})
+wa34 = S.fund_carry(panel, mu); wb34 = S.fund_carry(pp34, mu[perm34]); wc34 = S.fund_change(panel, mu); wd34 = S.fund_change(pp34, mu[perm34])
+check('T34d funding sleeves invariant to symbol order', np.abs(wa34 - wb34[inv34]).max() < 1e-12 and np.abs(wc34 - wd34[inv34]).max() < 1e-12 and (wa34 != 0).sum() > 0,
+      f'fcarry n {int((wa34 != 0).sum())}')
+C.FUND_TIEBREAK = 0
+w_old34 = S.fund_carry(panel, mu)
+C.FUND_TIEBREAK = 1
+check('T34e FUND_TIEBREAK=0 reproduces the argsort order (before reg. 4)', np.allclose(w_old34, q_res(np.where(mu_res & np.isfinite(sig_lvl), sig_lvl, np.nan), 0.2), atol=1e-12))
+
+# T35: ml8 features ranked over the TRAINING universe (age >= 30 d, top-150, exp17), sleeve trades the >= 180 d names (reg. 4).
+# The test window is ~6 months, so ages are shifted by 150 days to populate the 180 d set; research universes rebuilt with the same ages.
+if 8 in S.models:
+    from ml_features_8h import compute_features_8h as _cf8, FEATURES_8H as _F8
+    from ml_features import rank_norm as _rn
+    age35 = age_h + 150 * 24.0
+    def _runi(min_age_h):
+        t_ = d.t24[i]; m_ = (age35 >= min_age_h) & d.valid[i] & np.isfinite(t_) & (t_ >= 1e7)
+        o_ = np.argsort(-np.where(m_, t_, -np.inf)); r_ = np.empty(N, dtype=np.int64); r_[o_] = np.arange(N)
+        return m_ & (r_ < 150)
+    u30, ub35 = _runi(720), _runi(180 * 24)
+    panel35 = dict(panel, data_age=age35)          # bars on the exchange as old as the shifted age (as in research: segment age = bars)
+    S.uni.prev = {}; m8t = S.ml8_universe(panel35, age35); m8r = S.ml8_rank_universe(panel35, age35)
+    nh = 2161; jb35 = syms.index('BTCUSDT')
+    F35 = _cf8(d.cff[i - nh + 1:i + 1], d.fund[i - nh + 1:i + 1], d.t24[i - nh + 1:i + 1], d.prem[i - nh + 1:i + 1], d.high[i - nh + 1:i + 1], d.low[i - nh + 1:i + 1], age35, jb35, 0)
+    ix35 = np.flatnonzero(u30); p30 = np.full(N, np.nan)
+    p30[ix35] = S.models[8].predict(_rn(np.column_stack([F35[f][ix35] for f in _F8]).astype(np.float32)).astype(np.float64))
+    w_res35 = q_res(np.where(ub35, p30, np.nan), C.ML8_TOP_FRAC, inv_vol=vol_res)
+    w_bot35 = S.ml8(panel35, m8t, age35, 0, rank_mask=m8r)
+    w_old35 = S.ml8(panel35, m8t, age35, 0)
+    check('T35a ml8 rank universe == research training universe (age>=30d top-150), trade set == age>=180d', (m8r == u30).all() and (m8t == ub35).all()
+          and ub35.sum() > 20 and (u30 != ub35).any(), f"differ {int((u30 != ub35).sum())} "
+          f"rank {int(m8r.sum())}/{int(u30.sum())} trade {int(m8t.sum())}/{int(ub35.sum())}")
+    check('T35b ml8 weights == research (rank over 30d, trade >= 180d)', np.abs(w_bot35 - w_res35).max() < 1e-9 and (w_bot35 != 0).sum() > 10,
+          f'n {int((w_bot35 != 0).sum())} max diff {np.abs(w_bot35 - w_res35).max():.1e}; old path (rank over 180d) 0.5*L1 {0.5 * np.abs(w_old35 - w_res35).sum():.3f}')
+    _sl35 = C.SLEEVES
+    C.SLEEVES = ['ml8']; S.uni.prev = {}
+    _w, _p, inf35 = S.combined(panel35, age35, set(), daily_update=True, hour_utc=0)
+    C.SLEEVES = _sl35
+    check('T35c combined() ranks ml8 over the rank universe', inf35.get('ml8_rank_uni') == int(u30.sum()) and np.abs(_p['ml8'] - w_res35).max() < 1e-9, f"{inf35.get('ml8_rank_uni')}")
+else:
+    print('SKIP  T35 (no ml8 model)')
+
+# T36: EMA applied once per rebalance slot: a retried slot (aborted / failed execution) gives the same targets as its first attempt
+m36 = Memory(); m36.save = lambda: None; R36 = RiskEngine(m36, lambda *a: None); m36['lev'] = 1.0; m36['initial'] = 10000.0
+sy36 = ['AUSDT', 'BUSDT', 'CUSDT', 'DUSDT']; w36 = np.array([0.01, -0.01, 0.0, 0.0]); m36['w_prev'] = {'CUSDT': 0.01, 'DUSDT': -0.01}
+t1, _ = R36.build_targets(w36, sy36, 10000.0, np.full(4, 5e8), 1.0, set(), slot='2026-11-01T01')
+t2, _ = R36.build_targets(w36, sy36, 10000.0, np.full(4, 5e8), 1.0, set(), slot='2026-11-01T01')
+t3, _ = R36.build_targets(w36, sy36, 10000.0, np.full(4, 5e8), 1.0, set(), slot='2026-11-01T09')
+check('T36 EMA once per slot: retry == first attempt (0.5/0.5), next slot smooths from it',
+      np.allclose(t1, [50, -50, 50, -50]) and np.allclose(t1, t2) and np.allclose(t3 / t1, [1.5, 1.5, 0.5, 0.5]),
+      f't1 {t1} t2 {t2} t3 {t3}')
+
+# T37: ml8 kill-rule memory carried over from the previous stage's state file (ops/stage.sh -> ML8_CARRY_FROM), only those keys
+tmp37 = tempfile.mkdtemp(); old37 = os.path.join(tmp37, 'trial_100000.json')
+hist37 = [{'date': f'd{k_}', 'eq': 100000.0, 'ml8': 1.0, 'ml8_shadow': 3.0 if k_ % 2 else 1.0, 'ml8_shadow_cost': 0.1} for k_ in range(190)]
+json.dump(dict(sleeve_pnl_hist=hist37, ml8_mult=0.5, ml8_mult_date='2026-10-01', ml8_changes=[['2026-10-01', 1.0, 0.5, 0.3]], initial=100000.0,
+               eq_peak=101000.0, w_prev={'AUSDT': 0.1}, sleeve_pnl_day={'ml8': 5.0}, attrib_shadow_ml8={'AUSDT': 10.0}), open(old37, 'w'))
+b37 = Bot.__new__(Bot); b37.mem = Memory(); b37.mem.save = lambda: None
+_cf37 = C.ML8_CARRY_FROM; C.ML8_CARRY_FROM = old37
+n37 = b37.carry_ml8_memory(); C.ML8_CARRY_FROM = _cf37
+mm37 = b37.mem
+check('T37a kill-rule memory carried (history, multiplier, dates), nothing else', n37 == 190 and len(mm37['sleeve_pnl_hist']) == 190 and mm37['ml8_mult'] == 0.5
+      and mm37['ml8_mult_date'] == '2026-10-01' and 'initial' not in mm37 and 'eq_peak' not in mm37 and not mm37.get('w_prev') and 'sleeve_pnl_day' not in mm37
+      and 'attrib_shadow_ml8' not in mm37, f'n {n37} keys {sorted(k for k in mm37 if not k.startswith("c"))}')
+b37.reb_every_base = 8; C.ML8_KILL_RULE = 1
+b37.apply_ml8_kill_rule(10000.0, datetime(2026, 11, 15, tzinfo=timezone.utc))
+check('T37b the carried rule acts at once (>= 180 days): shadow net Sharpe > 1 but restore waits 60 d -> stays 0.5',
+      mm37['ml8_mult'] == 0.5 and abs(C.SLEEVE_SCALES['ml8'] - C.ML8_BASE_SCALE * 0.5) < 1e-12, f"mult {mm37['ml8_mult']}")
+C.SLEEVE_SCALES['ml8'] = C.ML8_BASE_SCALE; C.REBAL_EVERY_H = 8
+check('T37c ML8_CARRY_FROM is not part of the config hash', _cfg_hash() == _cfg_hash(ML8_CARRY_FROM='/opt/propsleeves/state/x.json'))
 
 print(f'\n{sum(1 for _, ok in res if ok)}/{len(res)} passed')
 sys.exit(0 if all(ok for _, ok in res) else 1)

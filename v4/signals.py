@@ -48,6 +48,38 @@ def quantile_ls(sig, top_frac=0.2, min_n=10, inv_vol=None):
     return w
 
 
+def last_rate(fw):
+    """Latest non-zero funding settlement per column of the window fw (H, N) (0 = no settlement that hour); 0 if none.
+    Identical copy of bt.last_rate (PREREG reg. 4)."""
+    fw = np.asarray(fw, dtype=np.float64)
+    nz = fw != 0
+    last = fw.shape[0] - 1 - np.argmax(nz[::-1], 0)
+    return np.where(nz.any(0), fw[last, np.arange(fw.shape[1])], 0.0)
+
+
+def quantile_ls_tb(sig, sec, liq, top_frac=0.2, min_n=10, nd=9):
+    """Funding sleeves (fcarry / fchg): quantile_ls with a deterministic order inside ties (PREREG reg. 4, audit 2026-10-31).
+    Primary key = sig rounded to nd decimals, then `sec` (same direction), then `liq` (more liquid first in both legs), then
+    column index. Same code as bt.quantile_ls_tb (test T35) plus the degenerate-signal guard of quantile_ls."""
+    s0 = np.where(np.isfinite(sig), sig, np.nan); fin = np.isfinite(s0); n0 = int(fin.sum())
+    if n0 >= min_n and np.unique(s0[fin]).size < min(C.SIG_MIN_DISTINCT, max(2, n0 // 2)):
+        return np.zeros(len(s0))
+    s = np.where(np.isfinite(sig), np.round(sig, nd), np.nan)
+    ok = np.flatnonzero(np.isfinite(s)); n = len(ok)
+    w = np.zeros(len(s))
+    if n < min_n:
+        return w
+    k = max(2, int(round(n * top_frac)))
+    a = s[ok]
+    b = np.asarray(sec, dtype=np.float64)[ok]; b = np.where(np.isfinite(b), np.round(b, nd), 0.0)
+    c = np.asarray(liq, dtype=np.float64)[ok]; c = np.where(np.isfinite(c), c, -np.inf)
+    shorts = ok[np.lexsort((-c, b, a))[:k]]
+    lo = ok[np.lexsort((-c, -b, -a))]
+    longs = lo[~np.isin(lo, shorts)][:k]          # a tie block spanning both boundaries: a name is never in both legs
+    w[longs] = 1.0 / k; w[shorts] = -1.0 / k
+    return w
+
+
 class Universe:
     """Point-in-time eligibility with hysteresis (held names stay while ranked < top_n + extra)."""
     def __init__(self):
@@ -181,20 +213,35 @@ class Sleeves:
         if i < 48:
             return np.zeros(len(panel['symbols']))
         sig = -(f[i - 23:i + 1].sum(0) - f[i - 47:i - 23].sum(0))
-        return quantile_ls(np.where(mask, sig, np.nan), C.FUND_TOP_FRAC)
+        return self._fund_q(np.where(mask, sig, np.nan), f, panel, i)
 
     def fund_carry(self, panel, mask):
         """Funding-level carry: short high (positive) 72h funding, long negative; quantile L/S (research fund_level)."""
         f = np.where(np.isfinite(panel['fund']), panel['fund'], 0.0); i = self._last(panel)
         if i < 72:
             return np.zeros(len(panel['symbols']))
-        return quantile_ls(np.where(mask, -f[i - 71:i + 1].sum(0), np.nan), C.FUND_TOP_FRAC)
+        return self._fund_q(np.where(mask, -f[i - 71:i + 1].sum(0), np.nan), f, panel, i)
+
+    @staticmethod
+    def _fund_q(sig, f, panel, i):
+        """FUND_TIEBREAK=1 (reg. 4): ties -> latest funding settlement of the last 72 h (same sign as the signal), then 24h turnover.
+        Mirrors research exp_common.qf. 0 = old argsort order (array order decides inside ties)."""
+        if not C.FUND_TIEBREAK:
+            return quantile_ls(sig, C.FUND_TOP_FRAC)
+        return quantile_ls_tb(sig, -last_rate(f[max(0, i - 71):i + 1]), np.asarray(panel['t24'][i], float), C.FUND_TOP_FRAC)
 
     def ml8_universe(self, panel, age_h):
         """ml8 trades only names >= ML8_MIN_AGE_D old (young names are a jump lottery on an 8h grid; exp20b/20h)."""
         i = self._last(panel)
         return self._need_hist(self.uni.select('ml8', panel['symbols'], panel['t24'][i], age_h, panel['valid'][i], panel['stale'],
                                C.ML8_MIN_AGE_D * 24, C.UNI_MIN_TURN, C.UNI_TOP_ML, C.UNI_EXIT_EXTRA, C.BLACKLIST, panel.get('delist', set())), panel)
+
+    def ml8_rank_universe(self, panel, age_h):
+        """Universe over which the ml8 features are rank-normalised = the model's training universe (exp17: age >= 30 d,
+        top-150 by turnover, no hysteresis) + 720 h of bars on this exchange. Reg. 4; predictions outside the trade mask are dropped."""
+        i = self._last(panel)
+        return self._need_hist(self.uni.select('ml8rank', panel['symbols'], panel['t24'][i], age_h, panel['valid'][i], panel['stale'],
+                               C.ML8_RANK_MIN_AGE_D * 24, C.UNI_MIN_TURN, C.UNI_TOP_ML, 0, C.BLACKLIST, panel.get('delist', set())), panel)
 
     def ml8_vol(self, panel):
         """Std of hourly returns over the last ML8_VOL_H closed bars (gap bars -> unknown), >= 72 obs; else NaN.
@@ -256,8 +303,10 @@ class Sleeves:
     def ml8_weights(self, sig, panel):
         return quantile_ls(sig, C.ML8_TOP_FRAC, inv_vol=self.ml8_vol(panel) if C.ML8_INV_VOL else None)
 
-    def ml8(self, panel, mask, age_h, hour_utc):
-        """Intraday sleeve: 8h-horizon model on the v3 feature set + intraday extras; inverse-vol weights."""
+    def ml8(self, panel, mask, age_h, hour_utc, rank_mask=None):
+        """Intraday sleeve: 8h-horizon model on the v3 feature set + intraday extras; inverse-vol weights.
+        rank_mask: names the features are ranked over (training universe, ml8_rank_universe); predictions are kept only
+        for `mask` (the trade universe). None = rank over `mask` itself (behaviour before reg. 4)."""
         mdl = self.models.get(8)
         if mdl is None or panel['cff'].shape[0] < ML_NEED_H:
             return np.zeros(len(panel['symbols']))
@@ -267,12 +316,14 @@ class Sleeves:
         jb = syms.index('BTCUSDT')
         F = compute_features_8h(panel['cff'][-ML_NEED_H:], panel['fund'][-ML_NEED_H:], panel['t24'][-ML_NEED_H:], panel['prem'][-ML_NEED_H:],
                                 panel['high'][-ML_NEED_H:], panel['low'][-ML_NEED_H:], age_h, jb, hour_utc)
-        idx = alpha_order(np.flatnonzero(mask), syms)
+        rm = mask if rank_mask is None else rank_mask
+        idx = alpha_order(np.flatnonzero(rm), syms)
         if len(idx) < 20:
             return np.zeros(len(syms))
         X = np.column_stack([F[f][idx] for f in FEATURES_8H]).astype(np.float32)
         pred = mdl.predict(rank_norm(X).astype(np.float64))
         sig = np.full(len(syms), np.nan); sig[idx] = pred
+        sig = np.where(mask, sig, np.nan)
         return self.ml8_weights(sig, panel)
 
     def listing(self, panel, age_h, majors_idx):
@@ -333,7 +384,10 @@ class Sleeves:
             info['daily_update'] = False
         if 'ml8' in C.SLEEVES:
             mm8 = self.ml8_universe(panel, age_ml); info['ml8_uni'] = int(mm8.sum())
-            parts['ml8'] = self.ml8(panel, mm8, age_ml, hour_utc); info['ml8_n'] = int((parts['ml8'] != 0).sum())
+            mr8 = self.ml8_rank_universe(panel, age_ml) if C.ML8_RANK_MIN_AGE_D != C.ML8_MIN_AGE_D else None
+            if mr8 is not None:
+                info['ml8_rank_uni'] = int(mr8.sum())
+            parts['ml8'] = self.ml8(panel, mm8, age_ml, hour_utc, rank_mask=mr8); info['ml8_n'] = int((parts['ml8'] != 0).sum())
         if 'fcarry' in C.SLEEVES:                  # funding-level carry (exp24a/e), recomputed every rebalance (8h holding)
             parts['fcarry'] = self.fund_carry(panel, self.fund_universe(panel, age_ml)); info['fcarry_n'] = int((parts['fcarry'] != 0).sum())
         info['ml_short_hist_n'] = self.short_hist_n

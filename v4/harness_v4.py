@@ -287,7 +287,7 @@ if A.ml_panels:
         return botsignals.quantile_ls(s, C.ML_TOP_FRAC) if hz != 8 else self.ml8_weights(s, panel)
     botsignals.Sleeves.ml = ml_from_panel
     if 8 in PANELS:
-        botsignals.Sleeves.ml8 = lambda self, panel, mask, age_h, hour_utc: ml_from_panel(self, panel, mask, age_h, 8)
+        botsignals.Sleeves.ml8 = lambda self, panel, mask, age_h, hour_utc, rank_mask=None: ml_from_panel(self, panel, mask, age_h, 8)   # P8 is ranked over the training universe already
     print('ML sleeve: walk-forward prediction panels (fair OOS)')
 
 

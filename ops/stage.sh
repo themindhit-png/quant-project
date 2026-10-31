@@ -11,6 +11,8 @@
 # (evns/base.env) и профиль стадии (evns/mubite_challenge.env / mubite_funded.env / personal.env), ставит PHASE / MODE /
 # ACCOUNT_SIZE и НОВЫЙ файл состояния (каждая стадия начинается с чистого счёта), считает хэш конфигурации, перезапускает бота
 # и ждёт /status. Старый env сохраняется рядом (.bak.<время>). Ничего секретного не печатает.
+# Рег. 4: память правила отключения ml8 (180 дней истории рукава, множитель) переносится со старой стадии: в env пишется
+# ML8_CARRY_FROM=<прежний STATE_FILE>, бот при чистом state копирует из него только эти ключи (main.carry_ml8_memory).
 set -euo pipefail
 UNIT="${UNIT:-propsleeves}"; APP="${APP:-/opt/propsleeves}"; SRC="$APP/src/v4"; BOTPY="${BOTPY:-$APP/venv/bin/python}"
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"; TS="$(date -u +%Y%m%d-%H%M%S)"
@@ -45,6 +47,7 @@ esac
 # ключи профиля и стратегии — их берём из репо, не из старого env
 LOCAL_RE='^(BYBIT_|TG_|STATUS_|STATE_|PORT|DRY_RUN|MODEL_DIR|EXPECTED_CONFIG_HASH)'
 NEW="$(mktemp)"
+OLDSTATE="$(grep -E '^[[:space:]]*(export[[:space:]]+)?STATE_FILE=' "$ENVF" | tail -1 | sed -E 's/^[[:space:]]*(export[[:space:]]+)?STATE_FILE=//; s/^["'\'']//; s/["'\'']$//' || true)"
 {
   echo "# собрано ops/stage.sh $STAGE $SIZE ($TS UTC); свои строки (ключи, Telegram, порт) сохранены из прежнего env"
   grep -E '^[[:space:]]*(export[[:space:]]+)?[A-Z0-9_]+=' "$ENVF" | sed -E 's/^[[:space:]]*(export[[:space:]]+)?//' \
@@ -56,6 +59,7 @@ NEW="$(mktemp)"
   echo "MODE=$MODE"; echo "PHASE=$PHASE"; echo "ACCOUNT_SIZE=$SIZE"
   [[ "$STAGE" == trial ]] && { echo "TARGETS=5"; echo "MIN_DAYS=2"; echo "PROFIT_DAYS=0"; }   # кабинет пробы: минимум 2 торговых дня
   echo "STATE_FILE=$APP/state/${STAGE}_${SIZE}_$TS.json"; echo "STATE_BACKUP_FILE=$APP/state/${STAGE}_${SIZE}_$TS.backup.json"
+  if [[ -n "$OLDSTATE" && -f "$OLDSTATE" ]]; then echo "ML8_CARRY_FROM=$OLDSTATE"; fi   # kill-rule memory of the previous stage (reg. 4)
 } > "$NEW"
 grep -q '^BYBIT_API_KEY=..' "$NEW" || die "нет API-ключа — сначала: bash ops/stage.sh keys"
 [[ -n "${STAGE_DRY:-}" ]] || mkdir -p "$APP/state"
