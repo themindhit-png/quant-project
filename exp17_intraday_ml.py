@@ -8,6 +8,7 @@ import os, time, json, gc, numpy as np, pandas as pd, lightgbm as lgb
 from bt import Data, run, quantile_ls, slip_model
 from strategies import core_signal
 from ml_features_v3 import compute_features_v3, FEATURES_V3, rank_norm
+from predio import save_pred
 
 START, END, OOS = '2021-01-01', os.environ.get('END', '2026-08-31 23:00'), '2022-01-01'
 d = Data(start=START, end=END, min_turn_ever=5e6, load_hl=True, load_premium=True)
@@ -53,31 +54,37 @@ print(f'table {tab.shape} ({time.time()-t0:.0f}s)', flush=True)
 params = dict(objective='regression', learning_rate=0.03, num_leaves=31, min_data_in_leaf=400, feature_fraction=0.7, bagging_fraction=0.7,
               bagging_freq=1, lambda_l2=10.0, verbose=-1, num_threads=2, seed=1)
 months = sorted(set(tab.date.dt.strftime('%Y-%m'))); first_test = months.index('2022-01'); mth_col = tab.date.dt.strftime('%Y-%m').values
-cache = {}; okrow = np.isfinite(tab['y'].values); pred = np.full(len(tab), np.nan, dtype=np.float32); ics = []
-for kk in range(first_test, len(months)):
-    mth = months[kk]; test = (mth_col == mth) & okrow
-    if test.sum() == 0:
-        continue
-    t_start = tab.date.values[test].min(); anchor = t_start
-    if RETRAIN == 'semi':
-        a = pd.Timestamp(t_start); anchor = np.datetime64(f'{a.year}-{"01" if a.month < 7 else "07"}-01T00:00:00')
-    train = (tab.date.values < (anchor - np.timedelta64(8, 'D'))) & okrow
-    if RETRAIN == 'roll24': train &= tab.date.values >= (anchor - np.timedelta64(730 + 8, 'D'))
-    key = str(anchor)
-    if RETRAIN != 'semi' or key not in cache:
-        ytr = tab.loc[train, 'y'].values; lo, hi = np.nanpercentile(ytr, [0.5, 99.5])
-        cache[key] = lgb.train(params, lgb.Dataset(tab.loc[train, FEATS].values, np.clip(ytr, lo, hi), free_raw_data=True), num_boost_round=300)
-    mdl = cache[key]
-    p = mdl.predict(tab.loc[test, FEATS].values); pred[test] = p
-    sub = tab.loc[test, ['dec', 'y']].copy(); sub['p'] = p
-    ics.append((mth, sub.groupby('dec').apply(lambda g: g[['y', 'p']].corr(method='spearman').iloc[0, 1]).mean()))
-    if kk % 6 == 0:
-        print(f'  {mth} IC {ics[-1][1]:.3f} ({time.time()-t0:.0f}s)', flush=True)
-ic = pd.DataFrame(ics, columns=['m', 'ic']); ic['y'] = ic.m.str[:4]
-print('8h IC by year: ' + ' '.join(f'{y}:{v:.3f}' for y, v in ic.groupby('y').ic.mean().items()) + f' mean {ic.ic.mean():.3f}', flush=True)
-P8 = np.full((T, N), np.nan, dtype=np.float32); okp = np.isfinite(pred)
-P8[dec[tab.dec.values[okp]], tab.sym.values[okp]] = pred[okp]
-np.save(f'out_exp17_pred_8h{SUF}.npy', P8); del tab; gc.collect()
+# seed / train-end bagging (env SEEDS="1,2,3", END_SHIFTS_D="0,14"; defaults = one model, seed 1, no shift = old behaviour)
+SEEDS = [int(x) for x in os.environ.get('SEEDS', '1').split(',')]; SHIFTS = [int(x) for x in os.environ.get('END_SHIFTS_D', '0').split(',')]
+COMBOS = [(sd, sh) for sh in SHIFTS for sd in SEEDS]
+for SEED, SHIFT in COMBOS:
+  params['seed'] = SEED; SUF_C = SUF if COMBOS == [(1, 0)] else SUF + f'_s{SEED}' + (f'_e{SHIFT}' if SHIFT else '')
+  cache = {}; okrow = np.isfinite(tab['y'].values); pred = np.full(len(tab), np.nan, dtype=np.float32); ics = []
+  for kk in range(first_test, len(months)):
+      mth = months[kk]; test = (mth_col == mth) & okrow
+      if test.sum() == 0:
+          continue
+      t_start = tab.date.values[test].min(); anchor = t_start
+      if RETRAIN == 'semi':
+          a = pd.Timestamp(t_start); anchor = np.datetime64(f'{a.year}-{"01" if a.month < 7 else "07"}-01T00:00:00')
+      train = (tab.date.values < (anchor - np.timedelta64(8 + SHIFT, 'D'))) & okrow
+      if RETRAIN == 'roll24': train &= tab.date.values >= (anchor - np.timedelta64(730 + 8, 'D'))
+      key = str(anchor)
+      if RETRAIN != 'semi' or key not in cache:
+          ytr = tab.loc[train, 'y'].values; lo, hi = np.nanpercentile(ytr, [0.5, 99.5])
+          cache[key] = lgb.train(params, lgb.Dataset(tab.loc[train, FEATS].values, np.clip(ytr, lo, hi), free_raw_data=True), num_boost_round=300)
+      mdl = cache[key]
+      p = mdl.predict(tab.loc[test, FEATS].values); pred[test] = p
+      sub = tab.loc[test, ['dec', 'y']].copy(); sub['p'] = p
+      ics.append((mth, sub.groupby('dec').apply(lambda g: g[['y', 'p']].corr(method='spearman').iloc[0, 1]).mean()))
+      if kk % 6 == 0:
+          print(f'  {mth} IC {ics[-1][1]:.3f} ({time.time()-t0:.0f}s)', flush=True)
+  ic = pd.DataFrame(ics, columns=['m', 'ic']); ic['y'] = ic.m.str[:4]
+  print('8h IC by year: ' + ' '.join(f'{y}:{v:.3f}' for y, v in ic.groupby('y').ic.mean().items()) + f' mean {ic.ic.mean():.3f}', flush=True)
+  P8 = np.full((T, N), np.nan, dtype=np.float32); okp = np.isfinite(pred)
+  P8[dec[tab.dec.values[okp]], tab.sym.values[okp]] = pred[okp]
+  save_pred(f'out_exp17_pred_8h{SUF_C}', P8, COMBOS != [(1, 0)])
+del tab; gc.collect()
 if os.environ.get('PRED_ONLY'):
     print('DONE (pred only)'); raise SystemExit
 

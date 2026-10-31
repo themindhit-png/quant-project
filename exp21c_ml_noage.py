@@ -7,6 +7,7 @@ import os, sys, time, json, numpy as np, pandas as pd
 import lightgbm as lgb
 from bt import Data
 from ml_features import rank_norm
+from predio import save_pred
 START, END = '2021-01-01', os.environ.get('END', '2026-08-31 23:00')
 MIN_AGE_H = int(os.environ.get('MIN_AGE_D', '90')) * 24
 DROP = [f for f in os.environ.get('DROP_FEATS', 'age_d').split(',') if f]
@@ -81,7 +82,13 @@ tab = pd.concat(rows, ignore_index=True); tab['date'] = d.idx[dec[tab.day.values
 print(f'table: {tab.shape}, {tab.date.min().date()} -> {tab.date.max().date()}', flush=True)
 params = dict(objective='regression', learning_rate=0.03, num_leaves=31, min_data_in_leaf=200, feature_fraction=0.7, bagging_fraction=0.7, bagging_freq=1, lambda_l2=10.0, verbose=-1, num_threads=2, seed=1)
 months = sorted(set(tab.date.dt.strftime('%Y-%m'))); first_test = months.index('2022-01'); mth_col = tab.date.dt.strftime('%Y-%m').values
-for HZ in (3, 7):
+# seed / train-end bagging (env SEEDS="1,2,3", END_SHIFTS_D="0,14"; defaults = one model seed 1, no shift = old behaviour).
+# Each (seed, shift) pair is saved as SUF + _s<seed> (+ _e<shift>) unless it is the single default pair (file name unchanged).
+SEEDS = [int(x) for x in os.environ.get('SEEDS', '1').split(',')]; SHIFTS = [int(x) for x in os.environ.get('END_SHIFTS_D', '0').split(',')]
+COMBOS = [(sd, sh) for sh in SHIFTS for sd in SEEDS]
+def csuf(sd, sh): return SUF if COMBOS == [(1, 0)] else SUF + f'_s{sd}' + (f'_e{sh}' if sh else '')
+for (SEED, SHIFT), HZ in [(c, h) for c in COMBOS for h in (3, 7)]:
+    params['seed'] = SEED; SUF_C = csuf(SEED, SHIFT)
     cache = {}; ycol = f'y{HZ}'; okrow = np.isfinite(tab[ycol].values); pred = np.full(len(tab), np.nan, dtype=np.float32); ics = []; imp = np.zeros(len(feat_names))
     for k in range(first_test, len(months)):
         mth = months[k]; test = (mth_col == mth) & okrow
@@ -91,7 +98,7 @@ for HZ in (3, 7):
             anchor = np.datetime64(f'{anchor.year}-{"01" if anchor.month < 7 else "07"}-01T00:00:00')
         else:
             anchor = t_start
-        train = (tab.date.values < (anchor - np.timedelta64(HZ + 7, 'D'))) & okrow
+        train = (tab.date.values < (anchor - np.timedelta64(HZ + 7 + SHIFT, 'D'))) & okrow
         if RETRAIN == 'roll24': train &= tab.date.values >= (anchor - np.timedelta64(730 + HZ + 7, 'D'))
         key = (RETRAIN == 'semi', str(anchor))
         if RETRAIN != 'semi' or key not in cache:
@@ -104,8 +111,8 @@ for HZ in (3, 7):
         ics.append((mth, sub.groupby('day').apply(lambda g: g[[ycol, 'p']].corr(method='spearman').iloc[0, 1]).mean(), int(train.sum())))
         if k % 6 == 0: print(f'  h{HZ} {mth}: train {int(train.sum()):>7} rows  IC {ics[-1][1]:+.3f} ({time.time()-t0:.0f}s)', flush=True)
     ic_df = pd.DataFrame(ics, columns=['month', 'ic', 'ntrain'])
-    print(f'\nh{HZ}{SUF} mean IC by year:'); print(ic_df.assign(y=ic_df.month.str[:4]).groupby('y').ic.mean().round(4).to_string())
-    fi = pd.Series(imp, index=feat_names).sort_values(ascending=False); print(f'h{HZ}{SUF} feature importance (gain):'); print((fi / fi.sum()).round(3).head(12).to_string(), flush=True)
+    print(f'\nh{HZ}{SUF_C} mean IC by year:'); print(ic_df.assign(y=ic_df.month.str[:4]).groupby('y').ic.mean().round(4).to_string())
+    fi = pd.Series(imp, index=feat_names).sort_values(ascending=False); print(f'h{HZ}{SUF_C} feature importance (gain):'); print((fi / fi.sum()).round(3).head(12).to_string(), flush=True)
     P = np.full((T, N), np.nan, dtype=np.float32); okp = np.isfinite(pred); P[dec[tab.day.values[okp]], tab.sym.values[okp]] = pred[okp]
-    np.save(f'out_exp21c_pred_h{HZ}{SUF}.npy', P); ic_df.to_csv(f'out_exp21c_ic_h{HZ}{SUF}.csv', index=False)
+    save_pred(f'out_exp21c_pred_h{HZ}{SUF_C}', P, COMBOS != [(1, 0)]); ic_df.to_csv(f'out_exp21c_ic_h{HZ}{SUF_C}.csv', index=False)
 print('DONE')
