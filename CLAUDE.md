@@ -32,7 +32,7 @@ pip install -r requirements.txt
 python3 dl_binance.py klines,fundingRate,premiumIndexKlines     # ~1.3 ГБ, ~15 мин
 python3 build_panels.py "2026-09-30 23:00" core                  # затем ohlc, premium
 python3 check_panels.py
-python3 -m pytest v4/tests_v4.py                                 # нужны панели
+python3 v4/tests_v4.py                                           # нужны панели (скрипт, не pytest)
 ```
 
 ## Железные правила
