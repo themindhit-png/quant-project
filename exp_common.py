@@ -5,7 +5,7 @@ from scipy.stats import norm, skew, kurtosis
 from bt import Data, run, quantile_ls, quantile_ls_tb, last_rate, slip_model
 from strategies import core_signal
 from betautil import rolling_std
-START, END, OOS = '2021-01-01', os.environ.get('END', '2026-08-31 23:00'), '2022-01-01'
+START, END, OOS = os.environ.get('START', '2021-01-01'), os.environ.get('END', '2026-08-31 23:00'), os.environ.get('OOS', '2022-01-01')   # START/OOS env: reverse test 2020-21 (research/rev_book.py)
 PS8, PS37 = os.environ.get('PRED_SUF8', '_p0'), os.environ.get('PRED_SUF37', '_noage')   # Phase 4: PRED_SUF8=_oct PRED_SUF37=_noage_oct for predictions extended to 2026-10-26
 d = Data(start=START, end=END, min_turn_ever=5e6, load_hl=False, load_premium=False); T, N = d.ret.shape
 P8 = np.load(f'out_exp17_pred_8h{PS8}.npy', mmap_mode='r')
