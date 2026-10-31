@@ -21,11 +21,11 @@ class Panel:
         qv = pd.read_parquet(os.path.join(PAN, 'qvol.parquet')).loc[a:END]
         t24 = qv.rolling(24, min_periods=6).sum()
         keep = [c for c in t24.columns if str(c).isascii() and np.nanmax(t24[c].values) >= 5e6]
-        self.sym = np.array(keep); self.t24 = t24[keep].values.astype(np.float64)
+        self.sym = np.array(keep); self.t24 = t24[keep].values.astype(np.float32); del t24
         px = pd.read_parquet(os.path.join(PAN, 'close.parquet'), columns=keep).loc[a:END]
-        self.time = px.index; P = px.values.astype(np.float64)
+        self.time = px.index; P = px.values.astype(np.float64); del px
         F = pd.read_parquet(os.path.join(PAN, 'funding.parquet'), columns=keep).loc[a:END].values.astype(np.float64)
-        self.fund = np.nan_to_num(F, nan=0.0)
+        self.fund = np.nan_to_num(F, nan=0.0).astype(np.float32); del F
         T, N = P.shape; self.T, self.N = T, N
         self.ok = np.isfinite(P) & (P > 0)
         if os.environ.get('FREEZE') == '1':          # variant: >=24h runs of unchanged close with zero volume = no price (delisted)
@@ -37,7 +37,7 @@ class Panel:
                     if e_ - s_ >= 24: self.ok[s_:e_, j] = False
             print('FREEZE: frozen bars set invalid:', int((np.isfinite(P) & (P > 0) & ~self.ok).sum()), flush=True)
         # listing segments: a run of valid bars broken by >24h of missing bars
-        self.age = np.full((T, N), -1, np.int64); self.last_bar = np.zeros((T, N), bool)
+        self.age = np.full((T, N), -1, np.int32); self.last_bar = np.zeros((T, N), bool)
         for j in range(N):
             v = np.flatnonzero(self.ok[:, j])
             if not len(v): continue
@@ -49,13 +49,13 @@ class Panel:
         Pf = pd.DataFrame(np.where(self.ok, P, np.nan)).ffill().values
         R = np.full((T, N), np.nan); R[1:] = Pf[1:] / Pf[:-1] - 1
         R[(self.age == 0) | ~self.ok] = np.nan
-        self.R = R; self.R0 = np.nan_to_num(R, nan=0.0)
+        self.R0 = np.nan_to_num(R, nan=0.0); del Pf, P
         self.hour = np.asarray(self.time.hour); self.hcount = ((self.time - pd.Timestamp('1970-01-01', tz='UTC')) // pd.Timedelta(hours=1)).values
         # cumulative sums for rolling stats
         okr = np.isfinite(R); X = np.where(okr, R, 0.0)
         z = np.zeros((1, N))
-        self.cS = np.vstack([z, np.cumsum(X, 0)]); self.cSS = np.vstack([z, np.cumsum(X * X, 0)]); self.cN = np.vstack([z, np.cumsum(okr, 0)])
-        self.cF = np.vstack([z, np.cumsum(self.fund, 0)])
+        self.cS = np.vstack([z, np.cumsum(X, 0)]); self.cSS = np.vstack([z, np.cumsum(X * X, 0)]); self.cN = np.vstack([z, np.cumsum(okr, 0)]).astype(np.float32)
+        self.cF = np.vstack([z, np.cumsum(self.fund, 0, dtype=np.float64)]); del R, X, okr, qv
         self.majors = np.isin(self.sym, ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT'])
         print(f'Panel {T}x{N} {self.time[0]} -> {self.time[-1]} ({time.time()-t0:.0f}s)', flush=True)
 
