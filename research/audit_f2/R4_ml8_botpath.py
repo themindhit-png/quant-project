@@ -2,7 +2,7 @@
 """Reg. 4 check (after audit F2 / agent F M1): the LIVE ml8 path (v4/signals.Sleeves.ml8 with the training-universe rank mask, as
 Sleeves.combined calls it) vs the research path (exp17: features ranked over age >= 30 d top-150, traded on age >= 180 d), with the
 deployed v4/models/ml_8h.txt on Binance panels. Prints prediction Spearman and 0.5*L1 of the weights, new path and old path.
-Run (repo root): python3 research/audit_f2/R4_ml8_botpath.py [N_BARS]  -> logs/R4_ml8_botpath.log"""
+Run (repo root): [NO_BLACKLIST=1] python3 research/audit_f2/R4_ml8_botpath.py [N_BARS]  -> logs/R4_ml8_botpath[_nobl].log"""
 import os, sys, numpy as np, pandas as pd
 from scipy.stats import spearmanr
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -23,6 +23,9 @@ NB = int(sys.argv[1]) if len(sys.argv) > 1 else 40
 d = Data(start='2025-06-01', end='2026-10-26 23:00', min_turn_ever=5e6, load_hl=True, load_premium=True)
 T, N = d.ret.shape; jb = int(np.flatnonzero(d.cols == 'BTCUSDT')[0]); VOL = rolling_std(d.ret, 168, 72)
 S = Sleeves(log=lambda *a: None); mdl = S.models[8]; syms = [str(s) for s in d.cols]
+if os.environ.get('NO_BLACKLIST') == '1':   # parity check of the code path: the live bot cannot load the blacklisted stock/ETF tokens at all
+    C.BLACKLIST = set()
+print('blacklist', len(C.BLACKLIST), 'names, in panel:', sorted(set(C.BLACKLIST) & set(syms)))
 bars = [i for i in range(T) if d.hh[i] % 8 == 0 and d.idx[i] >= pd.Timestamp('2025-09-01', tz='UTC')]
 bars = bars[::max(1, len(bars) // NB)][:NB]
 rows = []
