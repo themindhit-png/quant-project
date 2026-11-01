@@ -9,7 +9,7 @@ Env (forward): FUND_SRC (exp_common), P5_PRED8 / P5_PRED37 (prediction suffixes,
 (daily returns per scenario; reverse -> P5_<tag>_rev.csv) and P5_<tag>.json (run metrics).
 FLAGS: nofchg (drop funding-change sleeve) | fchgres (its signal = residual after 24h return and premium change) | ml37 (h3+h7 merged, weight 2)
        | softq (soft 15-25 % quantile in funding sleeves) | ml8w1 (8h sleeve weight 1) | crp (cluster risk parity) | fcm (fcarry x clip(S/med S,.5,2))
-       | fcoff (fcarry off if expected carry < rebalance cost) | vt30 / vtewm (ex-ante vol target) | rk1 / rk2 (rank weights in ML sleeves)"""
+       | fcoff (fcarry off if expected carry < rebalance cost) | vt30 / vtewm (ex-ante vol target) | rk1 / rk2 (rank weights in ML sleeves) | ctrend (core = ensemble of lookbacks)"""
 import os, sys, math, json, argparse, numpy as np, pandas as pd
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); os.chdir(ROOT); sys.path.insert(0, ROOT)
 OUT = os.path.join(ROOT, 'research', 'phase4_out'); LOG = os.path.join(ROOT, 'docs', 'PHASE4_LOG.md')
@@ -86,7 +86,14 @@ def build(flags):
         if 'fcoff' in flags and Sv[i] * 8 / 72 < 4.5e-4 * Wp[i]: w = w * 0.0
         return w
 
-    parts = [Held(sl_listing), Held(sl_core)]; wts = [1, 1]; names = ['listing', 'core']
+    def core_ens(dd, i, mask):   # idea 11: equal-weight ensemble of lookbacks (ranks), same universe / quantile as the core sleeve
+        from strategies import core_signal
+        m = dd.universe(i, min_age_h=720, min_turn=1e7, top_n=100); base = core_signal(dd, i, m, 336); ok = np.flatnonzero(np.isfinite(base)); s = np.full(N, np.nan)
+        if len(ok) >= 10:
+            rk = [rankdata(np.where(np.isfinite(x[ok]), x[ok], np.nanmedian(x[ok]))) / len(ok) for x in (core_signal(dd, i, m, lb) for lb in (24, 72, 168, 336, 720))]
+            s[ok] = np.mean(rk, 0)
+        return quantile_ls(s, 0.2)
+    parts = [Held(sl_listing), Held(core_ens if 'ctrend' in flags else sl_core)]; wts = [1, 1]; names = ['listing', 'core']
     if 'ml37' in flags: parts += [Held(ml37)]; wts += [2]; names += ['ml37']
     else: parts += [Held(ml3), Held(ml7)]; wts += [1, 1]; names += ['ml3', 'ml7']
     parts += [ml8]; wts += [1 if 'ml8w1' in flags else 2]; names += ['ml8']
