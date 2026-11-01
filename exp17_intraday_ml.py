@@ -18,6 +18,7 @@ HZ = 8; NEED = 2161
 DEC_PHASE = int(os.environ.get('DEC_PHASE', '7'))        # 7: decisions at 07/15/23 bars (funding-aligned); 0: 00/08/16 (daily-grid aligned)
 SUF = os.environ.get('SUF', '')
 RETRAIN = os.environ.get('RETRAIN', 'monthly')   # Phase 4.2: monthly | semi | roll24
+LSH = int(os.environ.get('LABEL_SHIFT_H', '0'))   # reg. 5: 1 = label log(P[i+9]/P[i+1]) - funding (execution one bar later)
 dec = np.flatnonzero(d.hh % 8 == DEC_PHASE)
 dec = dec[(dec >= NEED) & (dec < T - 48)]
 D = len(dec); print(f'decisions: {D}', flush=True)
@@ -41,8 +42,8 @@ for n, i in enumerate(dec):
     F['hour'] = np.full(N, float((d.hh[i] + 1) % 24))
     X = np.column_stack([F[f][m] for f in FEATS]).astype(np.float32)
     Xr = rank_norm(X)
-    fp = np.nansum(d.fund[i + 1:i + HZ + 1], 0, dtype=np.float64)
-    y = (np.log(d.cff[i + HZ] / d.cff[i]) - fp)[m]; y = y - np.nanmean(y)
+    fp = np.nansum(d.fund[i + 1 + LSH:i + HZ + 1 + LSH], 0, dtype=np.float64)   # LABEL_SHIFT_H (reg. 5 idea 8): label starts LSH bars later
+    y = (np.log(d.cff[i + HZ + LSH] / d.cff[i + LSH]) - fp)[m]; y = y - np.nanmean(y)
     df = pd.DataFrame(Xr, columns=FEATS); df['dec'] = n; df['sym'] = np.flatnonzero(m); df['y'] = y.astype(np.float32)
     rows.append(df)
     if n % 500 == 0:

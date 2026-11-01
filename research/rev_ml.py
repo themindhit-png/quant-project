@@ -10,6 +10,8 @@ import os, sys, time, gc, numpy as np, pandas as pd, lightgbm as lgb
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); sys.path.insert(0, ROOT); sys.path.insert(0, os.path.join(ROOT, 'v4')); os.chdir(ROOT)
 from bt import Data
 MODE = sys.argv[1]
+SEEDS = [int(x) for x in os.environ.get('SEEDS', '1').split(',')]   # reg. 5 bagging: several seeds -> sparse files _rev_s<seed>.npz
+from predio import save_pred
 START, END, SPLIT = '2020-01-01', os.environ.get('END', '2026-10-26 23:00'), pd.Timestamp('2022-01-01', tz='UTC')
 d = Data(start=START, end=END, min_turn_ever=5e6, load_hl=True, load_premium=True)
 T, N = d.ret.shape; jbtc = int(np.flatnonzero(d.cols == 'BTCUSDT')[0]); t0 = time.time(); rows = []; d.prev_mask = None
@@ -40,12 +42,15 @@ if MODE == 'h37':
     for hz in HZS:
         y = tab[f'y{hz}'].values; ok = np.isfinite(y); tr = ok & (tab.date >= SPLIT + pd.Timedelta(days=hz + 7)).values; te = (tab.date < SPLIT).values
         lo, hi = np.nanpercentile(y[tr], [0.5, 99.5])
-        mdl = lgb.train(params, lgb.Dataset(tab.loc[tr, FEATS].values, np.clip(y[tr], lo, hi)), num_boost_round=400)
-        p = mdl.predict(tab.loc[te, FEATS].values)
-        print(f'h{hz}: train {tr.sum()} rows {tab.date[tr].min().date()}..{tab.date[tr].max().date()}; test {te.sum()} rows {tab.date[te].min().date()}..{tab.date[te].max().date()}', flush=True)
-        print(f'h{hz} reverse OOS IC by quarter:\n' + ic_by(tab[te], f'y{hz}', p, 'day').round(3).to_string(), flush=True)
-        P = np.full((T, N), np.nan, dtype=np.float32); P[dec[tab.day.values[te]], tab.sym.values[te]] = p
-        np.save(f'out_exp21c_pred_h{hz}_rev.npy', P)
+        for SEED in SEEDS:
+            params['seed'] = SEED
+            mdl = lgb.train(params, lgb.Dataset(tab.loc[tr, FEATS].values, np.clip(y[tr], lo, hi)), num_boost_round=400)
+            p = mdl.predict(tab.loc[te, FEATS].values)
+            print(f'h{hz} seed {SEED}: train {tr.sum()} rows {tab.date[tr].min().date()}..{tab.date[tr].max().date()}; test {te.sum()} rows {tab.date[te].min().date()}..{tab.date[te].max().date()}', flush=True)
+            print(f'h{hz} reverse OOS IC by quarter:\n' + ic_by(tab[te], f'y{hz}', p, 'day').round(3).to_string(), flush=True)
+            P = np.full((T, N), np.nan, dtype=np.float32); P[dec[tab.day.values[te]], tab.sym.values[te]] = p
+            if SEEDS == [1]: np.save(f'out_exp21c_pred_h{hz}_rev.npy', P)
+            else: save_pred(f'out_exp21c_pred_h{hz}_rev_s{SEED}', P, True)
 elif MODE == '8h':
     from ml_features_8h import compute_features_8h, FEATURES_8H, rank_norm, NEED_H
     dec = np.flatnonzero(d.hh % 8 == 0); dec = dec[(dec >= NEED_H) & (dec < T - 16)]
@@ -62,10 +67,13 @@ elif MODE == '8h':
     params = dict(objective='regression', learning_rate=0.03, num_leaves=31, min_data_in_leaf=400, feature_fraction=0.7, bagging_fraction=0.7, bagging_freq=1, lambda_l2=10.0, verbose=-1, num_threads=2, seed=1)
     y = tab['y'].values; ok = np.isfinite(y); tr = ok & (tab.date >= SPLIT + pd.Timedelta(days=8)).values; te = (tab.date < SPLIT).values
     lo, hi = np.nanpercentile(y[tr], [0.5, 99.5])
-    mdl = lgb.train(params, lgb.Dataset(tab.loc[tr, FEATURES_8H].values, np.clip(y[tr], lo, hi)), num_boost_round=300)
-    p = mdl.predict(tab.loc[te, FEATURES_8H].values)
-    print(f'8h: train {tr.sum()} rows {tab.date[tr].min()}..{tab.date[tr].max()}; test {te.sum()} rows {tab.date[te].min()}..{tab.date[te].max()}', flush=True)
-    print('8h reverse OOS IC by quarter:\n' + ic_by(tab[te], 'y', p, 'dec').round(3).to_string(), flush=True)
-    P = np.full((T, N), np.nan, dtype=np.float32); P[dec[tab.dec.values[te]], tab.sym.values[te]] = p
-    np.save('out_exp17_pred_8h_rev.npy', P)
+    for SEED in SEEDS:
+        params['seed'] = SEED
+        mdl = lgb.train(params, lgb.Dataset(tab.loc[tr, FEATURES_8H].values, np.clip(y[tr], lo, hi)), num_boost_round=300)
+        p = mdl.predict(tab.loc[te, FEATURES_8H].values)
+        print(f'8h seed {SEED}: train {tr.sum()} rows {tab.date[tr].min()}..{tab.date[tr].max()}; test {te.sum()} rows {tab.date[te].min()}..{tab.date[te].max()}', flush=True)
+        print('8h reverse OOS IC by quarter:\n' + ic_by(tab[te], 'y', p, 'dec').round(3).to_string(), flush=True)
+        P = np.full((T, N), np.nan, dtype=np.float32); P[dec[tab.dec.values[te]], tab.sym.values[te]] = p
+        if SEEDS == [1]: np.save('out_exp17_pred_8h_rev.npy', P)
+        else: save_pred(f'out_exp17_pred_8h_rev_s{SEED}', P, True)
 print(f'DONE ({time.time()-t0:.0f}s)')

@@ -13,6 +13,8 @@ MIN_AGE_H = int(os.environ.get('MIN_AGE_D', '90')) * 24
 DROP = [f for f in os.environ.get('DROP_FEATS', 'age_d').split(',') if f]
 SUF = os.environ.get('SUF', '_noage')
 RETRAIN = os.environ.get('RETRAIN', 'monthly')   # Phase 4.2: monthly | semi (retrain 1 Jan / 1 Jul, expanding) | roll24 (monthly, 24-month window)
+LABEL = os.environ.get('LABEL', 'ret')   # reg. 5: ret (old) | rg (rank-gauss)
+from scipy.stats import norm, rankdata
 d = Data(start=START, end=END, min_turn_ever=5e6, load_hl=True, load_premium=True)
 T, N = d.ret.shape
 dec = np.flatnonzero(d.hh % 24 == 0); dec = dec[(dec >= 24 * 100) & (dec < T - 24 * 8)]; D = len(dec)
@@ -76,7 +78,11 @@ for n in range(D):
     X = np.column_stack([F[f][n][m] for f in feat_names]).astype(np.float32); Xr = rank_norm(X)
     df = pd.DataFrame(Xr, columns=feat_names); df['day'] = n; df['sym'] = np.flatnonzero(m)
     for hzn, arr in fwd.items():
-        v = arr[n][m]; df[f'y{hzn}'] = v - np.nanmean(v)
+        v = arr[n][m]
+        if LABEL == 'rg':   # reg. 5 idea 10: normal quantile of the cross-sectional rank (NaN stays NaN)
+            ok = np.isfinite(v); g = np.full(len(v), np.nan); g[ok] = norm.ppf((rankdata(v[ok]) - 0.5) / ok.sum()); df[f'y{hzn}'] = g
+        else:
+            df[f'y{hzn}'] = v - np.nanmean(v)
     rows.append(df)
 tab = pd.concat(rows, ignore_index=True); tab['date'] = d.idx[dec[tab.day.values]]; del rows
 print(f'table: {tab.shape}, {tab.date.min().date()} -> {tab.date.max().date()}', flush=True)

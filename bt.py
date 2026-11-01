@@ -225,14 +225,17 @@ def run(data, signal_fn, reb_h=24, band=0.0, fee_bps=5.5, slip_bps=None, slip_fn
         attrib=False, pos_cap_abs=None, stop_pct=None, stop_cooldown_h=48, reb_offset=0,
         max_gross_x=None, daily_stop=None, cap_exempt=None, cap_exempt_val=0.30, stop_side='both', attrib_from=None,
         cap_young=None, young_h=180 * 24, vt_mode='direct', vt_smooth=0.0, vt_delever='realised',
-        end_i=None, maker_adverse_bps=0.0, band_fn=None):
+        end_i=None, maker_adverse_bps=0.0, band_fn=None, vt_src='realised', rec=None):
     """Generic engine. signal_fn(data, i, mask) -> target weights (N,), each side sums ~1.
     band: skip trades where |target-current| < band*|target| (unless full close).
     smooth: EMA smoothing of target weights across rebalances. trade_frac: partial rebalance.
     vol_target: daily vol target using realised strategy vol over vol_win_d days.
     stop_pct: per-position stop (fraction adverse move from entry, checked on bar high/low).
     daily_stop: if today's pnl <= -daily_stop*eq_at_day_start -> flatten until next UTC day.
-    max_gross_x: hard cap on gross notional / equity."""
+    max_gross_x: hard cap on gross notional / equity.
+    vt_src: 'realised' (default, old behaviour: realised unlevered book returns) | 'exante30' (std of the daily paper return of the CURRENT
+    target weights over the last 30 days) | 'exante_ewm10' (same, last 90 days, EWMA half-life 10 days). Reg. 5 research option.
+    rec: optional list; at each rebalance appends (bar i, held positions / equity after trading) — hourly per-coin weights export."""
     uni_kwargs = uni_kwargs or {}
     if slip_fn is None and slip_bps is None:
         slip_fn = slip_model()
@@ -308,7 +311,17 @@ def run(data, signal_fn, reb_h=24, band=0.0, fee_bps=5.5, slip_bps=None, slip_fn
             if smooth > 0 and w_prev_target is not None:
                 w = smooth * w_prev_target + (1 - smooth) * w
             w_prev_target = w.copy()
-            if vol_target and len(pnl_hist) >= 24 * 10:
+            if vol_target and vt_src != 'realised' and i >= 24 * 91:
+                hw = np.nan_to_num(ret[i - (24 * 30 if vt_src == 'exante30' else 24 * 90) + 1:i + 1]) @ w
+                dr = hw.reshape(-1, 24).sum(1)
+                if vt_src == 'exante30':
+                    dvol = dr.std(ddof=1)
+                else:
+                    wt = 0.5 ** (np.arange(len(dr))[::-1] / 10.0); mu = (wt * dr).sum() / wt.sum()
+                    dvol = float(np.sqrt((wt * (dr - mu) ** 2).sum() / wt.sum()))
+                if np.isfinite(dvol) and dvol > 1e-6:
+                    lev = float(np.clip(vol_target / dvol, 0.05, max_lev))
+            elif vol_target and len(pnl_hist) >= 24 * 10:
                 # 'direct': lev = target / realised vol of the UNLEVERED book (stable). 'recursive' (legacy): lev *= target/dvol
                 # on levered returns with a lagging window -> bang-bang oscillation between the clips (see exp20g).
                 src = pnl_hist_u if vt_mode == 'direct' else pnl_hist
@@ -372,6 +385,8 @@ def run(data, signal_fn, reb_h=24, band=0.0, fee_bps=5.5, slip_bps=None, slip_fn
                 pos = newpos
                 if A is not None and i >= af:
                     A['cost'] += slv + feev; A['traded'] += traded
+            if rec is not None:
+                rec.append((i, pos / max(eq, 1e-9)))
             n_pos_hist.append((pos != 0).sum()); gross_hist.append(np.abs(pos).sum() / max(eq, 1e-9))
             lev_hist.append((i, lev, float(np.abs(pos).sum() / max(eq, 1e-9)), int((pos != 0).sum())))
         eq_path[i] = eq

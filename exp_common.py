@@ -20,7 +20,24 @@ for j, s in enumerate(d.cols):
     mm = instr.get(str(s))
     if mm and mm.get('launch'): launch_h[j] = mm['launch'] / 1000 / 3600
 MAJ5 = [s for s in ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT'] if s in d.cols]; jm = np.array([int(np.flatnonzero(d.cols == s)[0]) for s in MAJ5]); JB = int(np.flatnonzero(d.cols == 'BTCUSDT')[0])
-FUND_REAL = d.fund.copy(); FUND0 = np.where(np.isfinite(d.fund), d.fund, 0.0).astype(np.float64); CF = np.cumsum(FUND0, axis=0, dtype=np.float64)
+# Reg. 5 realism step R-1: funding of the trading venue. FUND_SRC=binance (default, old) | bybit_pnl (Bybit settlements as P&L only,
+# signals on the old source) | bybit (Bybit as P&L and signal, like the live bot). Bybit history (data/bybit_funding.csv, env FUND_FILE) is
+# used per symbol from its first Bybit settlement on; earlier hours and symbols without Bybit data keep the old source.
+FUND_SRC = os.environ.get('FUND_SRC', 'binance')
+FUND_SIG = None
+if FUND_SRC != 'binance':
+    _bf = pd.read_csv(os.environ.get('FUND_FILE', 'data/bybit_funding.csv')); _bf['ts'] = pd.to_datetime(_bf.ts_ms, unit='ms', utc=True).dt.floor('h')
+    _bf = _bf[_bf.symbol.isin(set(d.cols))]; _piv = _bf.pivot_table(index='ts', columns='symbol', values='rate', aggfunc='sum').reindex(index=d.idx)
+    _sig = d.fund.copy(); _new = d.fund.copy(); _nby = 0
+    for _s in _piv.columns:
+        _c = _piv[_s].values; _f = np.flatnonzero(np.isfinite(_c))
+        if len(_f) == 0: continue
+        _j = int(np.flatnonzero(d.cols == _s)[0]); _i0 = int(_f[0]); _col = np.where(np.isfinite(_c[_i0:]), _c[_i0:], np.nan).astype(np.float32)
+        _new[_i0:, _j] = _col; _nby += 1
+    if FUND_SRC == 'bybit_pnl': FUND_SIG = _sig            # signals keep the old source
+    d.fund = _new; print(f'FUND_SRC={FUND_SRC}: Bybit funding for {_nby} symbols from their first Bybit settlement', flush=True)
+FUND_REAL = d.fund.copy(); _FS = d.fund if FUND_SIG is None else FUND_SIG
+FUND0 = np.where(np.isfinite(_FS), _FS, 0.0).astype(np.float64); CF = np.cumsum(FUND0, axis=0, dtype=np.float64)
 def fsum(i, a, b): return CF[i - b] - CF[i - a]
 def sl_listing(dd, i, mask):
     age = np.maximum(dd.age[i].astype(float), np.where(np.isfinite(launch_h), dd.hh[i] - launch_h, -np.inf)); t = dd.t24[i]
