@@ -20,3 +20,4 @@ synth_panels/
 research/phase4_out/*.parquet
 /data/m1/
 /models_new/
+*.npz
