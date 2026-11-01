@@ -12,6 +12,8 @@ from bt import Data
 MODE = sys.argv[1]
 SEEDS = [int(x) for x in os.environ.get('SEEDS', '1').split(',')]   # reg. 5 bagging: several seeds -> sparse files _rev_s<seed>.npz
 from predio import save_pred
+from scipy.stats import norm, rankdata
+LABEL = os.environ.get('LABEL', 'ret'); LSH = int(os.environ.get('LABEL_SHIFT_H', '0')); RSUF = os.environ.get('REV_SUF', '_rev')   # reg. 5 ideas 10 / 8
 START, END, SPLIT = '2020-01-01', os.environ.get('END', '2026-10-26 23:00'), pd.Timestamp('2022-01-01', tz='UTC')
 d = Data(start=START, end=END, min_turn_ever=5e6, load_hl=True, load_premium=True)
 T, N = d.ret.shape; jbtc = int(np.flatnonzero(d.cols == 'BTCUSDT')[0]); t0 = time.time(); rows = []; d.prev_mask = None
@@ -33,7 +35,10 @@ if MODE == 'h37':
         X = np.column_stack([F[f][m] for f in FEATS]).astype(np.float32); df = pd.DataFrame(rank_norm(X), columns=FEATS); df['day'] = n; df['sym'] = np.flatnonzero(m)
         for hz in HZS:
             k = 24 * hz; fpaid = np.nansum(d.fund[i + 1:i + k + 1], 0, dtype=np.float64); y = np.log(d.cff[i + k] / d.cff[i]) - fpaid
-            df[f'y{hz}'] = (y - np.nanmean(y[m]))[m]
+            if LABEL == 'rg':   # reg. 5 idea 10
+                v = y[m]; ok = np.isfinite(v); g = np.full(len(v), np.nan); g[ok] = norm.ppf((rankdata(v[ok]) - 0.5) / ok.sum()); df[f'y{hz}'] = g
+            else:
+                df[f'y{hz}'] = (y - np.nanmean(y[m]))[m]
         rows.append(df)
         if n % 300 == 0: print(f'  {n}/{len(dec)} ({time.time()-t0:.0f}s)', flush=True)
     tab = pd.concat(rows, ignore_index=True); del rows; tab['date'] = d.idx[dec[tab.day.values]]
@@ -50,7 +55,7 @@ if MODE == 'h37':
             print(f'h{hz} reverse OOS IC by quarter:\n' + ic_by(tab[te], f'y{hz}', p, 'day').round(3).to_string(), flush=True)
             P = np.full((T, N), np.nan, dtype=np.float32); P[dec[tab.day.values[te]], tab.sym.values[te]] = p
             if SEEDS == [1]: np.save(f'out_exp21c_pred_h{hz}_rev.npy', P)
-            else: save_pred(f'out_exp21c_pred_h{hz}_rev_s{SEED}', P, True)
+            else: save_pred(f'out_exp21c_pred_h{hz}{RSUF}_s{SEED}', P, True)
 elif MODE == '8h':
     from ml_features_8h import compute_features_8h, FEATURES_8H, rank_norm, NEED_H
     dec = np.flatnonzero(d.hh % 8 == 0); dec = dec[(dec >= NEED_H) & (dec < T - 16)]
@@ -60,7 +65,7 @@ elif MODE == '8h':
         sl = slice(i - NEED_H + 1, i + 1)
         F = compute_features_8h(d.cff[sl], d.fund[sl], d.t24[sl], d.prem[sl], d.high[sl], d.low[sl], d.age[i].astype(float), jbtc, (d.hh[i] + 1) % 24)
         X = np.column_stack([F[f][m] for f in FEATURES_8H]).astype(np.float32); Xr = rank_norm(X)
-        fp = np.nansum(d.fund[i + 1:i + 9], 0, dtype=np.float64); y = (np.log(d.cff[i + 8] / d.cff[i]) - fp)[m]; y = y - np.nanmean(y)
+        fp = np.nansum(d.fund[i + 1 + LSH:i + 9 + LSH], 0, dtype=np.float64); y = (np.log(d.cff[i + 8 + LSH] / d.cff[i + LSH]) - fp)[m]; y = y - np.nanmean(y)
         df = pd.DataFrame(Xr, columns=FEATURES_8H); df['dec'] = n; df['sym'] = np.flatnonzero(m); df['y'] = y.astype(np.float32); rows.append(df)
         if n % 1000 == 0: print(f'  {n}/{len(dec)} ({time.time()-t0:.0f}s)', flush=True)
     tab = pd.concat(rows, ignore_index=True); del rows; gc.collect(); tab['date'] = d.idx[dec[tab.dec.values]]
@@ -75,5 +80,5 @@ elif MODE == '8h':
         print('8h reverse OOS IC by quarter:\n' + ic_by(tab[te], 'y', p, 'dec').round(3).to_string(), flush=True)
         P = np.full((T, N), np.nan, dtype=np.float32); P[dec[tab.dec.values[te]], tab.sym.values[te]] = p
         if SEEDS == [1]: np.save('out_exp17_pred_8h_rev.npy', P)
-        else: save_pred(f'out_exp17_pred_8h_rev_s{SEED}', P, True)
+        else: save_pred(f'out_exp17_pred_8h{RSUF}_s{SEED}', P, True)
 print(f'DONE ({time.time()-t0:.0f}s)')

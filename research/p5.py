@@ -231,6 +231,7 @@ def compare(bt, ct, cls, step, name, nacc, write=True, rev=True):
     g['MDD/худший день'] = (dm >= -1.0 and dw >= -0.5, f'MDD {dm:+.2f} п.п., день {dw:+.2f} п.п.')
     pB, pC = prop_proxy(B['lag1_x1']), prop_proxy(C['lag1_x1']); g['проп-прокси'] = (pC['fail'] <= pB['fail'], f'провалы {pB["fail"]}->{pC["fail"]}, проход {pB["pass"]}->{pC["pass"]}, медиана дн {pB["median_days"]:.0f}->{pC["median_days"]:.0f}')
     cb, cc = v3_corr(B['lag1_x1']), v3_corr(C['lag1_x1']); g['похожесть'] = ((cc - cb) <= 0.05 if np.isfinite(cb) else None, f'корр {cb:.3f}->{cc:.3f}')
+    g = {k: ((None if p is None else bool(p)), txt) for k, (p, txt) in g.items()}   # numpy bools -> bool (bug 2026-11-01: `is False` missed np.False_)
     ok = all(v[0] is not False for v in g.values())
     for k, (p, txt) in g.items(): print(f'  {k:<16} {"OK " if p else ("-- " if p is None else "НЕТ")} {txt}')
     verdict = 'ПРОШЁЛ' if ok else 'НЕ ПРОШЁЛ'
