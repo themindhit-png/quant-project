@@ -26,7 +26,8 @@ MAJ5 = [s for s in ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT'] if s 
 FUND_SRC = os.environ.get('FUND_SRC', 'binance')
 FUND_SIG = None
 if FUND_SRC != 'binance':
-    _bf = pd.read_csv(os.environ.get('FUND_FILE', 'data/bybit_funding.csv')); _bf['ts'] = pd.to_datetime(_bf.ts_ms, unit='ms', utc=True).dt.floor('h')
+    _FF = 'research/vps_dump/funding_bybit_full.csv.gz' if os.path.exists('research/vps_dump/funding_bybit_full.csv.gz') else 'data/bybit_funding.csv'   # full 2020+ history (VPS) if present
+    _bf = pd.read_csv(os.environ.get('FUND_FILE', _FF)); _bf['ts'] = pd.to_datetime(_bf.ts_ms, unit='ms', utc=True).dt.floor('h')
     _bf = _bf[_bf.symbol.isin(set(d.cols))]; _piv = _bf.pivot_table(index='ts', columns='symbol', values='rate', aggfunc='sum').reindex(index=d.idx)
     _sig = d.fund.copy(); _new = d.fund.copy(); _nby = 0
     for _s in _piv.columns:
@@ -34,6 +35,13 @@ if FUND_SRC != 'binance':
         if len(_f) == 0: continue
         _j = int(np.flatnonzero(d.cols == _s)[0]); _i0 = int(_f[0]); _col = np.where(np.isfinite(_c[_i0:]), _c[_i0:], np.nan).astype(np.float32)
         _new[_i0:, _j] = _col; _nby += 1
+    if os.environ.get('BYBIT_UNI') == '1':   # R-1c: trade only coins listed on Bybit at that hour (first .. last Bybit settlement + 24 h)
+        _ok = np.zeros(d.valid.shape, dtype=bool); _n = 0
+        for _s in _piv.columns:
+            _f = np.flatnonzero(np.isfinite(_piv[_s].values))
+            if len(_f): _j = int(np.flatnonzero(d.cols == _s)[0]); _ok[_f[0]:min(_f[-1] + 25, len(_ok)), _j] = True; _n += 1
+        print(f'BYBIT_UNI=1: universe restricted to Bybit-listed hours ({_n} symbols; {(d.valid & ~_ok).sum() / max(d.valid.sum(), 1) * 100:.1f}% of valid bars removed)', flush=True)
+        d.valid = d.valid & _ok
     if FUND_SRC == 'bybit_pnl': FUND_SIG = _sig            # signals keep the old source
     d.fund = _new; print(f'FUND_SRC={FUND_SRC}: Bybit funding for {_nby} symbols from their first Bybit settlement', flush=True)
 FUND_REAL = d.fund.copy(); _FS = d.fund if FUND_SIG is None else FUND_SIG
