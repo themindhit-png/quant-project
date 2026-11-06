@@ -192,10 +192,13 @@ def effective_config():
             'API_KEY', 'API_SECRET', 'TG_TOKEN', 'TG_CHAT', 'STATE_BACKUP_FILE', 'PORT', 'STATUS_BIND',
             # connection / operations, not strategy: demo -> live or a blacklist edit must not change the registered hash
             'BASE_URL', 'BLACKLIST', 'BLACKLIST_PATTERNS', 'STATE_PUSH_H', 'WATCHDOG_SEC', 'VERSION',
-            'PAUSE_FILE', 'TRANSFER_CHECK', 'KEY_EXPIRY_WARN_D', 'ML8_CARRY_FROM'}
+            'PAUSE_FILE', 'TRANSFER_CHECK', 'KEY_EXPIRY_WARN_D', 'ML8_CARRY_FROM',
+            'CASCADE_DIR', 'CASCADE_BACKFILL_D', 'CASCADE_RATE'}
     out = {}
     for k, v in sorted(globals().items()):
         if k.startswith('_') or k in skip or not k.isupper() or callable(v):
+            continue
+        if k.startswith('CASCADE_') and not CASCADE_FILTER:            # off = registered hash unchanged
             continue
         if (k == 'HIVOL_MULT' or k == 'REBAL_PARTIAL') and v == 1.0:    # off = registered hash unchanged
             continue
@@ -272,6 +275,20 @@ SMOOTH = _env('SMOOTH', 0.5, float)
 # Partial rebalance (reg. 5): each rebalance trades this fraction of the gap between the position at the start of the slot and the
 # target (research: bt.run trade_frac, exp_common BASE8 via the same env key). 1.0 = full step (the key is then left out of the config hash).
 REBAL_PARTIAL = _env('REBAL_PARTIAL', 1.0, float)
+# Market-wide liquidation cascade filter (reg. 5b; v4/cascade.py): market liquidations / OI above the CASCADE_PCT quantile of the trailing
+# CASCADE_WIN_D days -> the whole book x CASCADE_MULT for the next CASCADE_DAYS days. 0 = off (all CASCADE_* keys then stay out of the hash).
+# The Coinalyze key is read ONLY from the environment variable COINALYZE_API_KEY inside cascade.py (not a config value, never hashed/logged).
+CASCADE_FILTER = _env('CASCADE_FILTER', 0, int)
+CASCADE_PCT = _env('CASCADE_PCT', 0.95, float)
+CASCADE_MULT = _env('CASCADE_MULT', 0.5, float)
+CASCADE_DAYS = _env('CASCADE_DAYS', 2, int)
+CASCADE_WIN_D = _env('CASCADE_WIN_D', 365, int)
+CASCADE_MIN_D = _env('CASCADE_MIN_D', 180, int)
+CASCADE_EXCH = _env('CASCADE_EXCH', 'A,6')               # Coinalyze exchange codes: A = Binance, 6 = Bybit (the evidence used these two)
+CASCADE_NUNI = _env('CASCADE_NUNI', 150, int)            # universe: top-N USDT perps by 24h turnover
+CASCADE_DIR = _env('CASCADE_DIR', '').strip()            # cache dir (default: <state dir>/cascade); operational, not hashed
+CASCADE_BACKFILL_D = _env('CASCADE_BACKFILL_D', 400, int)
+CASCADE_RATE = _env('CASCADE_RATE', 38, int)             # Coinalyze limit 40 calls/min, each symbol is a call
 MIN_TRADE_USDT = _env('MIN_TRADE_USDT', max(15.0, 0.0015 * ACCOUNT_SIZE), float)
 # Daily rebalance at 01:10 UTC: the last closed bar is then the 00:00-01:00 bar — exactly the decision bar
 # used in research and in ML training (features/targets aligned to the bar with open_time 00:00 UTC).

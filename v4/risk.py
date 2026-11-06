@@ -209,13 +209,14 @@ class RiskEngine:
         return float(np.std(d, ddof=1)) if len(d) > 5 else None
 
     # ------------------------------------------------------------ targets
-    def build_targets(self, w_raw, symbols, equity, t24_now, k, majors, lowcap_mask=None, slot=None):
+    def build_targets(self, w_raw, symbols, equity, t24_now, k, majors, lowcap_mask=None, slot=None, cascade=1.0):
         """w_raw: combined sleeve weights (N,). Returns target notionals (N,) in USDT after smoothing,
         leverage, risk multiplier, caps, neutrality, gross/margin/low-cap guards and dust rule.
         lowcap_mask: bool (N,) — names the firm counts as low-cap (market cap below its threshold); when None, a
         turnover proxy (RULES.lowcap_turn) is used. Their combined gross is capped at RULES.lowcap_pct % of the notional base.
         slot: rebalance slot key; a retry of the same slot (aborted / failed execution) smooths from the weights saved BEFORE the
-        slot's first attempt, so the EMA is applied once per slot (reg. 4; before: 0.25/0.75 instead of 0.5/0.5 on a retry)."""
+        slot's first attempt, so the EMA is applied once per slot (reg. 4; before: 0.25/0.75 instead of 0.5/0.5 on a retry).
+        cascade: liquidation-cascade multiplier (reg. 5b, v4/cascade.py; 1.0 = off), applied like the vol-target leverage to every target."""
         m = self.mem
         N = len(symbols)
         # EMA smoothing of weights (state keyed by symbol)
@@ -231,7 +232,7 @@ class RiskEngine:
             w = C.SMOOTH * prev + (1 - C.SMOOTH) * w
         m['w_prev'] = {s: float(v) for s, v in zip(symbols, w) if abs(v) > 1e-6}
         lev = float(m['lev'])
-        tgt = w * lev * k * equity
+        tgt = w * lev * k * float(cascade) * equity
         is_major = np.array([s in majors for s in symbols])
         capl = np.where(is_major, C.MAJOR_CAP_PCT, C.POS_CAP_PCT) / 100.0 * equity
         caps = np.where(is_major, C.MAJOR_CAP_PCT, C.SHORT_CAP_PCT) / 100.0 * equity
@@ -262,7 +263,7 @@ class RiskEngine:
         if g > g_max > 0:
             tgt *= g_max / g
         tgt = np.where(np.abs(tgt) < C.MIN_TRADE_USDT, 0.0, tgt)
-        info = dict(lev=round(lev, 3), k=round(k, 3), gross=round(float(np.abs(tgt).sum()), 0),
+        info = dict(lev=round(lev, 3), k=round(k, 3), cascade=round(float(cascade), 3), gross=round(float(np.abs(tgt).sum()), 0),
                     gross_x_initial=round(float(np.abs(tgt).sum()) / self.initial, 3),
                     n_long=int((tgt > 0).sum()), n_short=int((tgt < 0).sum()), g_max=round(g_max, 0), lowcap=getattr(self, 'last_lowcap', None))
         return tgt, info

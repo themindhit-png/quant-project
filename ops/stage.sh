@@ -45,18 +45,19 @@ esac
 [[ -f "$REPO/evns/$PROFILE" ]] || die "нет профиля evns/$PROFILE"
 
 # ключи профиля и стратегии — их берём из репо, не из старого env
-LOCAL_RE='^(BYBIT_|TG_|STATUS_|STATE_|PORT|DRY_RUN|MODEL_DIR|EXPECTED_CONFIG_HASH)'
+LOCAL_RE='^(BYBIT_|TG_|STATUS_|STATE_|PORT|DRY_RUN|MODEL_DIR|EXPECTED_CONFIG_HASH|COINALYZE_)'
 NEW="$(mktemp)"
 OLDSTATE="$(grep -E '^[[:space:]]*(export[[:space:]]+)?STATE_FILE=' "$ENVF" | tail -1 | sed -E 's/^[[:space:]]*(export[[:space:]]+)?STATE_FILE=//; s/^["'\'']//; s/["'\'']$//' || true)"
 {
   echo "# собрано ops/stage.sh $STAGE $SIZE ($TS UTC); свои строки (ключи, Telegram, порт) сохранены из прежнего env"
   grep -E '^[[:space:]]*(export[[:space:]]+)?[A-Z0-9_]+=' "$ENVF" | sed -E 's/^[[:space:]]*(export[[:space:]]+)?//' \
-    | grep -E '^(BYBIT_API_|TG_|STATUS_TOKEN|PORT|MODEL_DIR|DRY_RUN)[A-Z0-9_]*='  # only own lines; any other old setting is dropped
+    | grep -E '^(BYBIT_API_|TG_|STATUS_TOKEN|PORT|MODEL_DIR|DRY_RUN|COINALYZE_API_KEY)[A-Z0-9_]*='  # only own lines; any other old setting is dropped
   echo; echo "# --- стратегия (evns/base.env)"; grep -E '^[A-Z0-9_]+=' "$REPO/evns/base.env" | grep -vE "$LOCAL_RE" | grep -vE '^(ACCOUNT_SIZE|MODE|PHASE|FIRM)='
   echo; echo "# --- профиль (evns/$PROFILE)"; grep -E '^[A-Z0-9_]+=' "$REPO/evns/$PROFILE" | grep -vE '^(MODE|PHASE)='
   echo; echo "# --- стадия"
   [[ "$STAGE" == personal ]] && echo "BYBIT_BASE_URL=https://api.bybit.com" || echo "BYBIT_BASE_URL=https://api-demo.bybit.com"
   echo "MODE=$MODE"; echo "PHASE=$PHASE"; echo "ACCOUNT_SIZE=$SIZE"
+  [[ "$STAGE" == trial ]] && echo "CASCADE_FILTER=1"   # reg. 5b: liquidation-cascade filter only on the trial/demo stage for now (key COINALYZE_API_KEY stays in the local env lines)
   [[ "$STAGE" == trial ]] && { echo "TARGETS=5"; echo "MIN_DAYS=2"; echo "PROFIT_DAYS=0"; }   # кабинет пробы: минимум 2 торговых дня
   echo "STATE_FILE=$APP/state/${STAGE}_${SIZE}_$TS.json"; echo "STATE_BACKUP_FILE=$APP/state/${STAGE}_${SIZE}_$TS.backup.json"
   if [[ -n "$OLDSTATE" && -f "$OLDSTATE" ]]; then echo "ML8_CARRY_FROM=$OLDSTATE"; fi   # kill-rule memory of the previous stage (reg. 4)

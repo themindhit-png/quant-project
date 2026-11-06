@@ -4,7 +4,7 @@
 Used for PREREG registrations (reg. 4). Run from the repo root: python3 research/stage_hashes.py"""
 import os, re, sys, json, subprocess
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-LOCAL = re.compile(r'^(BYBIT_|TG_|STATUS_|STATE_|PORT|DRY_RUN|MODEL_DIR|EXPECTED_CONFIG_HASH)')
+LOCAL = re.compile(r'^(BYBIT_|TG_|STATUS_|STATE_|PORT|DRY_RUN|MODEL_DIR|EXPECTED_CONFIG_HASH|COINALYZE_)')
 PROF = dict(trial=('mubite_challenge.env', 'challenge', 1), phase1=('mubite_challenge.env', 'challenge', 1), phase2=('mubite_challenge.env', 'challenge', 2),
             funded=('mubite_funded.env', 'funded', 1), personal=('personal.env', 'funded', 1))
 COMBOS = [('trial', 100000), ('trial', 10000), ('phase1', 10000), ('phase2', 10000), ('phase1', 100000), ('phase2', 100000),
@@ -23,7 +23,7 @@ def stage_env(stage, size):
     env['BYBIT_BASE_URL'] = 'https://api.bybit.com' if stage == 'personal' else 'https://api-demo.bybit.com'
     env.update(MODE=mode, PHASE=str(phase), ACCOUNT_SIZE=str(size))
     if stage == 'trial':
-        env.update(TARGETS='5', MIN_DAYS='2', PROFIT_DAYS='0')
+        env.update(TARGETS='5', MIN_DAYS='2', PROFIT_DAYS='0', CASCADE_FILTER='1')   # reg. 5b: filter on the trial/demo stage only (same line as ops/stage.sh)
     env['STATE_FILE'] = f'/opt/propsleeves/state/{stage}_{size}_X.json'; env['PATH'] = os.environ.get('PATH', '/usr/bin:/bin')
     return env
 

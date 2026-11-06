@@ -21,6 +21,7 @@ from signals import Sleeves
 from risk import RiskEngine
 from execution import Executor, round_qty, fmt_price
 from state import Memory, log, tg, tg_once, set_status, get_status
+import cascade as CAS
 
 
 class Bot:
@@ -35,7 +36,14 @@ class Bot:
         self.lock = threading.Lock()
         self.abort_event = threading.Event()               # watchdog -> executor: stop trading the current rebalance (hard limit hit)
         self.ex.abort = self.abort_event
+        self.cascade = CAS.from_config(C, notify=tg, log=log, universe_fn=self.cascade_universe) if C.CASCADE_FILTER else None   # reg. 5b
         self.reb_every_base = int(C.REBAL_EVERY_H)         # cadence with ml8 on; the kill rule switches to daily when ml8 is off
+
+    def cascade_universe(self):
+        """Bot universe for the cascade filter: top CASCADE_NUNI USDT perps by 24h turnover (same exclusions as the candidate pool)."""
+        tk = self.api.tickers()
+        ok = [s for s, t in tk.items() if s.endswith('USDT') and s not in C.BLACKLIST and not any(p in s for p in C.BLACKLIST_PATTERNS)]
+        return sorted(ok, key=lambda s: -tk[s]['turnover24h'])[:C.CASCADE_NUNI]
 
     # ------------------------------------------------------------ helpers
     def bad_data_split(self, bad, positions, hard_blocked):
@@ -381,10 +389,13 @@ class Bot:
                     lowcap_mask |= np.asarray(age_h, float) < C.LOWCAP_YOUNG_D * 24.0
                 lowcap_mask &= np.array([s not in C.MAJORS for s in syms])
                 info['lowcap_n'] = int(lowcap_mask.sum()); info['lowcap_src'] = 'mcap+turnover' if mc else 'turnover+age proxy'
-            tgt, tinfo = self.risk.build_targets(w, syms, equity, panel['t24'][i], k, set(C.MAJORS), lowcap_mask=lowcap_mask, slot=slot_key)
+            cas_m, cas_why = self.cascade.multiplier(self.now()) if self.cascade else (1.0, '')
+            if self.cascade:
+                info['cascade'] = cas_why
+            tgt, tinfo = self.risk.build_targets(w, syms, equity, panel['t24'][i], k, set(C.MAJORS), lowcap_mask=lowcap_mask, slot=slot_key, cascade=cas_m)
             # exposure multiplier actually in force = realised gross / (equity x gross of raw weights) — not lev*K, because
             # caps / neutrality / firm limits may have cut the book (Opus review); used by the direct vol target
-            mult_real = tinfo['gross'] / max(equity * max(info.get('gross_w', 0.0), 1e-9), 1e-9) if info.get('gross_w', 0.0) > 1e-9 else lev * k
+            mult_real = tinfo['gross'] / max(equity * max(info.get('gross_w', 0.0), 1e-9), 1e-9) if info.get('gross_w', 0.0) > 1e-9 else lev * k * cas_m
             m['mult_day_sum'] = float(m.get('mult_day_sum', 0.0)) + mult_real; m['mult_day_n'] = int(m.get('mult_day_n', 0)) + 1
             m['clip_n'] = int(m.get('clip_n', 0)) + int(tinfo['gross'] >= tinfo['g_max'] - 1.0); m['reb_n'] = int(m.get('reb_n', 0)) + 1
             targets = {s: float(v) for s, v in zip(syms, tgt) if v != 0.0}
@@ -448,7 +459,7 @@ class Bot:
             g = sum(abs(p['qty'] * p['mark']) for p in poss2.values()); net = sum(p['qty'] * p['mark'] for p in poss2.values())
             set_status(equity=round(equity, 2), k=round(k, 3), k_reason=why, lev=round(lev, 3), vt=vt_why, mult_real=round(mult_real, 3),
                        clip_share=round(m['clip_n'] / max(m['reb_n'], 1), 3), sleeves=info, targets=tinfo, sleeve_attrib=self.attrib_summary(equity),
-                       ml8_mult=m.get('ml8_mult', 1.0),
+                       ml8_mult=m.get('ml8_mult', 1.0), cascade_mult=cas_m,
                        n_targets=len(targets), n_positions=len(poss2), gross=round(g, 0), net=round(net, 0), gross_x_initial=round(g / self.risk.initial, 3),
                        orders=stats, errors=[e[2] for e in errors][:10], data_bad=bad[:20], cycles=m['cycles'],
                        last_cycle_utc=self.now().isoformat(), total_floor=round(self.risk.total_floor(), 2), daily_floor=round(self.risk.daily_floor(), 2),
@@ -458,7 +469,7 @@ class Bot:
                 f'orders maker {stats["maker_sent"]} market {stats["market_sent"]} errors {len(errors)} | positions {len(poss2)} gross {g:,.0f} net {net:+,.0f}')
             tg(f'📊 Ребаланс: equity {equity:,.2f} | K {k:.2f} ({why}) | lev {lev:.2f} | целей {len(targets)} (L{tinfo["n_long"]}/S{tinfo["n_short"]}) '
                f'gross {tinfo["gross_x_initial"]:.2f}x | позиций {len(poss2)}, net {net / equity * 100:+.1f}% | ордера maker/market {stats["maker_sent"]}/{stats["market_sent"]}'
-               + (f' | ошибок {len(errors)}' if errors else ''))
+               + (f' | {cas_why}' if cas_m < 1.0 else '') + (f' | ошибок {len(errors)}' if errors else ''))
 
     # ------------------------------------------------------------ funding diagnostics (PREREG rule 6)
     def funding_check(self, panel, syms, now_):
@@ -874,6 +885,8 @@ class Bot:
 
     def loop(self):
         self.start_with_retry()
+        if self.cascade:
+            self.cascade.start_background()
         self.loop_body()
 
     def loop_body(self, health=None):
@@ -933,6 +946,8 @@ def main():
     bot = Bot(api)
     bot.start_with_retry()                                  # watchdog only after the state is loaded and the config checked
     wd = threading.Thread(target=bot.watchdog_loop, daemon=True, name='watchdog'); wd.start()
+    if bot.cascade:
+        bot.cascade.start_background()                      # reg. 5b: daily Coinalyze job at ~00:05 UTC (reads the key from env COINALYZE_API_KEY only)
     threading.Thread(target=HTTPServer((C.STATUS_BIND, C.PORT), Handler).serve_forever, daemon=True, name='http').start()
 
     def die(why):

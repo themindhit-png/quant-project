@@ -238,7 +238,7 @@ check('T17 shadow ml8 negative -> multiplier stays 0 and cadence 24h', mem6['ml8
 C.REBAL_EVERY_H = 8; C.SLEEVE_SCALES['ml8'] = C.ML8_BASE_SCALE
 
 # ---------------------------------------------------------------- Phase 3a (T15d, T18-T23)
-import subprocess, inspect, types
+import subprocess, inspect, types, shutil
 from datetime import datetime, timezone, timedelta
 def _cfg_hash(**env):
     e = dict(os.environ); e.update(env)
@@ -816,6 +816,95 @@ check('T41b profile evns/base.env (reg. 5): no fchg in SLEEVES / SLEEVE_SCALES, 
       sl41 == ['listing', 'core', 'ml3', 'ml7', 'ml8', 'fcarry'] and set(sc41) == set(sl41) and sc41['ml8'] == 2.0 and float(be41['REBAL_PARTIAL']) == 0.5 and be41['REBAL_MINUTE'] == '1', str(be41.get('SLEEVES')))
 h41a = _cfg_hash(); h41b = _cfg_hash(REBAL_PARTIAL='1.0'); h41c = _cfg_hash(REBAL_PARTIAL='0.5')
 check('T41c REBAL_PARTIAL=1.0 (off) leaves the registered config hash unchanged, 0.5 changes it', h41a == h41b and h41a != h41c, f'{h41a} {h41c}')
+
+# ---------------------------------------------------------------- Reg. 5b: liquidation cascade filter (v4/cascade.py)
+import cascade as CAS, io, contextlib
+rng42 = np.random.default_rng(5)
+days42 = [(datetime(2024, 1, 1).date() + timedelta(days=k)).isoformat() for k in range(500)]
+C42 = {dd: float(0.01 + 0.002 * rng42.random()) for dd in days42}          # calm series, all < 0.012
+C42[days42[400]] = 0.5; C42[days42[450]] = 0.4                                # two spikes
+tr42 = CAS.trigger_days(C42, 0.95, 365, 180)
+check('T42a trigger: both spikes trigger, nothing triggers before 180 valid days, a calm random series triggers only about 5 % of days', days42[400] in tr42 and days42[450] in tr42 and len(tr42) <= 40 and not any(dd in tr42 for dd in days42[:180]), f'{len(tr42)} triggers')
+thr42 = CAS.threshold_series(C42, 0.95, 365, 180)
+w42 = np.array([C42[dd] for dd in days42[400 - 364:401]]); check('T42b threshold = 95th percentile (linear) of the trailing 365 days incl. the day', abs(thr42[days42[400]] - np.quantile(w42, 0.95)) < 1e-12 and thr42[days42[100]] is None)
+D42 = lambda k: datetime.strptime(days42[k], '%Y-%m-%d').date()
+mm42 = [CAS.multiplier_for(D42(k), tr42, 2, 0.5) for k in (400, 401, 402, 403, 450, 451, 452, 453)]
+check('T42c cut on d+1 and d+2 only (not on d, not on d+3)', mm42 == [1.0, 0.5, 0.5, 1.0, 1.0, 0.5, 0.5, 1.0], str(mm42))
+C42b = dict(C42); C42b[days42[400]] = 0.001                                   # causality: changing day 401+ never changes the multiplier of day 401
+C42c = {dd: v for dd, v in C42.items() if dd <= days42[400]}
+check('T42d causality: trigger set of the series truncated at day d equals the full-series trigger set up to d (no look-ahead); lowering day d removes its trigger',
+      CAS.trigger_days(C42c) == {dd for dd in tr42 if dd <= days42[400]} and days42[400] not in CAS.trigger_days(C42b))
+# bot-side filter on a fake API: bootstrap, trigger, failure, key never printed
+SECRET42 = 'SECRET-KEY-DO-NOT-PRINT'; os.environ['COINALYZE_API_KEY'] = SECRET42
+td42 = tempfile.mkdtemp(prefix='cas42_'); NOW42 = datetime(2025, 5, 20, 0, 6, tzinfo=timezone.utc); T0_42 = NOW42.timestamp()
+UNI42 = [f'C{j:02d}USDT' for j in range(30)]
+calls42 = []
+def fake_http_factory(spike_day=None, fail=False, status=200):
+    def http(path, params, key):
+        calls42.append((path, key == SECRET42, len(params.get('symbols', '').split(',')) if params.get('symbols') else 0))
+        if fail: return status, None, 1.0
+        if path == 'future-markets':
+            return 200, [dict(exchange=ex, symbol_on_exchange=s, symbol=f'{s}.{ex}', is_perpetual=True, quote_asset='USDT') for ex in 'A6' for s in UNI42], 1.0
+        out = []
+        for code in params['symbols'].split(','):
+            h = []; t = int(params['from']) // 86400 * 86400
+            while t < int(params['to']):
+                dd = datetime.fromtimestamp(t, timezone.utc).date().isoformat(); spike = (dd == spike_day)
+                h.append({'t': t, 'l': 5000.0 if spike else 10.0, 's': 5000.0 if spike else 10.0} if 'liquidation' in path else {'t': t, 'c': 1e6})
+                t += 86400
+            out.append({'symbol': code, 'history': h})
+        return 200, out, 1.0
+    return http
+sl42 = []; msgs42 = []
+def mk42(**kw):
+    return CAS.CascadeFilter(directory=td42, per_min=38, http=kw.pop('http'), clock=lambda: T0_42 + sum(sl42), sleep=lambda x: sl42.append(x), notify=msgs42.append,
+                             log=lambda *a: None, universe_fn=lambda: UNI42, **kw)
+f42 = mk42(http=fake_http_factory(spike_day='2025-05-17'))
+buf42 = io.StringIO()
+with contextlib.redirect_stdout(buf42):
+    ok42 = f42.update(NOW42)
+nc42 = len(calls42)
+check('T42e bootstrap: backfill >= 365 d for universe x (A, 6), throttled <= 40 symbol-calls/min, key sent only in the header',
+      ok42 and all(c[1] for c in calls42) and sum(c[2] for c in calls42) >= 2 * 60 and all(c[2] <= 20 for c in calls42) and sum(sl42) > 60.0 * (sum(c[2] for c in calls42) / 40.0 - 1.5),
+      f'ok {ok42}, symbol-calls {sum(c[2] for c in calls42)}, waited {sum(sl42):.0f}s')
+f42.cache['last_ok'] = '2025-05-19'    # data through the 19th: decisions on the 18th..20th
+r42 = {k: CAS.multiplier_for(datetime(2025, 5, k).date(), {dd for dd, v in f42.cache['series'].items() if v[2]}, 2, 0.5) for k in (17, 18, 19, 20)}
+check('T42f trigger day 2025-05-17 (spike): ×0.5 on 05-18 and 05-19, 1.0 on 05-17 and 05-20', r42 == {17: 1.0, 18: 0.5, 19: 0.5, 20: 1.0}, str(r42))
+f42b = CAS.CascadeFilter(directory=tempfile.mkdtemp(), http=fake_http_factory(), sleep=lambda x: None, universe_fn=lambda: UNI42, log=lambda *a: None)
+m42, why42 = f42b.multiplier(datetime(2025, 5, 19, 1, 1, tzinfo=timezone.utc))          # empty cache (nothing fetched yet)
+f42.cache['last_ok'] = '2025-05-18'
+m42b, _ = f42.multiplier(datetime(2025, 5, 19, 1, 1, tzinfo=timezone.utc))
+m42c, _ = f42.multiplier(datetime(2025, 5, 21, 1, 1, tzinfo=timezone.utc))
+check('T42g multiplier reads the cache only: 05-19 with data through 05-18 -> 0.5 (trigger 05-17 = d-2); empty cache -> 1.0; stale cache (no 05-20) for 05-21 -> 1.0',
+      m42b == 0.5 and m42 == 1.0 and m42c == 1.0, f'{m42} {m42b} {m42c} {why42}')
+# failure -> 1.0 and exactly one Telegram warning; key never printed
+cache_txt42 = open(f42.path).read(); shutil.rmtree(td42); os.makedirs(td42)
+msgs42.clear(); calls42.clear(); logs42 = []
+f42f = CAS.CascadeFilter(directory=td42, http=fake_http_factory(fail=True, status=503), clock=lambda: T0_42 + sum(sl42), sleep=lambda x: None, notify=msgs42.append,
+                         log=logs42.append, universe_fn=lambda: UNI42, tries=2)
+r1 = f42f.update(NOW42); r2 = f42f.update(NOW42)
+check('T42h API failure: update False, multiplier 1.0, ONE Telegram warning (not two)', (not r1) and (not r2) and f42f.multiplier(NOW42)[0] == 1.0 and len(msgs42) == 1 and msgs42[0].startswith('⚠️'), str(msgs42))
+os.environ.pop('COINALYZE_API_KEY'); msgs42.clear()
+f42n = CAS.CascadeFilter(directory=tempfile.mkdtemp(), http=fake_http_factory(), sleep=lambda x: None, notify=msgs42.append, log=logs42.append, universe_fn=lambda: UNI42)
+check('T42i no key in env: update False, multiplier 1.0, warning sent', (not f42n.update(NOW42)) and f42n.multiplier(NOW42)[0] == 1.0 and len(msgs42) == 1)
+os.environ['COINALYZE_API_KEY'] = SECRET42
+dump42 = buf42.getvalue() + ' '.join(map(str, logs42)) + ' '.join(msgs42) + cache_txt42
+check('T42j the key never appears in output, logs, Telegram text or the cache file', SECRET42 not in dump42 and len(dump42) > 1000)
+cfg_src42 = open(os.path.join(HERE, 'config.py')).read()
+check('T42k key is not a config value (no COINALYZE in config.py code lines) and not in the hash', all('COINALYZE' not in l_ or l_.strip().startswith('#') for l_ in cfg_src42.splitlines()) and 'COINALYZE_API_KEY' not in json.dumps(C.effective_config()[0]))
+h42a = _cfg_hash(); h42b = _cfg_hash(CASCADE_FILTER='0', CASCADE_PCT='0.9', CASCADE_MULT='0.3', CASCADE_DIR='/x', COINALYZE_API_KEY='k'); h42c = _cfg_hash(CASCADE_FILTER='1'); h42d = _cfg_hash(CASCADE_FILTER='1', CASCADE_MULT='0.3'); h42e = _cfg_hash(CASCADE_FILTER='1', COINALYZE_API_KEY='zzz', CASCADE_DIR='/y')
+check('T42l CASCADE_FILTER=0: hash unchanged by any CASCADE_* / key; on: hash changes with the parameters but not with key / cache dir', h42a == h42b and h42c != h42a and h42d != h42c and h42e == h42c, f'{h42a} {h42c} {h42d}')
+# wiring: build_targets scales like leverage; main passes the multiplier; profiles
+mem42 = Memory(); mem42['lev'] = 1.0; rk42 = RiskEngine(mem42, lambda *a: None); wt42 = np.zeros(N); wt42[0] = 0.01; wt42[1] = -0.01
+t1_, _i1 = rk42.build_targets(wt42, syms, 10000.0, np.full(N, 1e9), 1.0, set(), slot='a'); mem42.pop('w_prev', None)
+t2_, _i2 = rk42.build_targets(wt42, syms, 10000.0, np.full(N, 1e9), 1.0, set(), slot='b', cascade=0.5)
+check('T42m build_targets(cascade=0.5) halves every target exactly (like a leverage factor); default 1.0 unchanged', np.allclose(t2_, 0.5 * t1_) and np.abs(t1_).sum() > 0 and _i2['cascade'] == 0.5, f'{np.abs(t1_).sum():.0f} {np.abs(t2_).sum():.0f}')
+src42 = open(os.path.join(HERE, 'main.py')).read()
+check('T42n main.py: multiplier read from the cache and passed to build_targets; background job started only when CASCADE_FILTER', 'cascade=cas_m' in src42 and 'self.cascade.multiplier(' in src42 and 'if C.CASCADE_FILTER else None' in src42)
+pf42 = {p_: _envfile(p_) for p_ in ('base.env', 'mubite_challenge.env', 'mubite_funded.env', 'personal.env')}
+stg42 = open(os.path.join(ROOT, 'ops', 'stage.sh')).read()
+check('T42o profiles: CASCADE_FILTER not set to 1 in any env file (off for phase1/phase2/funded/personal); stage.sh enables it for trial only and keeps COINALYZE_API_KEY locally',
+      all(pf42[p_].get('CASCADE_FILTER', '0') == '0' for p_ in pf42) and 'trial ]] && echo "CASCADE_FILTER=1"' in stg42 and 'COINALYZE_API_KEY' in stg42)
 
 print(f'\n{sum(1 for _, ok in res if ok)}/{len(res)} passed')
 sys.exit(0 if all(ok for _, ok in res) else 1)

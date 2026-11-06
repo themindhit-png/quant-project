@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Shared research definitions (Data, sleeves, F/F2 books, BASE8/BASE24, go()) — sliced from exp26_opus3.py."""
-import os, time, json, math, glob, itertools, numpy as np, pandas as pd
+import os, sys, time, json, math, glob, itertools, numpy as np, pandas as pd
 from scipy.stats import norm, skew, kurtosis
 from bt import Data, run, quantile_ls, quantile_ls_tb, last_rate, slip_model
 from strategies import core_signal
@@ -92,10 +92,27 @@ def F2(carry_daily=False): return combo([Held(sl_listing), Held(sl_core), Held(M
 REBAL_PARTIAL = float(os.environ.get('REBAL_PARTIAL', '1.0'))
 BASE8 = dict(trade_frac=REBAL_PARTIAL, reb_h=8, reb_offset=0, band=0.5, smooth=0.5, fee_bps=5.5, maker_share=0.7, slip_fn=slip_model(scale=0.3), gross=1.0, pos_cap=0.02, cap_short=0.015,
              cap_exempt=MAJ5, cap_exempt_val=0.30, uni_kwargs=dict(min_age_h=0, min_turn=0, top_n=0), verbose=False, vol_target=0.006, max_lev=3.0, max_gross_x=2.0)
+# reg. 5b: market-wide liquidation cascade filter, same switch and same rule as the live bot (v4/cascade.py). CASCADE_FILTER=1 + CASCADE_SERIES=<csv date,C>
+# (daily intensity = liquidations / OI; export from the bot cache `python3 v4/cascade.py export out.csv` or build it from Coinalyze daily bars).
+# go() then multiplies the book weights by CASCADE_MULT on the days after a trigger day. cascade_wrap(fn, lag) is the wrapper itself; lag = how many bars
+# before the engine bar the signal is evaluated (R2 lag-1 runners that call f0(dd, i - 1) pass lag=1: the date of the DECISION bar counts).
+CASCADE_FILTER = os.environ.get('CASCADE_FILTER', '0') == '1'
+def cascade_wrap(fn, lag=0, series=None, pct=None, mult=None, days=None):
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'v4')); import cascade as _cas
+    pct = float(os.environ.get('CASCADE_PCT', '0.95')) if pct is None else pct; mult = float(os.environ.get('CASCADE_MULT', '0.5')) if mult is None else mult
+    days = int(os.environ.get('CASCADE_DAYS', '2')) if days is None else days
+    if series is None:
+        sr = pd.read_csv(os.environ['CASCADE_SERIES']); series = {str(a)[:10]: float(b) for a, b in zip(sr.iloc[:, 0], sr.iloc[:, 1])}
+    trig = _cas.trigger_days(series, pct, int(os.environ.get('CASCADE_WIN_D', '365')), int(os.environ.get('CASCADE_MIN_D', '180')))
+    def g(dd, i, mask):
+        w = fn(dd, i, mask); day = dd.idx[i - lag].tz_convert('UTC').date()
+        return w * _cas.multiplier_for(day, trig, days, mult)
+    return g
 BASE24 = dict(BASE8); BASE24.update(reb_h=24, band=0.3)
 def sh(x): x = np.asarray(x, float); return float(x.mean() / x.std(ddof=1) * math.sqrt(365)) if len(x) > 30 and x.std(ddof=1) > 0 else float('nan')
 SER = {}
 def go(label, fn, base=BASE8, keep=None, attrib=False, **kw):
+    if CASCADE_FILTER: fn = cascade_wrap(fn)
     t1 = time.time(); d.start_i = int(d.idx.searchsorted(pd.Timestamp(OOS, tz='UTC'))); args = dict(base); args.update(kw); args['label'] = label
     m, eq, hp = run(d, fn, ret_diag=True, attrib=attrib, **args); de = eq.groupby(eq.index.floor('D')).last(); r = de.pct_change().dropna()
     if keep: SER[keep] = r
