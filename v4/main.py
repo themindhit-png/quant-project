@@ -427,7 +427,13 @@ class Bot:
                 tickers = self.api.tickers()
             except Exception as e:
                 log(f'tickers refresh failed ({e}); using the earlier snapshot')
-            legs = self.ex.plan(targets, positions, tickers, self.instr, C.REBAL_BAND, C.MIN_TRADE_USDT)
+            start = None
+            if C.REBAL_PARTIAL < 1.0:
+                # partial rebalance (reg. 5): fix the positions at the first attempt of the slot; a retry completes the same step
+                if m.get('slot_pos0_slot') != slot_key:
+                    m['slot_pos0'] = {s: float(p['qty']) for s, p in positions.items()}; m['slot_pos0_slot'] = slot_key; m.save()
+                start = m.get('slot_pos0') or {}
+            legs = self.ex.plan(targets, positions, tickers, self.instr, C.REBAL_BAND, C.MIN_TRADE_USDT, frac=C.REBAL_PARTIAL, start=start)
             stats, errors = self.ex.execute(legs, self.instr, tickers, self.api.positions)
             # ---- bookkeeping
             m['last_targets'] = targets; m['k_ref'] = k; m['last_rebal_date'] = self.now().date().isoformat()

@@ -88,7 +88,9 @@ def beta0(fn):
     return g
 def F(): return combo([Held(sl_listing), Held(sl_core), Held(ML3n), Held(ML7n), ML8], [1, 1, 1, 1, 2])
 def F2(carry_daily=False): return combo([Held(sl_listing), Held(sl_core), Held(ML3n), Held(ML7n), ML8, Held(fund_change), Held(fund_level) if carry_daily else fund_level], [1, 1, 1, 1, 2, 1, 1])
-BASE8 = dict(reb_h=8, reb_offset=0, band=0.5, smooth=0.5, fee_bps=5.5, maker_share=0.7, slip_fn=slip_model(scale=0.3), gross=1.0, pos_cap=0.02, cap_short=0.015,
+# reg. 5: partial rebalance, same switch as the live bot (v4/config.py REBAL_PARTIAL; 1.0 = full step = unchanged results)
+REBAL_PARTIAL = float(os.environ.get('REBAL_PARTIAL', '1.0'))
+BASE8 = dict(trade_frac=REBAL_PARTIAL, reb_h=8, reb_offset=0, band=0.5, smooth=0.5, fee_bps=5.5, maker_share=0.7, slip_fn=slip_model(scale=0.3), gross=1.0, pos_cap=0.02, cap_short=0.015,
              cap_exempt=MAJ5, cap_exempt_val=0.30, uni_kwargs=dict(min_age_h=0, min_turn=0, top_n=0), verbose=False, vol_target=0.006, max_lev=3.0, max_gross_x=2.0)
 BASE24 = dict(BASE8); BASE24.update(reb_h=24, band=0.3)
 def sh(x): x = np.asarray(x, float); return float(x.mean() / x.std(ddof=1) * math.sqrt(365)) if len(x) > 30 and x.std(ddof=1) > 0 else float('nan')

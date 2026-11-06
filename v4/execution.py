@@ -42,8 +42,12 @@ class Executor:
         self.stats = dict(maker_sent=0, market_sent=0, closes=0, opens=0, errors=0)
 
     # ------------------------------------------------------------ planning
-    def plan(self, targets, positions, tickers, instr, band, min_trade, no_touch=()):
-        """targets: {sym: usd}. Returns list of legs (sym, side, usd, reduce_only, full_close)."""
+    def plan(self, targets, positions, tickers, instr, band, min_trade, no_touch=(), frac=1.0, start=None):
+        """targets: {sym: usd}. Returns list of legs (sym, side, usd, reduce_only, full_close).
+        frac < 1 (REBAL_PARTIAL, reg. 5): partial rebalance — the book moves `frac` of the gap between the position at the START of the
+        rebalance slot and the target (full close stays full). start = {sym: qty at slot start}: the band decision and the step are
+        taken from it, so a retry of the same slot completes the same step instead of stepping again (idempotent). Same arithmetic as
+        bt.run(trade_frac=...). frac >= 1: unchanged behaviour."""
         legs, missing = [], []
         for sym in sorted(set(targets) | set(positions)):
             if sym in no_touch:
@@ -60,7 +64,16 @@ class Executor:
                 tgt = 0.0
             full_close = tgt == 0.0 and cur != 0.0
             diff = tgt - cur
-            if not full_close and abs(diff) < max(min_trade, band * abs(tgt)):
+            if frac < 1.0:
+                ref = cur if start is None else float(start.get(sym, 0.0)) * px
+                if not full_close and abs(tgt - ref) < max(min_trade, band * abs(tgt)):
+                    continue
+                if not full_close:
+                    tgt = ref + frac * (tgt - ref)
+                    diff = tgt - cur
+                    if abs(diff) < min_trade:         # step already done (retry) or too small to place
+                        continue
+            elif not full_close and abs(diff) < max(min_trade, band * abs(tgt)):
                 continue
             if cur != 0 and (tgt == 0 or np.sign(tgt) != np.sign(cur)):
                 legs.append((sym, 'Sell' if cur > 0 else 'Buy', abs(cur), True, True))          # close

@@ -720,5 +720,102 @@ check('T37b the carried rule acts at once (>= 180 days): shadow net Sharpe > 1 b
 C.SLEEVE_SCALES['ml8'] = C.ML8_BASE_SCALE; C.REBAL_EVERY_H = 8
 check('T37c ML8_CARRY_FROM is not part of the config hash', _cfg_hash() == _cfg_hash(ML8_CARRY_FROM='/opt/propsleeves/state/x.json'))
 
+# ---------------------------------------------------------------- Reg. 5: partial rebalance (REBAL_PARTIAL), fchg off
+# T38: Executor.plan(frac, start): partial step = frac x gap from the slot-start position; full close stays full; band by the full gap
+ex38 = Executor(None, lambda *a: None, None, True)
+i38 = {s: dict(qtyStep=0.1, minQty=0.1, maxQty=1e9, minNotional=5.0, tickSize=0.001) for s in ('AUSDT', 'BUSDT', 'CUSDT', 'DUSDT', 'EUSDT')}
+tk38 = {s: dict(mark=1.0, last=1.0, bid=1.0, ask=1.0) for s in i38}
+def pos38(d_): return {s: dict(qty=q, mark=1.0, entry=1.0, upnl=0, im=1, legs=[]) for s, q in d_.items() if q != 0}
+def net38(legs): return {l[0]: (1 if l[1] == 'Buy' else -1) * l[2] for l in legs}
+p0 = {'AUSDT': 100.0, 'BUSDT': -100.0, 'CUSDT': 200.0, 'DUSDT': 10.0}
+tg38 = {'AUSDT': 300.0, 'BUSDT': -100.0, 'CUSDT': 0.0, 'EUSDT': 400.0, 'DUSDT': -190.0}
+L38 = ex38.plan(tg38, pos38(p0), tk38, i38, 0.5, 15.0, frac=0.5, start=dict(p0))
+n38 = net38([l for l in L38 if not (l[0] == 'DUSDT' and l[4])])
+c38 = [l for l in L38 if l[0] == 'CUSDT']
+check('T38a partial: half of the gap (A +100 of 200, E +200 of 400), unchanged name skipped, full close of C stays full (200)',
+      abs(n38['AUSDT'] - 100) < 1e-9 and abs(n38['EUSDT'] - 200) < 1e-9 and 'BUSDT' not in n38 and len(c38) == 1 and abs(c38[0][2] - 200) < 1e-9 and c38[0][4], str(L38))
+d38 = [l for l in L38 if l[0] == 'DUSDT']
+check('T38b flip D +10 -> -190 is a partial step to -90: close 10 + open 90 (same arithmetic as bt.run trade_frac)',
+      len(d38) == 2 and d38[0][4] and abs(d38[0][2] - 10) < 1e-9 and abs(d38[1][2] - 90) < 1e-9 and d38[1][1] == 'Sell', str(d38))
+L38f = ex38.plan(tg38, pos38(p0), tk38, i38, 0.5, 15.0)
+check('T38c frac=1.0 (default) is the unchanged full step', abs(net38([l for l in L38f if l[0] == 'AUSDT'])['AUSDT'] - 200) < 1e-9 and ex38.plan(tg38, pos38(p0), tk38, i38, 0.5, 15.0, frac=1.0, start=dict(p0)) == L38f)
+# band by the FULL gap: gap 40 on target 100 (< 0.5 x 100 = 50) -> no trade; gap 60 -> trade of 30
+check('T38d band is decided on the full gap, the step is half of it',
+      ex38.plan({'AUSDT': 100.0}, pos38({'AUSDT': 60.0}), tk38, i38, 0.5, 15.0, frac=0.5, start={'AUSDT': 60.0}) == []
+      and abs(net38(ex38.plan({'AUSDT': 100.0}, pos38({'AUSDT': 40.0}), tk38, i38, 0.5, 15.0, frac=0.5, start={'AUSDT': 40.0}))['AUSDT'] - 30) < 1e-9)
+# T38e: idempotency. attempt 1 fills only A (E fails); the retry of the SAME slot (start fixed) completes E's half step and does NOT step A again;
+# without `start` (position-based) the retry would walk A to 75 % of the way.
+cur38 = dict(p0); first = ex38.plan(tg38, pos38(cur38), tk38, i38, 0.2, 15.0, frac=0.5, start=dict(p0))
+cur38['AUSDT'] += net38(first)['AUSDT']
+retry = ex38.plan(tg38, pos38(cur38), tk38, i38, 0.2, 15.0, frac=0.5, start=dict(p0))
+naive = ex38.plan(tg38, pos38(cur38), tk38, i38, 0.2, 15.0, frac=0.5)
+check('T38e retry of the same slot: A already at its step (no new leg), E still 200; position-based retry would step A again (+50)',
+      'AUSDT' not in net38(retry) and abs(net38(retry)['EUSDT'] - 200) < 1e-9 and abs(net38(naive).get('AUSDT', 0) - 50) < 1e-9, f'retry {net38(retry)} naive {net38(naive)}')
+# T38f: the whole chain in Bot.rebalance state handling: slot start positions are fixed on the first attempt of a slot only
+src38 = inspect.getsource(Bot.rebalance) if hasattr(Bot, 'rebalance') else ''
+check('T38f main.py fixes the slot-start positions once per slot and passes frac/start to plan', "slot_pos0_slot') != slot_key" in src38 and 'frac=C.REBAL_PARTIAL' in src38 and 'start=start' in src38)
+
+# T39: EMA once per slot + partial step compose: retry of a slot gives the same smoothed targets AND the same step orders as the first attempt
+m39 = Memory(); m39.save = lambda: None; R39 = RiskEngine(m39, lambda *a: None); m39['lev'] = 1.0; m39['initial'] = 10000.0
+sy39 = ['AUSDT', 'BUSDT', 'CUSDT', 'DUSDT']; w39 = np.array([0.01, -0.01, 0.0, 0.0]); m39['w_prev'] = {'CUSDT': 0.01, 'DUSDT': -0.01}
+a39, _ = R39.build_targets(w39, sy39, 10000.0, np.full(4, 5e8), 1.0, set(), slot='S1')
+pstart39 = {'AUSDT': 0.0, 'BUSDT': 0.0, 'CUSDT': 0.0, 'DUSDT': 0.0}
+g1 = ex38.plan({s: float(v) for s, v in zip(sy39, a39) if v}, {}, tk38, i38, 0.0, 15.0, frac=0.5, start=pstart39)
+b39, _ = R39.build_targets(w39, sy39, 10000.0, np.full(4, 5e8), 1.0, set(), slot='S1')          # retry, nothing filled
+g2 = ex38.plan({s: float(v) for s, v in zip(sy39, b39) if v}, {}, tk38, i38, 0.0, 15.0, frac=0.5, start=pstart39)
+check('T39 EMA-once-per-slot + partial step: retry == first attempt (targets and orders)', np.allclose(a39, b39) and g1 == g2 and len(g1) == 4, f'{g1}')
+
+# T40: partial rebalance in the engine and in the bot make the same moves; REBAL_PARTIAL=1.0 is out of the hash, 0.5 is in it
+from bt import run as bt_run
+i0_40 = T - 24 * 40; ok40 = np.flatnonzero(d.valid[i0_40:i0_40 + 24 * 8].all(0))[:10]
+w40 = np.zeros(N); w40[ok40[:5]] = [0.3, 0.3, 0.2, 0.1, 0.1]; w40[ok40[5:10]] = -np.array([0.3, 0.3, 0.2, 0.1, 0.1])
+R40 = {}; _si40 = d.start_i
+for fr_ in (1.0, 0.5):
+    rec40 = []; d.start_i = i0_40
+    bt_run(d, lambda dd, i_, mk_: w40, reb_h=24, band=0.0, fee_bps=0.0, slip_bps=0.0, gross=1.0, pos_cap=1.0, cap_short=1.0, max_lev=1.0, min_trade=0.0,
+           trade_frac=fr_, verbose=False, rec=rec40, label='t40', uni_kwargs=dict(min_age_h=0, min_turn=0, top_n=0), end_i=i0_40 + 24 * 6)
+    R40[fr_] = np.array([p_ for _, p_ in rec40])
+d.start_i = _si40
+P1, P5_ = R40[1.0], R40[0.5]
+T40 = P1[0]
+ratios = np.array([(P5_[k_] @ T40) / (T40 @ T40) for k_ in range(4)])
+check('T40a engine trade_frac=0.5: position goes 1/2, 3/4, 7/8 of the way to a constant target (1.0: at once)',
+      abs(ratios[0] - 0.5) < 0.02 and abs(ratios[1] - 0.75) < 0.03 and abs(ratios[2] - 0.875) < 0.04 and abs((P1[1] @ T40) / (T40 @ T40) - 1) < 0.03, f'{np.round(ratios, 3)}')
+st40 = {}; cur40 = np.zeros(N); tk40 = {s: dict(mark=1.0, last=1.0, bid=1.0, ask=1.0) for s in syms}; i40 = {s: dict(qtyStep=1e-6, minQty=1e-6, maxQty=1e18, minNotional=0.0, tickSize=0.001) for s in syms}
+tgt40 = {s: 1000.0 * float(v) for s, v in zip(syms, w40) if v}; bot_r = []
+for k_ in range(4):
+    pp40 = {s: dict(qty=float(q_), mark=1.0, entry=1.0, upnl=0, im=1, legs=[]) for s, q_ in zip(syms, cur40) if q_}
+    legs40 = ex38.plan(tgt40, pp40, tk40, i40, 0.0, 0.0, frac=0.5, start={s: float(q_) for s, q_ in zip(syms, cur40)})
+    for l_ in legs40: cur40[syms.index(l_[0])] += (1 if l_[1] == 'Buy' else -1) * l_[2]
+    bot_r.append(float(cur40 @ (w40 * 1000.0)) / float((w40 * 1000.0) @ (w40 * 1000.0)))
+check('T40b bot plan(frac=0.5) walks 1/2, 3/4, 7/8, 15/16 of the way, as the engine', np.allclose(bot_r, [0.5, 0.75, 0.875, 0.9375], atol=1e-6), f'{np.round(bot_r, 4)}')
+
+# T41: fchg off via the sleeve configuration: SLEEVES without fchg == fchg kept with scale 0 == book without it; profile (evns/base.env) is reg. 5
+def _envfile(p_):
+    o_ = {}
+    for ln_ in open(os.path.join(ROOT, 'evns', p_), encoding='utf-8'):
+        ln_ = ln_.strip()
+        if '=' in ln_ and not ln_.startswith('#'): k_, v_ = ln_.split('=', 1); o_[k_] = v_
+    return o_
+be41 = _envfile('base.env')
+_sl41, _sc41 = C.SLEEVES, dict(C.SLEEVE_SCALES)
+C.SLEEVES = ['listing', 'core', 'ml3', 'ml7', 'fchg', 'fcarry']; C.SLEEVE_SCALES = {'listing': 1, 'core': 1, 'ml3': 1, 'ml7': 1, 'fchg': 1, 'fcarry': 1}
+S41 = Sleeves(log=lambda *a: None); S41.uni.prev = {}
+w_with, p_with, _ = S41.combined(panel, age_h, set(), daily_update=True, hour_utc=0)
+C.SLEEVE_SCALES['fchg'] = 0.0; S41 = Sleeves(log=lambda *a: None); S41.uni.prev = {}
+w_zero, p_zero, _ = S41.combined(panel, age_h, set(), daily_update=True, hour_utc=0)
+C.SLEEVES = ['listing', 'core', 'ml3', 'ml7', 'fcarry']; S41 = Sleeves(log=lambda *a: None); S41.uni.prev = {}
+w_out, p_out, _ = S41.combined(panel, age_h, set(), daily_update=True, hour_utc=0)
+C.SLEEVES, C.SLEEVE_SCALES = _sl41, _sc41
+exp41 = (p_out['listing'] + p_out['core'] + p_out['ml3'] + p_out['ml7'] + p_out['fcarry']) / 5.0
+check('T41a fchg weight 0 (scale 0) == sleeve removed == mean of the other five sleeves (sum of scales renormalised)',
+      np.abs(w_zero - w_out).max() < 1e-12 and 'fchg' in p_zero and 'fchg' not in p_out and np.abs(w_out - exp41).max() < 1e-12 and np.abs(w_with - w_out).max() > 1e-6,
+      f'diff zero/out {np.abs(w_zero - w_out).max():.1e}, with/out {np.abs(w_with - w_out).max():.2e}')
+sl41 = be41['SLEEVES'].split(','); sc41 = dict((a.split(':')[0], float(a.split(':')[1])) for a in be41['SLEEVE_SCALES'].split(','))
+check('T41b profile evns/base.env (reg. 5): no fchg in SLEEVES / SLEEVE_SCALES, ml8 weight 2, REBAL_PARTIAL=0.5, REBAL_MINUTE=1',
+      sl41 == ['listing', 'core', 'ml3', 'ml7', 'ml8', 'fcarry'] and set(sc41) == set(sl41) and sc41['ml8'] == 2.0 and float(be41['REBAL_PARTIAL']) == 0.5 and be41['REBAL_MINUTE'] == '1', str(be41.get('SLEEVES')))
+h41a = _cfg_hash(); h41b = _cfg_hash(REBAL_PARTIAL='1.0'); h41c = _cfg_hash(REBAL_PARTIAL='0.5')
+check('T41c REBAL_PARTIAL=1.0 (off) leaves the registered config hash unchanged, 0.5 changes it', h41a == h41b and h41a != h41c, f'{h41a} {h41c}')
+
 print(f'\n{sum(1 for _, ok in res if ok)}/{len(res)} passed')
 sys.exit(0 if all(ok for _, ok in res) else 1)

@@ -197,7 +197,7 @@ def effective_config():
     for k, v in sorted(globals().items()):
         if k.startswith('_') or k in skip or not k.isupper() or callable(v):
             continue
-        if k == 'HIVOL_MULT' and v == 1.0:    # off = registered hash unchanged
+        if (k == 'HIVOL_MULT' or k == 'REBAL_PARTIAL') and v == 1.0:    # off = registered hash unchanged
             continue
         if (k == 'K_MIN_FRAC' and v == 0.0) or (k.startswith('DD_HIVOL_') and DD_HIVOL_BUF == 0.0) or (k.startswith('DAY_MARKER_') and DAY_MARKER_FRAC == 0.0):
             continue
@@ -269,6 +269,9 @@ REBAL_BAND = _env('REBAL_BAND', 0.30, float)
 # EMA smoothing per rebalance step. exp19/19b: at 8h cadence heavier per-step smoothing (0.794) made the combined
 # book erratic (stale intraday targets); 0.5 per step was stable (Sharpe 1.72/1.78/1.51 for ml8 weights 1/2/4).
 SMOOTH = _env('SMOOTH', 0.5, float)
+# Partial rebalance (reg. 5): each rebalance trades this fraction of the gap between the position at the start of the slot and the
+# target (research: bt.run trade_frac, exp_common BASE8 via the same env key). 1.0 = full step (the key is then left out of the config hash).
+REBAL_PARTIAL = _env('REBAL_PARTIAL', 1.0, float)
 MIN_TRADE_USDT = _env('MIN_TRADE_USDT', max(15.0, 0.0015 * ACCOUNT_SIZE), float)
 # Daily rebalance at 01:10 UTC: the last closed bar is then the 00:00-01:00 bar — exactly the decision bar
 # used in research and in ML training (features/targets aligned to the bar with open_time 00:00 UTC).
