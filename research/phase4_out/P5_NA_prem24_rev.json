@@ -1,0 +1,174 @@
+{
+ "diag": {
+  "2022-26": {
+   "listing": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "core": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "ml3": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "ml7": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "ml8": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "fchg": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "fcarry": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "prem": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "x:Q1": {
+    "p": 0.0,
+    "f": 0.0
+   },
+   "x:Q2": {
+    "p": 0.0,
+    "f": 0.0
+   },
+   "x:Q3": {
+    "p": 0.0,
+    "f": 0.0
+   },
+   "x:Q4": {
+    "p": 0.0,
+    "f": 0.0
+   },
+   "x:Q5": {
+    "p": 0.0,
+    "f": 0.0
+   },
+   "corr_full": {
+    "listing": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN,
+     "prem": NaN
+    },
+    "core": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN,
+     "prem": NaN
+    },
+    "ml3": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN,
+     "prem": NaN
+    },
+    "ml7": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN,
+     "prem": NaN
+    },
+    "ml8": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN,
+     "prem": NaN
+    },
+    "fchg": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN,
+     "prem": NaN
+    },
+    "fcarry": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN,
+     "prem": NaN
+    },
+    "prem": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN,
+     "prem": NaN
+    }
+   }
+  }
+ },
+ "x1": {
+  "sharpe": 5.102135460300496,
+  "cagr": 0.6233204790793905,
+  "mdd": -0.03924814122517173,
+  "turnover_x": 148.42488160426137,
+  "fees": 0.04526958888929969,
+  "slip": 0.008697668549940352,
+  "funding": -0.08275483440069997,
+  "avg_gross": 0.5363629431102636
+ }
+}

@@ -1,0 +1,162 @@
+{
+ "diag": {
+  "2022-26": {
+   "listing": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "core": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "ml3": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "ml7": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "ml8": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "fchg": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "fcarry": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "liq": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "x:mom_liquid": {
+    "p": 0.0,
+    "f": 0.0
+   },
+   "x:rev_illiquid": {
+    "p": 0.0,
+    "f": 0.0
+   },
+   "corr_full": {
+    "listing": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN,
+     "liq": NaN
+    },
+    "core": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN,
+     "liq": NaN
+    },
+    "ml3": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN,
+     "liq": NaN
+    },
+    "ml7": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN,
+     "liq": NaN
+    },
+    "ml8": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN,
+     "liq": NaN
+    },
+    "fchg": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN,
+     "liq": NaN
+    },
+    "fcarry": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN,
+     "liq": NaN
+    },
+    "liq": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN,
+     "liq": NaN
+    }
+   }
+  }
+ },
+ "x1": {
+  "sharpe": 4.344876289596256,
+  "cagr": 0.5180080832172134,
+  "mdd": -0.06858060421219536,
+  "turnover_x": 157.64465070729548,
+  "fees": 0.04808161846572514,
+  "slip": 0.009196796161084835,
+  "funding": -0.0639557057951459,
+  "avg_gross": 0.5105292764627668
+ }
+}

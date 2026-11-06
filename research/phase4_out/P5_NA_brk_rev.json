@@ -1,0 +1,130 @@
+{
+ "diag": {
+  "2022-26": {
+   "listing": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "core": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "ml3": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "ml7": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "ml8": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "fchg": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "fcarry": {
+    "p": 0.0,
+    "f": 0.0,
+    "c": 0.0,
+    "sh_full": NaN,
+    "brake": NaN
+   },
+   "corr_full": {
+    "listing": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN
+    },
+    "core": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN
+    },
+    "ml3": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN
+    },
+    "ml7": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN
+    },
+    "ml8": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN
+    },
+    "fchg": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN
+    },
+    "fcarry": {
+     "listing": NaN,
+     "core": NaN,
+     "ml3": NaN,
+     "ml7": NaN,
+     "ml8": NaN,
+     "fchg": NaN,
+     "fcarry": NaN
+    }
+   }
+  }
+ },
+ "x1": {
+  "sharpe": 4.553837736374319,
+  "cagr": 0.5510113614047689,
+  "mdd": -0.05259551748896929,
+  "turnover_x": 152.3687574819955,
+  "fees": 0.046472471032008696,
+  "slip": 0.00889357224108387,
+  "funding": -0.06628485544181552,
+  "avg_gross": 0.5256083544013249
+ }
+}
