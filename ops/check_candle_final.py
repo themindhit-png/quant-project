@@ -11,9 +11,19 @@ OFFS = [3, 10, 20, 30, 45, 60, 120, 300]
 
 def kline(sym, start_ms):
     q = urllib.parse.urlencode({'category': 'linear', 'symbol': sym, 'interval': '60', 'start': start_ms, 'end': start_ms, 'limit': 1})
-    with urllib.request.urlopen('https://api.bybit.com/v5/market/kline?' + q, timeout=10) as r:
-        lst = json.load(r)['result']['list']
-    return tuple(float(x) for x in lst[0][4:7]) if lst else None   # close, volume, turnover
+    for i in range(4):                                                # Bybit sometimes answers retCode!=0 (rate limit) -> retry
+        try:
+            with urllib.request.urlopen('https://api.bybit.com/v5/market/kline?' + q, timeout=10) as r:
+                js = json.load(r)
+            lst = (js.get('result') or {}).get('list')
+            if lst is not None:
+                return tuple(float(x) for x in lst[0][4:7]) if lst else None   # close, volume, turnover
+            err = f"retCode {js.get('retCode')} {js.get('retMsg')}"
+        except Exception as e:
+            err = repr(e)
+        time.sleep(0.5 * (i + 1))
+    print(f'  ! {sym}: {err}', flush=True)
+    return 'ERR'
 
 def one_hour():
     now = time.time(); top = (int(now) // 3600 + 1) * 3600; start_ms = (top - 3600) * 1000; snaps = {}
@@ -22,7 +32,7 @@ def one_hour():
         snaps[off] = {s: kline(s, start_ms) for s in SYMS}
     fin = snaps[OFFS[-1]]; first_ok = None
     for off in OFFS[:-1]:
-        diff = [s for s in SYMS if snaps[off][s] != fin[s]]
+        diff = [s for s in SYMS if 'ERR' not in (snaps[off][s], fin[s]) and snaps[off][s] != fin[s]]
         print(f'  {time.strftime("%Y-%m-%d %H:00", time.gmtime(top - 3600))} свеча, +{off:>3} с: отличается от финальной у {len(diff)} из {len(SYMS)} {diff[:4]}', flush=True)
         if not diff and first_ok is None: first_ok = off
         if diff: first_ok = None
