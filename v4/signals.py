@@ -303,6 +303,14 @@ class Sleeves:
     def ml8_weights(self, sig, panel):
         return quantile_ls(sig, C.ML8_TOP_FRAC, inv_vol=self.ml8_vol(panel) if C.ML8_INV_VOL else None)
 
+    @staticmethod
+    def ml8_bar_lag(panel):
+        """Bars between the last closed bar and the last 8h prediction bar (hour 0/8/16 of the bar open). Non-zero only when the cadence is not a
+        multiple of 8h (REBAL_EVERY_H=12, reg. 5c): the slot 13:01 then uses the 08:00 bar. 8h/24h cadence: 0 (unchanged)."""
+        if int(C.REBAL_EVERY_H) % 8 == 0 or panel.get('grid') is None:
+            return 0
+        return int(panel['grid'][-1]) % 24 % 8
+
     def ml8(self, panel, mask, age_h, hour_utc, rank_mask=None):
         """Intraday sleeve: 8h-horizon model on the v3 feature set + intraday extras; inverse-vol weights.
         rank_mask: names the features are ranked over (training universe, ml8_rank_universe); predictions are kept only
@@ -313,6 +321,11 @@ class Sleeves:
         syms = panel['symbols']
         if 'BTCUSDT' not in syms:
             return np.zeros(len(syms))
+        lag = self.ml8_bar_lag(panel)
+        if lag:                                  # reg. 5c: 12h slots -> hold the weights of the last 8h prediction bar (00/08/16), as research T3
+            panel = {k: (v[:-lag] if k in ('grid', 'cff', 'high', 'low', 't24', 'fund', 'prem', 'valid') and v is not None else v) for k, v in panel.items()}
+            if panel['cff'].shape[0] < ML_NEED_H:
+                return np.zeros(len(syms))
         jb = syms.index('BTCUSDT')
         F = compute_features_8h(panel['cff'][-ML_NEED_H:], panel['fund'][-ML_NEED_H:], panel['t24'][-ML_NEED_H:], panel['prem'][-ML_NEED_H:],
                                 panel['high'][-ML_NEED_H:], panel['low'][-ML_NEED_H:], age_h, jb, hour_utc)

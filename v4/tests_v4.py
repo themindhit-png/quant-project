@@ -906,5 +906,54 @@ stg42 = open(os.path.join(ROOT, 'ops', 'stage.sh')).read()
 check('T42o profiles: CASCADE_FILTER not set to 1 in any env file (off for phase1/phase2/funded/personal); stage.sh enables it for trial only and keeps COINALYZE_API_KEY locally',
       all(pf42[p_].get('CASCADE_FILTER', '0') == '0' for p_ in pf42) and 'trial ]] && echo "CASCADE_FILTER=1"' in stg42 and 'COINALYZE_API_KEY' in stg42)
 
+# ---------------------------------------------------------------- Reg. 5c: maker-only rebalancing + 2 rebalances/day (01:01 / 13:01)
+# T43a: normal legs never go to market with MAKER_ONLY; forced symbols and risk passes still do
+a43 = _Api24(); ex43 = Executor(a43, lambda *a: None, None, False); ex43.abort = threading.Event()
+st43, _er43 = ex43.execute(legs24, meta24, a43.tickers(), lambda: {}, maker_attempts=2, wait_s=0, maker_only=True)
+check('T43a maker_only: 2 quote rounds, NO market fallback, the unfilled leg is counted and cancelled', [x[0] for x in a43.sent] == ['PO', 'PO'] and st43['market_sent'] == 0 and st43['unfilled_legs'] == 1, f'{a43.sent} {st43}')
+a43b = _Api24(); ex43b = Executor(a43b, lambda *a: None, None, False); ex43b.abort = threading.Event()
+ex43b.execute(legs24, meta24, a43b.tickers(), lambda: {}, maker_attempts=2, wait_s=0, maker_only=True, force_market={'AAAUSDT'})
+check('T43b forced symbol (delisting / cooldown / blocked) still finishes at market', [x[0] for x in a43b.sent] == ['PO', 'PO', 'MKT'], f'{a43b.sent}')
+C.MAKER_ONLY = 1
+a43c = _Api24(); ex43c = Executor(a43c, lambda *a: None, None, False); ex43c.abort = threading.Event()
+ex43c.execute(legs24, meta24, a43c.tickers(), lambda: {}, maker_attempts=2, wait_s=0)
+a43d = _Api24(); ex43d = Executor(a43d, lambda *a: None, None, False); ex43d.abort = threading.Event()
+ex43d.execute(legs24, meta24, a43d.tickers(), lambda: {}, maker_attempts=2, wait_s=0, maker_only=False)
+C.MAKER_ONLY = 0
+check('T43c MAKER_ONLY=1 is the default of execute(); maker_only=False (scale pass) keeps the market fallback', 'MKT' not in [x[0] for x in a43c.sent] and [x[0] for x in a43d.sent] == ['PO', 'PO', 'MKT'], f'{a43c.sent} {a43d.sent}')
+src43 = open(os.path.join(HERE, 'main.py')).read()
+check('T43d main.py: scale pass passes maker_only=False, the rebalance passes force_market (blocked + delisted); flatten_all / day marker use market only',
+      'wait_s=60, maker_only=False' in src43 and 'force_market=force_mkt' in src43 and 'self.api.market(' in src43 and 'maker_only' not in inspect.getsource(Executor.flatten_all))
+# T43e: unfilled remainder is carried: next slot steps from the position at ITS start (target recomputed), nothing is lost
+tk43 = {'AAAUSDT': dict(mark=10.0, last=10.0, bid=9.99, ask=10.01)}
+l1 = ex38.plan({'AAAUSDT': 1000.0}, {}, tk43, {'AAAUSDT': dict(qtyStep=0.1, minQty=0.1, maxQty=1e9, minNotional=5.0)}, 0.0, 15.0, frac=0.5, start={})
+pos43 = {'AAAUSDT': dict(qty=20.0, mark=10.0, entry=10.0, upnl=0, im=1, legs=[])}          # only 200 of the 500 step filled
+l2 = ex38.plan({'AAAUSDT': 1000.0}, pos43, tk43, {'AAAUSDT': dict(qtyStep=0.1, minQty=0.1, maxQty=1e9, minNotional=5.0)}, 0.0, 15.0, frac=0.5, start={'AAAUSDT': 20.0})
+check('T43e carry-over: slot 1 step = 500 of 1000; next slot (position 200 at its start) steps half of the remaining 800 = 400', abs(l1[0][2] - 500.0) < 1e-6 and abs(l2[0][2] - 400.0) < 1e-6, f'{l1} {l2}')
+# T43f: slots at 01:01 and 13:01 with REBAL_EVERY_H=12
+_e43, _m43 = C.REBAL_EVERY_H, C.REBAL_MINUTE; C.REBAL_EVERY_H = 12; C.REBAL_MINUTE = 1; C.REBAL_HOUR_UTC = 1
+U43 = lambda h, mi, dd=3: datetime(2026, 5, dd, h, mi, tzinfo=timezone.utc)
+check('T43f slots 01:01 / 13:01: 01:30 -> 01:01, 12:59 -> 01:01, 13:01 -> 13:01, 00:30 -> previous 13:01',
+      _slot(U43(1, 30)) == U43(1, 1) and _slot(U43(12, 59)) == U43(1, 1) and _slot(U43(13, 1)) == U43(13, 1) and _slot(U43(0, 30)) == U43(13, 1, 2))
+# day marker: next rebalance is 12 h after the slot -> the "still open at the next rebalance" test uses the same grid
+check('T43g day marker horizon: from the 01:01 slot the next one is 13:01', _slot(U43(5, 0)) + timedelta(hours=12) == U43(13, 1))
+# T43h: ml8 holds the weights of the last 8h bar (00/08/16) between them
+ep43 = int(datetime(2026, 5, 3, 12, tzinfo=timezone.utc).timestamp() // 3600)           # last closed bar opens at 12:00
+pan43 = dict(panel); pan43['grid'] = np.arange(ep43 - 2199, ep43 + 1)
+pan43_t = {k_: (v_[:-4] if k_ in ('grid', 'cff', 'high', 'low', 't24', 'fund', 'prem', 'valid') else v_) for k_, v_ in pan43.items()}    # ends at the 08:00 bar
+m43 = mu25
+C.REBAL_EVERY_H = 8; w_ref43 = S.ml8(pan43_t, m43, age_h, 8)
+C.REBAL_EVERY_H = 12; w_hold43 = S.ml8(pan43, m43, age_h, 13)
+lags43 = [Sleeves.ml8_bar_lag(dict(grid=np.array([ep_]))) for ep_ in (ep43 - 12, ep43 - 4, ep43, ep43 + 4, ep43 + 8)]   # bar opens 00, 08, 12, 16, 20
+C.REBAL_EVERY_H = 8; lag8_43 = Sleeves.ml8_bar_lag(dict(grid=np.array([ep43])))
+C.REBAL_EVERY_H = _e43; C.REBAL_MINUTE = _m43
+check('T43h ml8 at the 13:01 slot (bar 12) == ml8 computed on the 08:00 bar; lags 0/0/4/0/4; cadence 8h: lag 0 (unchanged)',
+      (np.abs(w_ref43).sum() > 0 or not S.models.get(8)) and np.allclose(w_ref43, w_hold43) and lags43 == [0, 0, 4, 0, 4] and lag8_43 == 0, f'{lags43} {lag8_43}')
+# T43i: hash unchanged when the flags are off; MAKER_ONLY=1 changes it; the profile registers 5c
+h43a = _cfg_hash(); h43b = _cfg_hash(MAKER_ONLY='0'); h43c = _cfg_hash(MAKER_ONLY='1'); h43d = _cfg_hash(REBAL_EVERY_H='12')
+be43 = _envfile('base.env')
+check('T43i MAKER_ONLY=0 leaves the hash unchanged, 1 and REBAL_EVERY_H=12 change it; evns/base.env: MAKER_ONLY=1, REBAL_EVERY_H=12, REBAL_HOUR_UTC=1, REBAL_MINUTE=1',
+      h43a == h43b and h43a != h43c and h43a != h43d and be43.get('MAKER_ONLY') == '1' and be43.get('REBAL_EVERY_H') == '12' and be43.get('REBAL_HOUR_UTC') == '1' and be43.get('REBAL_MINUTE') == '1', f'{h43a} {h43c} {h43d}')
+
 print(f'\n{sum(1 for _, ok in res if ok)}/{len(res)} passed')
 sys.exit(0 if all(ok for _, ok in res) else 1)

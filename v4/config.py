@@ -200,7 +200,7 @@ def effective_config():
             continue
         if k.startswith('CASCADE_') and not CASCADE_FILTER:            # off = registered hash unchanged
             continue
-        if (k == 'HIVOL_MULT' or k == 'REBAL_PARTIAL') and v == 1.0:    # off = registered hash unchanged
+        if (k == 'HIVOL_MULT' or k == 'REBAL_PARTIAL') and v == 1.0 or (k == 'MAKER_ONLY' and not v):    # off = registered hash unchanged
             continue
         if (k == 'K_MIN_FRAC' and v == 0.0) or (k.startswith('DD_HIVOL_') and DD_HIVOL_BUF == 0.0) or (k.startswith('DAY_MARKER_') and DAY_MARKER_FRAC == 0.0):
             continue
@@ -279,6 +279,10 @@ REBAL_PARTIAL = _env('REBAL_PARTIAL', 1.0, float)
 # CASCADE_WIN_D days -> the whole book x CASCADE_MULT for the next CASCADE_DAYS days. 0 = off (all CASCADE_* keys then stay out of the hash).
 # The Coinalyze key is read ONLY from the environment variable COINALYZE_API_KEY inside cascade.py (not a config value, never hashed/logged).
 CASCADE_FILTER = _env('CASCADE_FILTER', 0, int)
+# Maker-only rebalancing (reg. 5c): the rebalance legs are quoted PostOnly in the same window as before, but the unfilled remainder is NOT sent to
+# market — it is left and re-evaluated at the next slot. Forced/risk closes (delisting, cooldown/blocked names, halts, flatten, scale pass,
+# day marker) stay market. 0 = off (previous behaviour; the key is then left out of the config hash). Together with REBAL_EVERY_H=12 (slots 01:01 / 13:01).
+MAKER_ONLY = _env('MAKER_ONLY', 0, int)
 CASCADE_PCT = _env('CASCADE_PCT', 0.95, float)
 CASCADE_MULT = _env('CASCADE_MULT', 0.5, float)
 CASCADE_DAYS = _env('CASCADE_DAYS', 2, int)

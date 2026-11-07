@@ -445,7 +445,8 @@ class Bot:
                     m['slot_pos0'] = {s: float(p['qty']) for s, p in positions.items()}; m['slot_pos0_slot'] = slot_key; m.save()
                 start = m.get('slot_pos0') or {}
             legs = self.ex.plan(targets, positions, tickers, self.instr, C.REBAL_BAND, C.MIN_TRADE_USDT, frac=C.REBAL_PARTIAL, start=start)
-            stats, errors = self.ex.execute(legs, self.instr, tickers, self.api.positions)
+            force_mkt = set(blocked) | (set(positions) & set(getattr(self.md, 'delist', None) or ()))    # reg. 5c: risk/forced closes stay market
+            stats, errors = self.ex.execute(legs, self.instr, tickers, self.api.positions, force_market=force_mkt)
             # ---- bookkeeping
             m['last_targets'] = targets; m['k_ref'] = k; m['last_rebal_date'] = self.now().date().isoformat()
             if not stats.get('aborted'):                   # an aborted slot is retried at the next wake-up (guards decide then)
@@ -466,7 +467,7 @@ class Bot:
                        trading_days=m['trading_days'], profit_days=m.get('profit_days', 0), day_pnls_n=len(m['day_pnls']), consistency_ok=self.risk.consistency_ok(), ok=True)
             log(f'REBALANCE done in {time.time() - t0:.0f}s | eq {equity:,.2f} K={k:.2f} ({why}) lev {lev:.2f} ({vt_why}) | '
                 f'targets {len(targets)} gross {tinfo["gross"]:,.0f} ({tinfo["gross_x_initial"]:.2f}x) L{tinfo["n_long"]}/S{tinfo["n_short"]} | '
-                f'orders maker {stats["maker_sent"]} market {stats["market_sent"]} errors {len(errors)} | positions {len(poss2)} gross {g:,.0f} net {net:+,.0f}')
+                f'orders maker {stats["maker_sent"]} market {stats["market_sent"]} unfilled {stats.get("unfilled_legs", 0)} errors {len(errors)} | positions {len(poss2)} gross {g:,.0f} net {net:+,.0f}')
             tg(f'📊 Ребаланс: equity {equity:,.2f} | K {k:.2f} ({why}) | lev {lev:.2f} | целей {len(targets)} (L{tinfo["n_long"]}/S{tinfo["n_short"]}) '
                f'gross {tinfo["gross_x_initial"]:.2f}x | позиций {len(poss2)}, net {net / equity * 100:+.1f}% | ордера maker/market {stats["maker_sent"]}/{stats["market_sent"]}'
                + (f' | {cas_why}' if cas_m < 1.0 else '') + (f' | ошибок {len(errors)}' if errors else ''))
@@ -554,7 +555,7 @@ class Bot:
             legs = [l for l in self.ex.plan(targets, positions, tickers, self.instr, 0.05, C.MIN_TRADE_USDT) if l[3]]
             if not legs:
                 log('SCALE PASS: no reducing legs, K reference not moved'); return
-            stats, errors = self.ex.execute(legs, self.instr, tickers, self.api.positions, maker_attempts=1, wait_s=60)
+            stats, errors = self.ex.execute(legs, self.instr, tickers, self.api.positions, maker_attempts=1, wait_s=60, maker_only=False)
             if errors:
                 log(f'SCALE PASS: {len(errors)} order errors, K reference kept at {float(m["k_ref"]):.2f} (retry next hour)'); return
             m['last_targets'] = targets; m['k_ref'] = k; m.save()

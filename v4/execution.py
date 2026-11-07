@@ -155,8 +155,13 @@ class Executor:
                 res[sym] = (-1, str(e))
         return res
 
-    def execute(self, legs, instr, tickers, positions_fn, maker_attempts=None, wait_s=None):
-        """Execute legs: PostOnly at touch (batched), re-quote, then market. Returns (stats, errors); stats are per cycle."""
+    def execute(self, legs, instr, tickers, positions_fn, maker_attempts=None, wait_s=None, maker_only=None, force_market=()):
+        """Execute legs: PostOnly at touch (batched), re-quote, then market. Returns (stats, errors); stats are per cycle.
+        maker_only (default C.MAKER_ONLY, reg. 5c): the unfilled remainder of a normal leg is NOT sent to market (cancelled, re-evaluated at the
+        next slot); symbols in force_market (delisting / cooldown / blocked names) still finish at market. Callers of risk passes use maker_only=False."""
+        maker_only = bool(C.MAKER_ONLY) if maker_only is None else bool(maker_only)
+        force_market = set(force_market)
+        n_unfilled = 0
         maker_attempts = C.MAKER_ATTEMPTS if maker_attempts is None else maker_attempts
         wait_s = C.MAKER_WAIT_S if wait_s is None else wait_s
         self._reset_stats()
@@ -229,6 +234,9 @@ class Executor:
                 ro = (cur != 0) and (np.sign(dq) != np.sign(cur)) and abs(dq) <= abs(cur) + 1e-12
                 if tq == 0 and cur != 0:
                     q = round_qty(abs(cur), meta); ro = True
+                if final and maker_only and sym not in force_market and meta.get('tickSize'):
+                    n_unfilled += 1                       # reg. 5c: no market chasing; the remainder is carried to the next slot
+                    continue
                 if final or not meta.get('tickSize'):
                     try:
                         self._send(sym, side, q, ro, meta, None); n_market += 1; t_last_fill = time.time(); market_notional += q * px
@@ -270,7 +278,7 @@ class Executor:
         st.update(exec_seconds=round(time.time() - t_start, 1), last_fill_seconds=round(t_last_fill - t_start, 1), legs=len(want),
                   maker_fill_share=round(n_maker_filled / n_fills, 3) if n_fills else None,                        # by legs (proxy)
                   maker_notional_share=round(maker_notional / tot_notional, 3) if tot_notional > 0 else None,      # by notional (proxy)
-                  market_legs=n_market, aborted=aborted,
+                  market_legs=n_market, unfilled_legs=n_unfilled, aborted=aborted,
                   adverse_bps_mean=round(float(np.mean(fill_bps)), 2) if fill_bps else None, adverse_bps_p90=round(float(np.percentile(fill_bps, 90)), 2) if fill_bps else None)
         # real fills from the exchange (best effort): notional-weighted maker share and slippage vs the decision price
         if not self.dry and hasattr(self.api, 'executions'):
