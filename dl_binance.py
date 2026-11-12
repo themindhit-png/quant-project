@@ -27,15 +27,18 @@ def list_keys(prefix):
     out, marker = [], None
     for _ in range(50):
         url = f"{BASE_S3}?prefix={prefix}" + (f"&marker={marker}" if marker else "")
-        for attempt in range(5):
+        err = None
+        for attempt in range(8):
             try:
                 r = sess.get(url, timeout=60)
                 if r.status_code == 200:
                     break
-            except Exception:
-                time.sleep(1 + attempt)
+                err = f'HTTP {r.status_code}'                       # 503 SlowDown etc.: back off as for network errors
+            except Exception as e:
+                err = f'{type(e).__name__}: {e}'
+            time.sleep(min(60, 2 ** attempt))
         else:
-            raise RuntimeError(f'listing failed {prefix}')
+            raise RuntimeError(f'listing failed {prefix}: {err}')
         keys = re.findall(r'<Key>([^<]+)</Key>', r.text)
         out += [k for k in keys if k.endswith('.zip')]
         m = re.search(r'<NextMarker>([^<]+)</NextMarker>', r.text)
@@ -173,6 +176,7 @@ def main():
             if i % 200 == 0:
                 print(f'  listed {i}/{len(futs)} ({time.time()-t0:.0f}s) keys so far {len(keys)}', flush=True)
     keys = sorted(set(keys))
+    os.makedirs(ROOT, exist_ok=True)                                     # fresh VPS clone: data/raw does not exist yet
     json.dump(keys, open(os.path.join(ROOT, f'keys_{"_".join(KINDS)}.json'), 'w'))
     print(f'total files: {len(keys)}  listing took {time.time()-t0:.0f}s', flush=True)
     stats = {}
