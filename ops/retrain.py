@@ -8,10 +8,9 @@ from the repo clone (/root/quant-project). Steps:
   5. gates (no tuning — the models have no honest OOS): v4/tests_v4.py with the new models (feature parity T25/T25c, sleeves T4/T26);
      predictions not degenerate; Spearman new vs current models over the last 30 days >= 0.5;
   6. swap: backup of the live models, copy, bot restart outside a rebalance window, Telegram report (hashes, Spearman, train ends).
-Memory (VPS 2 GB): other memory-heavy services on the host (RETRAIN_PAUSE_UNITS, default edge-bot = the edge-lab paper bot, ~1 GB) are
-stopped for the retrain and started again at the end (also on failure / SIGTERM; a transient systemd timer starts them after 12 h even if
-this process is killed). The paper bot catches up the missed hours by itself (bot/collector.py: up to 1400 h, metrics 30 days back).
-A unit whose /etc/<unit>.env sets LIVE_CONFIG (live order executor) is never paused: missing a decision costs real money; with MEM_LEAN=1 it needs ~0.7 GB.
+Memory (VPS 2 GB): by default NOTHING else is stopped - every bot keeps trading (demo, prop and own account alike); the edge-lab bot fits next to
+the retrain with MEM_LEAN=1 (~0.7 GB), the rest goes to swap (slower retrain, Nice=10). Optional emergency switch: RETRAIN_PAUSE_UNITS=unit[,unit]
+stops those units for the retrain and always starts them again (end, failure, SIGTERM; a 12 h systemd timer if this process is killed).
 Any failure -> the live models stay, the reason goes to Telegram. Manual: python3 ops/retrain.py [--cutoff 2027-01-01] [--dry] [--skip-data]"""
 import os, sys, json, time, shutil, hashlib, argparse, subprocess, glob, signal
 from datetime import datetime, timezone, timedelta
@@ -145,11 +144,9 @@ def safe_restart():
 def pause_heavy():
     """Stop other memory-heavy services for the retrain (between their hourly cycles); a 12 h dead-man timer starts them again."""
     paused = []
-    for u in [x.strip() for x in os.environ.get('RETRAIN_PAUSE_UNITS', 'edge-bot').split(',') if x.strip()]:
+    for u in [x.strip() for x in os.environ.get('RETRAIN_PAUSE_UNITS', '').split(',') if x.strip()]:
         if not L.is_active(u):
             continue
-        if L.read_env(f'/etc/{u}.env').get('LIVE_CONFIG'):          # the unit trades real orders (live executor): never stop it, it fits in RAM (MEM_LEAN)
-            say(f'{u} trades live (LIVE_CONFIG set) - not paused'); continue
         while 8 <= datetime.now(timezone.utc).minute < 40:          # the paper bot cycles at hh:10 - do not cut a cycle
             time.sleep(60)
         dm = f'{u}-resume-{int(time.time())}'

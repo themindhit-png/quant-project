@@ -97,10 +97,8 @@ check('retrain: edge-bot gets a 12 h dead-man timer, is stopped, then started an
       len(pz) == 1 and pz[0][0] == 'edge-bot' and flat[0].startswith('systemd-run --unit=edge-bot-resume-') and '--on-active=12h' in flat[0]
       and flat[1] == 'systemctl stop edge-bot' and flat[2] == 'systemctl start edge-bot' and flat[3].endswith('.timer')
       and not any('absent-unit' in f for f in flat), str(flat))
-_re = RT.L.read_env; RT.L.read_env = lambda p: {'LIVE_CONFIG': 'bal'} if p == '/etc/edge-bot.env' else {}
-calls.clear(); pz = RT.pause_heavy()
-check('retrain: a live-trading edge-bot (LIVE_CONFIG in /etc/edge-bot.env) is never paused', pz == [] and not calls, str(calls))
-RT.L.read_env = _re
+os.environ.pop('RETRAIN_PAUSE_UNITS'); calls.clear(); pz = RT.pause_heavy()
+check('retrain: by default nothing is paused (one behaviour for demo, prop and own account)', pz == [] and not calls, str(calls))
 L.is_active = lambda u: True
 
 print(f'\n{sum(res)}/{len(res)} passed'); sys.exit(0 if all(res) else 1)
