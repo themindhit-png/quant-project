@@ -75,4 +75,28 @@ check('stage.sh carries the ml8 memory: ML8_CARRY_FROM = previous STATE_FILE, ne
 os.remove(old_state); r2 = stage('phase1', '100000')
 check('stage.sh without an old state file writes no ML8_CARRY_FROM', r2.returncode == 0 and 'ML8_CARRY_FROM' not in r2.stdout, r2.stderr[-300:])
 
+# retrain.py (12.11): restart windows follow the bot env (reg. 5c 01:01/13:01), heavy services are paused and always resumed
+import retrain as RT
+from datetime import datetime as _dt, timezone as _tz
+sl = RT.rebal_slots({'REBAL_HOUR_UTC': '1', 'REBAL_MINUTE': '1', 'REBAL_EVERY_H': '12'})
+at = lambda h, m: _dt(2027, 1, 5, h, m, tzinfo=_tz.utc)
+check('retrain: slots 01:01/13:01 from env; 13:05 and 00:59 blocked, 03:30 and 13:40 free; old default 01/09/17:10',
+      sl == [61, 781] and RT.in_rebal_window(at(13, 5), sl) and RT.in_rebal_window(at(0, 59), sl) and not RT.in_rebal_window(at(3, 30), sl)
+      and not RT.in_rebal_window(at(13, 40), sl) and RT.rebal_slots({}) == [70, 550, 1030], str(sl))
+calls = []
+class _DT:
+    @staticmethod
+    def now(tz=None): return at(3, 45)
+RT.datetime = _DT; RT.time.sleep = lambda s: None
+RT.subprocess.run = lambda cmd, **kw: calls.append(cmd) or type('R', (), {'returncode': 0, 'stdout': '', 'stderr': ''})()
+_act = {'edge-bot': True}; RT.L.is_active = lambda u: _act.get(u, False)
+os.environ['RETRAIN_PAUSE_UNITS'] = 'edge-bot,absent-unit'
+pz = RT.pause_heavy(); RT.resume_heavy(pz)
+flat = [' '.join(c) for c in calls]
+check('retrain: edge-bot gets a 12 h dead-man timer, is stopped, then started and the timer removed; inactive units untouched',
+      len(pz) == 1 and pz[0][0] == 'edge-bot' and flat[0].startswith('systemd-run --unit=edge-bot-resume-') and '--on-active=12h' in flat[0]
+      and flat[1] == 'systemctl stop edge-bot' and flat[2] == 'systemctl start edge-bot' and flat[3].endswith('.timer')
+      and not any('absent-unit' in f for f in flat), str(flat))
+L.is_active = lambda u: True
+
 print(f'\n{sum(res)}/{len(res)} passed'); sys.exit(0 if all(res) else 1)

@@ -8,8 +8,11 @@ from the repo clone (/root/quant-project). Steps:
   5. gates (no tuning — the models have no honest OOS): v4/tests_v4.py with the new models (feature parity T25/T25c, sleeves T4/T26);
      predictions not degenerate; Spearman new vs current models over the last 30 days >= 0.5;
   6. swap: backup of the live models, copy, bot restart outside a rebalance window, Telegram report (hashes, Spearman, train ends).
+Memory (VPS 2 GB): other memory-heavy services on the host (RETRAIN_PAUSE_UNITS, default edge-bot = the edge-lab paper bot, ~1 GB) are
+stopped for the retrain and started again at the end (also on failure / SIGTERM; a transient systemd timer starts them after 12 h even if
+this process is killed). The paper bot catches up the missed hours by itself (bot/collector.py: up to 1400 h, metrics 30 days back).
 Any failure -> the live models stay, the reason goes to Telegram. Manual: python3 ops/retrain.py [--cutoff 2027-01-01] [--dry] [--skip-data]"""
-import os, sys, json, time, shutil, hashlib, argparse, subprocess, glob
+import os, sys, json, time, shutil, hashlib, argparse, subprocess, glob, signal
 from datetime import datetime, timezone, timedelta
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(REPO, 'ops'))
@@ -115,16 +118,47 @@ def gates(cutoff):
     return rep
 
 
+def rebal_slots(env):
+    """Rebalance start times of one bot as minutes of the day, from its env (same defaults as v4/config.py)."""
+    h0 = int(env.get('REBAL_HOUR_UTC') or 1); m0 = int(env.get('REBAL_MINUTE') or 10)
+    every = int(env.get('REBAL_EVERY_H') or (8 if 'ml8' in (env.get('SLEEVES') or 'ml8') else 24))
+    return sorted({((h0 + i * every) % 24) * 60 + m0 for i in range(max(1, 24 // every))})
+
+
+def in_rebal_window(now, slots, before=3, after=30):
+    """True from `before` min before a rebalance slot to `after` min after it (orders + fills take ~5 min)."""
+    x = now.hour * 60 + now.minute
+    return any(-before <= ((x - s + 720) % 1440) - 720 < after for s in slots)
+
+
 def safe_restart():
-    """Restart the bots outside the rebalance windows (01/09/17 UTC hh:05-hh:25)."""
-    while True:
-        now = datetime.now(timezone.utc)
-        if not (now.hour % 8 == 1 and 5 <= now.minute < 25):
-            break
+    """Restart the bots outside their rebalance windows (slots from each bot's env: reg. 5c = 01:01 / 13:01 UTC)."""
+    units = [u for u in L.bot_units() if L.is_active(u)]
+    slots = sorted({s for u in units for s in rebal_slots(L.read_env(L.env_file(u) or ''))}) or rebal_slots({})
+    while in_rebal_window(datetime.now(timezone.utc), slots):
         time.sleep(60)
-    for u in L.bot_units():
-        if L.is_active(u):
-            subprocess.run(['systemctl', 'restart', u]); say(f'restarted {u}')
+    for u in units:
+        subprocess.run(['systemctl', 'restart', u]); say(f'restarted {u}')
+
+
+def pause_heavy():
+    """Stop other memory-heavy services for the retrain (between their hourly cycles); a 12 h dead-man timer starts them again."""
+    paused = []
+    for u in [x.strip() for x in os.environ.get('RETRAIN_PAUSE_UNITS', 'edge-bot').split(',') if x.strip()]:
+        if not L.is_active(u):
+            continue
+        while 8 <= datetime.now(timezone.utc).minute < 40:          # the paper bot cycles at hh:10 - do not cut a cycle
+            time.sleep(60)
+        dm = f'{u}-resume-{int(time.time())}'
+        subprocess.run(['systemd-run', f'--unit={dm}', '--on-active=12h', '/bin/systemctl', 'start', u], capture_output=True, text=True)
+        subprocess.run(['systemctl', 'stop', u]); paused.append((u, dm)); say(f'paused {u} for the retrain (memory)')
+    return paused
+
+
+def resume_heavy(paused):
+    for u, dm in paused:
+        subprocess.run(['systemctl', 'start', u]); say(f'resumed {u}: {"active" if L.is_active(u) else "NOT active"}')
+        subprocess.run(['systemctl', 'stop', dm + '.timer'], capture_output=True)
 
 
 def main():
@@ -135,7 +169,10 @@ def main():
     cutoff = datetime.fromisoformat(A.cutoff).replace(tzinfo=timezone.utc) if A.cutoff else datetime(now.year, now.month, 1, tzinfo=timezone.utc)
     end_hl = (cutoff - timedelta(days=GAP_HL_D)).strftime('%Y-%m-%d 23:00'); end_8h = (cutoff - timedelta(days=GAP_8H_D)).strftime('%Y-%m-%d 23:00')
     say(f'retrain: cutoff {cutoff:%Y-%m-%d}, h3/h7 end {end_hl}, 8h end {end_8h}, live models {LIVE}')
+    signal.signal(signal.SIGTERM, lambda *a: sys.exit(143))          # systemd timeout / stop -> the finally block still resumes paused units
+    paused = []
     try:
+        paused = pause_heavy()
         resources()
         if not A.skip_data:
             sf = vision_symbols()
@@ -168,6 +205,11 @@ def main():
         L.tg_send(f'⚠️ Переобучение моделей не выполнено, работают прежние модели. Причина: {str(e)[:700]}')
         return 1
     finally:
+        try:
+            resume_heavy(paused)
+        except Exception as e:
+            say(f'resume failed: {e}')
+            L.tg_send(f'⚠️ После переобучения не запустился {[u for u, _ in paused]}: {e}. Запусти вручную: systemctl start {" ".join(u for u, _ in paused)}')
         try:
             with open(os.path.join(L.APP if os.path.isdir(L.APP) else REPO, 'retrain_runs.txt'), 'a') as f:
                 f.write('\n'.join(LOG) + '\n')
