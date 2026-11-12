@@ -113,7 +113,7 @@ def main():
         # premium index klines: same layout under raw/premiumIndexKlines/<SYM>/1h/; store close as f32
         rawp = os.path.join(ROOT, 'data', 'raw', 'premiumIndexKlines')
         syms = sorted(d for d in os.listdir(rawp) if d.endswith('USDT'))
-        arr = np.full((H, len(syms)), np.nan, dtype=np.float32)
+        arr = np.full((H, len(syms)), np.nan, dtype=np.float32, order='F')   # column-major: one symbol = contiguous memory (2 GB VPS + swap)
         keep = []
         for j, sym in enumerate(syms):
             df = load_kline_kind('premiumIndexKlines', sym)
@@ -129,9 +129,11 @@ def main():
         print(f'DONE premium: {len(cols)} symbols', flush=True)
         return
     kinds = ['close', 'qvol'] if mode == 'core' else ['open', 'high', 'low', 'vol', 'ntrades', 'tbq']
-    panels = {k: np.full((H, len(syms)), np.nan, dtype=(np.float64 if k == 'close' else np.float32))
+    # column-major (order='F'): every symbol is written into one contiguous column, so on a 2 GB VPS the arrays page in/out
+    # sequentially instead of touching every page of every panel per symbol (row-major + swap = hours of thrashing). Values identical.
+    panels = {k: np.full((H, len(syms)), np.nan, dtype=(np.float64 if k == 'close' else np.float32), order='F')
               for k in kinds}
-    fund = np.zeros((H, len(syms)), dtype=np.float32) if mode == 'core' else None
+    fund = np.zeros((H, len(syms)), dtype=np.float32, order='F') if mode == 'core' else None
     meta = {}
     t0 = time.time()
     keep = []
