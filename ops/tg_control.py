@@ -55,7 +55,7 @@ def main():
         try:
             r = requests.get(f'https://api.telegram.org/bot{token}/getUpdates', params={'offset': offset, 'timeout': 50}, timeout=60).json()
         except Exception as e:
-            print(f'getUpdates: {e}'); time.sleep(10); continue
+            print(f'getUpdates: {type(e).__name__}: {L.scrub(e, token)}'); time.sleep(10); continue
         for upd in r.get('result', []):
             offset = upd['update_id'] + 1
             msg = upd.get('message') or {}
@@ -64,7 +64,7 @@ def main():
             try:
                 reply = handle(msg['text'])
             except Exception as e:
-                reply = f'ошибка: {e}'
+                reply = f'ошибка: {type(e).__name__}: {L.scrub(e, token)}'
             if reply:
                 L.tg_send(reply, token, chat)
         try:

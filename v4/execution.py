@@ -35,11 +35,50 @@ class Executor:
         self.stats = dict(maker_sent=0, market_sent=0, closes=0, opens=0, errors=0)          # per execute() call (cycle)
         self.stats_total = dict(self.stats)                                                  # cumulative since start
         self.abort = None                         # threading.Event set by the watchdog when a hard risk limit is hit mid-rebalance
+        self.tg_once = None                       # optional throttled sender tg_once(key, text, hours) (set by the bot); falls back to tg
 
     def _reset_stats(self):
         for k, v in self.stats.items():
             self.stats_total[k] = self.stats_total.get(k, 0) + v
         self.stats = dict(maker_sent=0, market_sent=0, closes=0, opens=0, errors=0)
+
+    # ------------------------------------------------------------ alerts / cancel
+    def _alert(self, key, text, hours=1.0):
+        """Throttled Telegram alert (an unattended loop must not repeat the same message every cycle)."""
+        if self.tg_once is not None:
+            self.tg_once(key, text, hours)
+        else:
+            self.tg(text)
+
+    def _cancel_verified(self):
+        """cancel_all, then check open_orders is empty (Bybit.cancel_all swallows API errors): retry once, else Telegram. True when the book is clean
+        (or cannot be checked: dry run / a client without open_orders)."""
+        try:
+            self.api.cancel_all()
+        except Exception as e:
+            self.log(f'cancel_all: {e}')
+        if self.dry or not hasattr(self.api, 'open_orders'):
+            return True
+        left = None
+        for att in range(2):
+            try:
+                left = self.api.open_orders()
+            except Exception as e:
+                self.log(f'open_orders check: {e}'); left = None
+            if left is not None and not left:
+                return True
+            if att == 0:
+                self.log(f'cancel_all left {len(left) if left is not None else "?"} open orders; retrying once')
+                time.sleep(0.5)
+                try:
+                    self.api.cancel_all()
+                except Exception as e:
+                    self.log(f'cancel_all (retry): {e}')
+                time.sleep(0.5)
+        syms = sorted({str(o.get('symbol')) for o in (left or [])})[:10]
+        self._alert('cancel_left', f'⚠️ После cancel_all на бирже остались лимитные ордера ({len(left) if left is not None else "не удалось проверить"}): {syms}. '
+                                   f'Они могут исполниться вне плана — проверь вручную.', 1.0)
+        return False
 
     # ------------------------------------------------------------ planning
     def plan(self, targets, positions, tickers, instr, band, min_trade, no_touch=(), frac=1.0, start=None):
@@ -145,7 +184,19 @@ class Executor:
                     res[sym] = (c, msg); self.stats['maker_sent'] += 1
                 batch = []
             except Exception as e:
-                self.log(f'batch quotes failed ({e}); falling back to single orders')
+                # F4: a later chunk failed: the chunks before it are ON THE BOOK (BatchError.done). Resend only the legs whose orders were not
+                # accepted, and even of those skip any that already rests (the failed request may have been processed: timeout after the fact)
+                done = list(getattr(e, 'done', None) or [])
+                self.log(f'batch quotes failed after {len(done)} accepted ({e}); resending only the rest as single orders')
+                for (sym, *_), (c, msg) in zip(batch, done):
+                    res[sym] = (c, msg); self.stats['maker_sent'] += 1
+                rest = batch[len(done):]
+                resting = self._resting(rest)
+                for x in rest:
+                    if (x[0], x[1]) in resting:
+                        res[x[0]] = (0, ''); self.stats['maker_sent'] += 1
+                        self.log(f'{x[0]} {x[1]}: quote already resting, not resent')
+                batch = [x for x in rest if (x[0], x[1]) not in resting]
         for sym, side, q, ro, ps, meta in singles + batch:
             try:
                 self._send(sym, side, q, ro, meta, ps); res[sym] = (0, '')
@@ -155,13 +206,24 @@ class Executor:
                 res[sym] = (-1, str(e))
         return res
 
+    def _resting(self, quotes):
+        """{(symbol, side)} of the given quotes that already rest on the book (best effort: unknown -> empty set -> they are resent)."""
+        if not quotes or not hasattr(self.api, 'open_orders'):
+            return set()
+        try:
+            want = {(x[0], x[1]) for x in quotes}
+            return {(o.get('symbol'), o.get('side')) for o in self.api.open_orders() if (o.get('symbol'), o.get('side')) in want}
+        except Exception as e:
+            self.log(f'open_orders (dedupe) failed: {e}')
+            return set()
+
     def execute(self, legs, instr, tickers, positions_fn, maker_attempts=None, wait_s=None, maker_only=None, force_market=()):
         """Execute legs: PostOnly at touch (batched), re-quote, then market. Returns (stats, errors); stats are per cycle.
         maker_only (default C.MAKER_ONLY, reg. 5c): the unfilled remainder of a normal leg is NOT sent to market (cancelled, re-evaluated at the
         next slot); symbols in force_market (delisting / cooldown / blocked names) still finish at market. Callers of risk passes use maker_only=False."""
         maker_only = bool(C.MAKER_ONLY) if maker_only is None else bool(maker_only)
         force_market = set(force_market)
-        n_unfilled = 0
+        n_unfilled = 0; unfilled_usd = 0.0
         maker_attempts = C.MAKER_ATTEMPTS if maker_attempts is None else maker_attempts
         wait_s = C.MAKER_WAIT_S if wait_s is None else wait_s
         self._reset_stats()
@@ -170,10 +232,12 @@ class Executor:
         # desired final signed qty per symbol from legs (apply sequentially per symbol)
         pos0 = positions_fn()
         want = {}
+        no_meta, no_px = [], []
         for sym, side, usd, ro, full in legs:
             meta = instr.get(sym); tk = tickers.get(sym, {})
             px = tk.get('mark') or tk.get('last') or pos0.get(sym, {}).get('mark') or 0.0
             if not meta or px <= 0:
+                (no_px if meta else no_meta).append(sym)           # F10: never dropped silently
                 continue
             cur = want.get(sym, pos0.get(sym, {}).get('qty', 0.0))
             dq = usd / px * (1 if side == 'Buy' else -1)
@@ -181,104 +245,104 @@ class Executor:
                 want[sym] = 0.0
             else:
                 want[sym] = cur + dq
+        if no_meta or no_px:
+            self.log(f'LEGS DROPPED: no instrument meta {no_meta}, no price {no_px}')
+            self._alert('legs_no_meta', f'⚠️ Ноги не выставлены: нет данных инструмента {sorted(set(no_meta))[:10]}, нет цены {sorted(set(no_px))[:10]}. '
+                                        f'Если это открытая позиция — она осталась на бирже, закрой вручную.', 1.0)
         active = dict(want)
         # execution quality instrumentation (Opus review): decision price per symbol, fill-time proxy price, timing
         t_start = time.time(); dec_px = {}; fill_bps = []; n_maker_filled = 0; n_market = 0; t_last_fill = t_start
         for sym in want:
             tk = tickers.get(sym, {}); dec_px[sym] = tk.get('mark') or tk.get('last') or 0.0
         prev_active = {}; aborted = False
-        for attempt in range(maker_attempts + 1):
-            if not active:
-                break
-            if self.abort is not None and self.abort.is_set():      # checked between quote rounds: no new orders, open quotes cancelled below
-                aborted = True; errors.append(('*', None, 'aborted by watchdog (risk limit)'))
-                self.log(f'EXECUTE ABORTED (watchdog: risk limit hit): round {attempt}, {len(active)} legs not traded'); break
-            final = attempt == maker_attempts
-            try:
-                self.api.cancel_all()
-            except Exception as e:
-                self.log(f'cancel_all: {e}')
-            time.sleep(0.5)
-            pos = positions_fn()
-            tks = tickers if attempt == 0 else self.api.tickers()
-            if attempt > 0:                       # legs that were quoted last round and no longer need trading -> filled as maker
-                for sym, tq in prev_active.items():
-                    cur = pos.get(sym, {}).get('qty', 0.0); px_now = (tks.get(sym) or {}).get('mark') or 0.0
-                    if abs(tq - cur) * max(px_now, 1e-9) < C.MIN_TRADE_USDT * 0.5 and dec_px.get(sym, 0) > 0 and px_now > 0:
-                        side = 1.0 if tq > pos0.get(sym, {}).get('qty', 0.0) else -1.0
-                        fill_bps.append(side * (px_now / dec_px[sym] - 1.0) * 1e4); n_maker_filled += 1; t_last_fill = time.time()
-                        maker_notional += abs(tq - prev_qty.get(sym, pos0.get(sym, {}).get('qty', 0.0))) * px_now
-            prev_active = dict(active); prev_qty = {s: pos.get(s, {}).get('qty', 0.0) for s in active}
-            still = {}; quotes = []
-            for sym, tq in active.items():
-                if sym in dead:
-                    continue
-                meta = instr[sym]
-                cur = pos.get(sym, {}).get('qty', 0.0)
-                dq = tq - cur
-                tk = tks.get(sym, {})
-                px = tk.get('mark') or tk.get('last') or 0.0
-                if px <= 0:
-                    continue
-                if abs(dq) * px < max(C.MIN_TRADE_USDT * 0.5, meta.get('minNotional', 5.0)) and not (tq == 0 and cur != 0):
-                    continue
-                q = round_qty(abs(dq), meta)
-                if q < meta['minQty']:
-                    if tq == 0 and cur != 0:
-                        q = round_qty(abs(cur), meta)
-                        if q < meta['minQty']:
-                            continue
-                    else:
-                        continue
-                side = 'Buy' if dq > 0 else 'Sell'
-                ro = (cur != 0) and (np.sign(dq) != np.sign(cur)) and abs(dq) <= abs(cur) + 1e-12
-                if tq == 0 and cur != 0:
-                    q = round_qty(abs(cur), meta); ro = True
-                if final and maker_only and sym not in force_market and meta.get('tickSize'):
-                    n_unfilled += 1                       # reg. 5c: no market chasing; the remainder is carried to the next slot
-                    continue
-                if final or not meta.get('tickSize'):
-                    try:
-                        self._send(sym, side, q, ro, meta, None); n_market += 1; t_last_fill = time.time(); market_notional += q * px
-                        if dec_px.get(sym, 0) > 0:
-                            fill_bps.append((1.0 if side == 'Buy' else -1.0) * (px / dec_px[sym] - 1.0) * 1e4)
-                        self.stats['closes' if ro else 'opens'] += 1
-                    except ApiError as e:
-                        if e.code in (110123, 110125, 110126, 10029):
-                            dead.add(sym); errors.append((sym, e.code, str(e))); self.log(f'{sym}: permanent block {e}')
-                        else:
-                            errors.append((sym, e.code, str(e))); self.stats['errors'] += 1; self.log(f'order {sym} {side} {q}: {e}')
-                    except Exception as e:
-                        errors.append((sym, None, str(e))); self.stats['errors'] += 1; self.log(f'order {sym}: {e}')
-                else:
-                    touch = tk.get('bid') if side == 'Buy' else tk.get('ask')
-                    quotes.append((sym, side, q, ro, fmt_price(touch or px, meta['tickSize'], side), meta)); still[sym] = tq
-            # PostOnly quotes for this round, batched (<=10 per request); per-order codes decide what stays active
-            if quotes:
-                res = self._send_quotes(quotes)
-                for sym, side, q, ro, ps, meta in quotes:
-                    code, msg = res.get(sym, (0, ''))
-                    if code == 0:
-                        self.stats['closes' if ro else 'opens'] += 1
-                    elif code in (110017, 110019, 30208):                    # post-only would cross -> re-quote next round
-                        pass
-                    elif code in (110123, 110125, 110126, 10029):
-                        dead.add(sym); still.pop(sym, None); errors.append((sym, code, msg)); self.log(f'{sym}: permanent block {code} {msg}')
-                    else:
-                        errors.append((sym, code, msg)); self.stats['errors'] += 1; self.log(f'quote {sym} {side} {q}: {code} {msg}')
-            active = still
-            if active and not final:
-                time.sleep(wait_s)
         try:
-            self.api.cancel_all()
-        except Exception:
-            pass
+            for attempt in range(maker_attempts + 1):
+                if not active:
+                    break
+                if self.abort is not None and self.abort.is_set():      # checked between quote rounds: no new orders, open quotes cancelled below
+                    aborted = True; errors.append(('*', None, 'aborted by watchdog (risk limit)'))
+                    self.log(f'EXECUTE ABORTED (watchdog: risk limit hit): round {attempt}, {len(active)} legs not traded'); break
+                final = attempt == maker_attempts
+                self._cancel_verified()
+                time.sleep(0.5)
+                pos = positions_fn()
+                tks = tickers if attempt == 0 else self.api.tickers()
+                if attempt > 0:                       # legs that were quoted last round and no longer need trading -> filled as maker
+                    for sym, tq in prev_active.items():
+                        cur = pos.get(sym, {}).get('qty', 0.0); px_now = (tks.get(sym) or {}).get('mark') or 0.0
+                        if abs(tq - cur) * max(px_now, 1e-9) < C.MIN_TRADE_USDT * 0.5 and dec_px.get(sym, 0) > 0 and px_now > 0:
+                            side = 1.0 if tq > pos0.get(sym, {}).get('qty', 0.0) else -1.0
+                            fill_bps.append(side * (px_now / dec_px[sym] - 1.0) * 1e4); n_maker_filled += 1; t_last_fill = time.time()
+                            maker_notional += abs(tq - prev_qty.get(sym, pos0.get(sym, {}).get('qty', 0.0))) * px_now
+                prev_active = dict(active); prev_qty = {s: pos.get(s, {}).get('qty', 0.0) for s in active}
+                still = {}; quotes = []
+                for sym, tq in active.items():
+                    if sym in dead:
+                        continue
+                    meta = instr[sym]
+                    cur = pos.get(sym, {}).get('qty', 0.0)
+                    dq = tq - cur
+                    tk = tks.get(sym, {})
+                    px = tk.get('mark') or tk.get('last') or 0.0
+                    if px <= 0:
+                        continue
+                    if abs(dq) * px < max(C.MIN_TRADE_USDT * 0.5, meta.get('minNotional', 5.0)) and not (tq == 0 and cur != 0):
+                        continue
+                    q = round_qty(abs(dq), meta)
+                    if q < meta['minQty']:
+                        if tq == 0 and cur != 0:
+                            q = round_qty(abs(cur), meta)
+                            if q < meta['minQty']:
+                                continue
+                        else:
+                            continue
+                    side = 'Buy' if dq > 0 else 'Sell'
+                    ro = (cur != 0) and (np.sign(dq) != np.sign(cur)) and abs(dq) <= abs(cur) + 1e-12
+                    if tq == 0 and cur != 0:
+                        q = round_qty(abs(cur), meta); ro = True
+                    if final and maker_only and sym not in force_market and meta.get('tickSize'):
+                        n_unfilled += 1; unfilled_usd += abs(dq) * px     # reg. 5c: no market chasing; the remainder is carried to the next slot
+                        continue
+                    if final or not meta.get('tickSize'):
+                        try:
+                            self._send(sym, side, q, ro, meta, None); n_market += 1; t_last_fill = time.time(); market_notional += q * px
+                            if dec_px.get(sym, 0) > 0:
+                                fill_bps.append((1.0 if side == 'Buy' else -1.0) * (px / dec_px[sym] - 1.0) * 1e4)
+                            self.stats['closes' if ro else 'opens'] += 1
+                        except ApiError as e:
+                            if e.code in (110123, 110125, 110126, 10029):
+                                dead.add(sym); errors.append((sym, e.code, str(e))); self.log(f'{sym}: permanent block {e}')
+                            else:
+                                errors.append((sym, e.code, str(e))); self.stats['errors'] += 1; self.log(f'order {sym} {side} {q}: {e}')
+                        except Exception as e:
+                            errors.append((sym, None, str(e))); self.stats['errors'] += 1; self.log(f'order {sym}: {e}')
+                    else:
+                        touch = tk.get('bid') if side == 'Buy' else tk.get('ask')
+                        quotes.append((sym, side, q, ro, fmt_price(touch or px, meta['tickSize'], side), meta)); still[sym] = tq
+                # PostOnly quotes for this round, batched (<=10 per request); per-order codes decide what stays active
+                if quotes:
+                    res = self._send_quotes(quotes)
+                    for sym, side, q, ro, ps, meta in quotes:
+                        code, msg = res.get(sym, (0, ''))
+                        if code == 0:
+                            self.stats['closes' if ro else 'opens'] += 1
+                        elif code in (110017, 110019, 30208):                    # post-only would cross -> re-quote next round
+                            pass
+                        elif code in (110123, 110125, 110126, 10029):
+                            dead.add(sym); still.pop(sym, None); errors.append((sym, code, msg)); self.log(f'{sym}: permanent block {code} {msg}')
+                        else:
+                            errors.append((sym, code, msg)); self.stats['errors'] += 1; self.log(f'quote {sym} {side} {q}: {code} {msg}')
+                active = still
+                if active and not final:
+                    time.sleep(wait_s)
+        finally:                                       # F4: an exception anywhere in the rounds must not leave resting quotes on the book
+            self._cancel_verified()
         st = self.stats.copy()
         n_fills = n_maker_filled + n_market; tot_notional = maker_notional + market_notional
         st.update(exec_seconds=round(time.time() - t_start, 1), last_fill_seconds=round(t_last_fill - t_start, 1), legs=len(want),
                   maker_fill_share=round(n_maker_filled / n_fills, 3) if n_fills else None,                        # by legs (proxy)
                   maker_notional_share=round(maker_notional / tot_notional, 3) if tot_notional > 0 else None,      # by notional (proxy)
-                  market_legs=n_market, unfilled_legs=n_unfilled, aborted=aborted,
+                  market_legs=n_market, unfilled_legs=n_unfilled, unfilled_notional=round(unfilled_usd, 0), aborted=aborted,
                   adverse_bps_mean=round(float(np.mean(fill_bps)), 2) if fill_bps else None, adverse_bps_p90=round(float(np.percentile(fill_bps, 90)), 2) if fill_bps else None)
         # real fills from the exchange (best effort): notional-weighted maker share and slippage vs the decision price
         if not self.dry and hasattr(self.api, 'executions'):
@@ -300,20 +364,24 @@ class Executor:
         return st, errors
 
     # ------------------------------------------------------------ emergency
-    def flatten_all(self, instr, reason):
-        try:
-            self.api.cancel_all()
-        except Exception as e:
-            self.log(f'cancel_all: {e}')
+    def flatten_all(self, instr, reason, quiet=False):
+        """Close everything at market. quiet=True (the watchdog's repeated attempt while a halt is latched): no 'closing' message, and a failure
+        message at most once an hour per reason instead of every attempt."""
+        self._cancel_verified()
         try:
             poss = self.api.positions()
         except Exception as e:
-            self.tg(f'🛑 Не смог прочитать позиции для закрытия ({reason}): {e}. ЗАКРОЙ ВРУЧНУЮ.')
+            msg = f'🛑 Не смог прочитать позиции для закрытия ({reason}): {e}. ЗАКРОЙ ВРУЧНУЮ.'
+            if quiet:
+                self._alert('flatten_read', msg, 1.0)
+            else:
+                self.tg(msg)
             return -1
         if not poss:
             return 0
         self.log(f'FLATTEN ALL: {reason} ({len(poss)} symbols)')
-        self.tg(f'🛑 Закрываю все позиции ({len(poss)}). Причина: {reason}')
+        if not quiet:
+            self.tg(f'🛑 Закрываю все позиции ({len(poss)}). Причина: {reason}')
         fails = []
         for sym, p in poss.items():
             meta = instr.get(sym)
@@ -329,5 +397,9 @@ class Executor:
                 except Exception as e:
                     fails.append(f'{sym}: {e}')
         if fails:
-            self.tg('⚠️ НЕ ЗАКРЫЛИСЬ: ' + ', '.join(str(f) for f in fails[:10]) + '. Закрой вручную.')
+            msg = '⚠️ НЕ ЗАКРЫЛИСЬ: ' + ', '.join(str(f) for f in fails[:10]) + '. Закрой вручную.'
+            if quiet:
+                self._alert('flatten_fail', msg, 1.0)
+            else:
+                self.tg(msg)
         return len(poss)

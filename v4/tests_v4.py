@@ -15,6 +15,7 @@ if not REAL_PANELS:
     bt.PAN = make_panels(tempfile.mkdtemp(prefix='v4_synth_panels_'))
 print(f'panels: {"REAL " + bt.PAN if REAL_PANELS else "SYNTHETIC (tests_synth.py, seed 7)"}')
 import config as C
+C.EQ_CONFIRM_S = 0.0          # F2 confirmation wait: no real sleeping in tests (the F2 tests set their own value)
 from signals import Sleeves, quantile_ls as q_bot
 from risk import RiskEngine
 from execution import Executor
@@ -954,6 +955,271 @@ h43a = _cfg_hash(); h43b = _cfg_hash(MAKER_ONLY='0'); h43c = _cfg_hash(MAKER_ONL
 be43 = _envfile('base.env')
 check('T43i MAKER_ONLY=0 leaves the hash unchanged, 1 and REBAL_EVERY_H=12 change it; evns/base.env: MAKER_ONLY=1, REBAL_EVERY_H=12, REBAL_HOUR_UTC=1, REBAL_MINUTE=1',
       h43a == h43b and h43a != h43c and h43a != h43d and be43.get('MAKER_ONLY') == '1' and be43.get('REBAL_EVERY_H') == '12' and be43.get('REBAL_HOUR_UTC') == '1' and be43.get('REBAL_MINUTE') == '1', f'{h43a} {h43c} {h43d}')
+
+
+# ---------------------------------------------------------------- Audit hardening 2026-11-13 (F1-F10, B1, B4): fakes only, no network
+import main as botmain, state as botstate, bybit as bybit_mod
+from bybit import BatchError, Bybit
+import cascade as CASF
+_meta_f = dict(qtyStep=0.1, minQty=0.1, maxQty=1e9, minNotional=5.0, tickSize=0.001)
+_pos_f = lambda **kw: {**dict(qty=10.0, mark=5.0, entry=5.0, upnl=0.0, rpnl=0.0, im=1.0, legs=[]), **kw}
+class _ApiF:
+    """Fake exchange for the guard tests: equity readings are consumed in order (the last one repeats)."""
+    def __init__(self, eqs, positions=None): self.eqs = list(eqs); self.pos = positions if positions is not None else {}; self.orders = []; self.eq_calls = 0
+    def equity(self):
+        self.eq_calls += 1
+        return self.eqs.pop(0) if len(self.eqs) > 1 else self.eqs[0]
+    def positions(self): return {k: dict(v) for k, v in self.pos.items()}
+    def market(self, sym, qty, side, reduce_only=False, position_idx=0): self.orders.append((sym, qty, side)); return {}
+    def cancel_all(self, *a, **k): return None
+    def tickers(self): return {}
+class _ExF:
+    def __init__(self): self.flat = []
+    def flatten_all(self, instr, reason, quiet=False): self.flat.append((reason, quiet)); return 1
+def mk_botf(eqs, pos=None):
+    b = Bot.__new__(Bot); b.api = _ApiF(eqs, pos); b.mem = Memory(); b.mem.save = lambda: None; b.risk = RiskEngine(b.mem, lambda *a: None)
+    b.lock = threading.Lock(); b.abort_event = threading.Event(); b.instr = {'AAAUSDT': dict(_meta_f), 'BBBUSDT': dict(_meta_f)}; b.ex = _ExF()
+    b.mem['initial'] = 10000.0; b.mem['eq_peak'] = 10000.0; b.mem['day_date'] = '2026-05-03'; b.mem['day_anchor'] = 10000.0; b.mem['day_peak'] = 10000.0
+    b.now = lambda: datetime(2026, 5, 3, 12, 0, tzinfo=timezone.utc)
+    return b
+_tgo_f = []; _orig_tgo = botmain.tg_once; botmain.tg_once = lambda key, text, hours=24.0: _tgo_f.append((key, text))
+_orig_tg_f = botmain.tg; botmain.tg = lambda text: _tgo_f.append(('tg', text)); _orig_tg_state = botstate.tg; botstate.tg = botmain.tg
+
+# T44 (F1): a latched halt re-flattens every 5 min while positions remain; quiet (tg_once style), nothing when flat
+b44 = mk_botf([10000.0], {'AAAUSDT': _pos_f()}); b44.mem['halt_total'] = True
+b44.watchdog(); n1_44 = len(b44.ex.flat)
+b44.watchdog(); n2_44 = len(b44.ex.flat)
+b44._reflat_t -= C.REFLATTEN_S + 1; b44.watchdog(); n3_44 = len(b44.ex.flat)
+b44.api.pos.clear(); b44._reflat_t -= C.REFLATTEN_S + 1; b44.watchdog(); n4_44 = len(b44.ex.flat)
+b44.mem['halt_total'] = False; b44.mem['halted_day'] = '2026-05-03'; b44.api.pos['AAAUSDT'] = _pos_f(); b44._reflat_t -= C.REFLATTEN_S + 1; b44.watchdog(); n5_44 = len(b44.ex.flat)
+b44.mem['halted_day'] = '2026-05-02'; b44._reflat_t -= C.REFLATTEN_S + 1; b44.watchdog(); n6_44 = len(b44.ex.flat)
+check('T44a halt_total with positions: re-flatten at once, NOT again within 5 min, again after 5 min, nothing when flat',
+      (n1_44, n2_44, n3_44, n4_44) == (1, 1, 2, 2) and all(q for _, q in b44.ex.flat), f'{[n1_44, n2_44, n3_44, n4_44]}')
+check('T44b daily halt (halted_day today) re-flattens too; an old halted_day does not; messages go through tg_once (throttled), not tg',
+      n5_44 == 3 and n6_44 == 3 and any(k.startswith('reflatten_') for k, _ in _tgo_f) and not any(k == 'tg' and 'Закрываю' in t for k, t in _tgo_f), f'{n5_44} {n6_44}')
+check('T44c Executor.flatten_all(quiet=True): no "closing" message, failure message via the throttled sender',
+      'quiet' in inspect.signature(Executor.flatten_all).parameters and "_alert('flatten_fail'" in inspect.getsource(Executor.flatten_all))
+
+# T45 (F2): equity plausibility
+slp_f = []; _sleep_orig = time.sleep; time.sleep = lambda x: slp_f.append(x); C.EQ_CONFIRM_S = 20.0
+try:
+    bad_f = []
+    for v in (None, 0, -5.0, float('nan'), 'x'):
+        b = mk_botf([v]); b.guards = lambda eq: (_ for _ in ()).throw(AssertionError('guards must not run on an implausible equity'))
+        b.watchdog(); bad_f.append(b.checked_equity() is None and not b.mem['halt_total'])
+    check('T45a equity None / 0 / negative / NaN / junk is never acted on (guards not called, no latch)', all(bad_f), str(bad_f))
+    b = mk_botf([10000.0, 9040.0, 10000.0])                    # 9040 = below the floor guard (9050) AND a 9.6 % drop; the second reading is normal
+    b.watchdog(); b.watchdog()
+    check('T45b a floor-breaking drop that the 2nd reading (20 s later) does not confirm is a glitch: no halt, no flatten', slp_f == [20.0] and not b.mem['halt_total'] and not b.ex.flat, f'{slp_f} {b.ex.flat}')
+    slp_f.clear(); b = mk_botf([10000.0, 9040.0, 9040.0]); b.watchdog(); b.watchdog()
+    check('T45c the same drop confirmed by the 2nd reading acts: total halt latched and flatten', slp_f == [20.0] and b.mem['halt_total'] and len(b.ex.flat) == 1, f'{slp_f} {b.ex.flat}')
+    slp_f.clear(); b = mk_botf([10000.0, 9800.0]); b.watchdog(); b.watchdog()
+    check('T45d a small fall (2 % of initial) needs no confirmation (no sleep)', slp_f == [] and b._eq_ok == 9800.0)
+    b = mk_botf([0.0]); b.rebalance(); b2 = mk_botf([None]); b2.scale_pass() if False else None
+    check('T45e rebalance with an implausible equity returns without trading or flattening', not b.ex.flat and b.api.eq_calls == 1)
+    check('T45f the limit_breach path gets the checked reading (watchdog passes it); EQ keys are safety keys outside the hash',
+          'self.checked_equity()' in inspect.getsource(Bot.watchdog) and all(k not in C.effective_config()[0] for k in ('EQ_JUMP_FRAC', 'EQ_CONFIRM_S', 'RISK_CUT_MARKET', 'REFLATTEN_S', 'STATE_SAVE_ALERT_H')))
+finally:
+    time.sleep = _sleep_orig; C.EQ_CONFIRM_S = 0.0
+
+# T46 (F3): unfilled legs in the summary; risk-reducing legs at market after the maker rounds
+b46 = mk_botf([10000.0])
+legs46 = [('AAAUSDT', 'Sell', 300.0, True, False), ('BBBUSDT', 'Sell', 200.0, True, True), ('BBBUSDT', 'Buy', 100.0, False, False), ('CCCUSDT', 'Sell', 150.0, True, True), ('DDDUSDT', 'Buy', 90.0, False, False)]
+pos46 = {'AAAUSDT': _pos_f(), 'BBBUSDT': _pos_f(), 'CCCUSDT': _pos_f()}; tg46 = {'AAAUSDT': 100.0, 'BBBUSDT': -50.0, 'DDDUSDT': 90.0}; pool46 = {'AAAUSDT', 'BBBUSDT', 'DDDUSDT'}
+r_cut = b46.risk_cut_market(legs46, pos46, tg46, pool46, 0.5, 1.0)
+r_nocut = b46.risk_cut_market(legs46, pos46, tg46, pool46, 0.9, 1.0)
+C.RISK_CUT_MARKET = 0; r_off = b46.risk_cut_market(legs46, pos46, tg46, pool46, 0.5, 1.0); C.RISK_CUT_MARKET = 1
+check('T46a K fell below 0.8 x previous: reducing-only symbols (AAA, CCC) go to market; the flip BBB (close + open) and the opener DDD do not',
+      r_cut == {'AAAUSDT', 'CCCUSDT'} and r_off == set(), f'{r_cut} {r_off}')
+check('T46b K barely moved: only the close of a name that left the candidate pool (CCC) is forced; flag off -> nothing', r_nocut == {'CCCUSDT'}, str(r_nocut))
+class _Api46(_Api24):
+    def tickers(self): return {s_: dict(mark=10.0, last=10.0, bid=9.99, ask=10.01) for s_ in ('AAAUSDT', 'BBBUSDT')}
+a46 = _Api46(); ex46 = Executor(a46, lambda *a: None, None, False); ex46.abort = threading.Event()
+st46, _e = ex46.execute([('AAAUSDT', 'Sell', 500.0, True, False), ('BBBUSDT', 'Buy', 500.0, False, False)], {'AAAUSDT': meta24['AAAUSDT'], 'BBBUSDT': dict(meta24['AAAUSDT'])},
+                        {'AAAUSDT': dict(mark=10.0, last=10.0, bid=9.99, ask=10.01), 'BBBUSDT': dict(mark=10.0, last=10.0, bid=9.99, ask=10.01)},
+                        lambda: {'AAAUSDT': dict(qty=50.0, mark=10.0)}, maker_attempts=1, wait_s=0, maker_only=True, force_market=r_cut)
+mk46 = [x for x in a46.sent if x[0] == 'MKT']
+check('T46c maker_only + force_market: the reducing leg finishes at market, the opening leg is counted as unfilled with its notional',
+      len(mk46) == 1 and mk46[0][1] == 'AAAUSDT' and st46['unfilled_legs'] == 1 and abs(st46['unfilled_notional'] - 500.0) < 1.0, f'{a46.sent} {st46.get("unfilled_legs")} {st46.get("unfilled_notional")}')
+src_main = open(os.path.join(HERE, 'main.py')).read()
+check('T46d rebalance: Telegram summary carries unfilled legs + notional; risk_cut_market feeds force_mkt', 'не исполнено ног' in src_main and 'unfilled_notional' in src_main and 'force_mkt |= rc' in src_main)
+
+# T47 (F4): partial batch failure, resend only the rest; cancel verification; cleanup on an exception
+class _BatchApi:
+    def __init__(self, fail_after, resting=()):
+        self.fail_after = fail_after; self.singles = []; self.resting = list(resting); self.cancels = 0; self.accepted = []
+    def create_batch(self, orders):
+        self.accepted += [o['symbol'] for o in orders[:self.fail_after]]
+        raise BatchError([(0, '')] * self.fail_after, RuntimeError('timeout in chunk 2'))
+    def post_only(self, sym, q, side, price, reduce_only=False): self.singles.append(sym)
+    def market(self, *a, **k): self.singles.append('MKT')
+    def cancel_all(self, *a, **k): self.cancels += 1
+    def open_orders(self): return [{'symbol': s, 'side': 'Buy'} for s in self.resting]
+q47 = [(f'S{j:02d}USDT', 'Buy', 1.0, False, '10.0', dict(meta, maxQty=1e9)) for j in range(12)]
+a47 = _BatchApi(10); ex47 = Executor(a47, lambda *a: None, None, False); r47 = ex47._send_quotes(q47)
+check('T47a batch fails in chunk 2 after 10 accepted: only the 2 unaccepted legs are resent as singles, all 12 reported accepted, no duplicates',
+      a47.singles == ['S10USDT', 'S11USDT'] and len(r47) == 12 and all(v[0] == 0 for v in r47.values()), f'{a47.singles}')
+a47b = _BatchApi(10, resting=['S10USDT']); ex47b = Executor(a47b, lambda *a: None, None, False); r47b = ex47b._send_quotes(q47)
+check('T47b of the unaccepted legs one already rests on the book (the failed request had been processed): not resent', a47b.singles == ['S11USDT'] and r47b['S10USDT'] == (0, ''), f'{a47b.singles}')
+bb47 = Bybit('http://x', 'k', 's'); calls47 = []
+def _req47(method, path, params=None, auth=False, retries=4, raw=False):
+    calls47.append(len(params['request']))
+    if len(calls47) == 2: raise RuntimeError('timeout')
+    return {'retExtInfo': {'list': [{'code': 0, 'msg': 'OK'}] * len(params['request'])}}
+bb47._req = _req47; _t0 = bybit_mod.time.sleep; bybit_mod.time.sleep = lambda x: None
+try:
+    bb47.create_batch([{'symbol': f'S{j}', 'side': 'Buy'} for j in range(23)]); err47 = None
+except BatchError as e:
+    err47 = e
+finally:
+    bybit_mod.time.sleep = _t0
+check('T47c Bybit.create_batch: a failing LATER chunk raises BatchError listing the 10 orders of the accepted first chunk', err47 is not None and len(err47.done) == 10 and calls47 == [10, 10], f'{err47} {calls47}')
+class _CxApi:
+    def __init__(self, stuck): self.stuck = stuck; self.cancels = 0
+    def cancel_all(self, *a, **k): self.cancels += 1
+    def open_orders(self): return [{'symbol': 'AAAUSDT'}] if self.stuck else []
+tgm47 = []
+cx = _CxApi(True); exc = Executor(cx, lambda *a: None, tgm47.append, False); ok_cx = exc._cancel_verified()
+cx2 = _CxApi(False); exc2 = Executor(cx2, lambda *a: None, tgm47.append, False); ok_cx2 = exc2._cancel_verified()
+check('T47d cancel_all verified by open_orders: clean -> one cancel, no alert; orders left -> retried once (2 cancels) and ONE Telegram alert',
+      ok_cx2 and cx2.cancels == 1 and (not ok_cx) and cx.cancels == 2 and len(tgm47) == 1 and 'AAAUSDT' in tgm47[0], f'{cx.cancels} {cx2.cancels} {tgm47}')
+class _BoomApi(_Api24):
+    def __init__(self): super().__init__(); self.n = 0
+    def tickers(self): raise RuntimeError('boom')
+bo47 = _BoomApi(); exb = Executor(bo47, lambda *a: None, None, False); exb.abort = threading.Event(); cc = []; bo47.cancel_all = lambda *a, **k: cc.append(1)
+try:
+    exb.execute(legs24, meta24, bo47.tickers.__func__ and {'AAAUSDT': dict(mark=10.0, last=10.0, bid=9.99, ask=10.01)}, lambda: {}, maker_attempts=2, wait_s=0, maker_only=True); exc_raised = False
+except RuntimeError:
+    exc_raised = True
+check('T47e an exception in the middle of execute() propagates and the finally-block still cancels the resting quotes (round-1 cancel + final cancel)', exc_raised and len(cc) >= 2 and [x[0] for x in bo47.sent] == ['PO'], f'{cc} {bo47.sent}')
+
+# T48 (F5): per-trade guard = unrealised + realised, base min(equity, initial); also in the rebalance limit_breach path
+b48 = mk_botf([10000.0], {'AAAUSDT': _pos_f(upnl=-200.0, rpnl=-80.0)})
+br48 = b48.per_trade_breaches(b48.api.positions(), 10000.0)
+b48b = mk_botf([10000.0], {'AAAUSDT': _pos_f(upnl=-200.0, rpnl=0.0)})
+br48b = b48b.per_trade_breaches(b48b.api.positions(), 10000.0); br48c = b48b.per_trade_breaches(b48b.api.positions(), 7000.0)
+check('T48a loss = upnl + realised: -200 alone is inside 0.9 x 3 % x 10 000 = 270, -280 is not; with equity 7000 the base falls to equity (limit 189) and -200 breaches',
+      len(br48) == 1 and abs(br48[0][2] - 270.0) < 1e-9 and br48b == [] and len(br48c) == 1 and abs(br48c[0][2] - 189.0) < 1e-9, f'{br48} {br48b} {br48c}')
+b48._watchdog_locked(10000.0)
+check('T48b watchdog closes the position (reduce-only market), quarantines it', b48.api.orders and b48.api.orders[0][0] == 'AAAUSDT' and 'AAAUSDT' in b48.mem['cooldown'], f'{b48.api.orders}')
+check('T48c limit_breach (lock held by a rebalance) reports the per-trade breach; healthy positions -> None', (b48.limit_breach(10000.0) or '').startswith('PER-TRADE') and b48b.limit_breach(10000.0) is None, str(b48.limit_breach(10000.0)))
+pos_src = open(os.path.join(HERE, 'bybit.py')).read()
+check('T48d positions() reads curRealisedPnl', "curRealisedPnl" in pos_src and "rpnl=sum(" in pos_src)
+
+# T49 (F6): recover_day_anchor sign logic unchanged for realised P&L
+class _TxApi:
+    def __init__(self, v): self.v = v
+    def transaction_log_sum(self, ms): return self.v
+b49 = Bot.__new__(Bot); b49.now = lambda: datetime(2026, 5, 3, 12, 0, tzinfo=timezone.utc)
+an = []
+for v in (50.0, -100.0, 300.0):
+    b49.api = _TxApi(v); an.append(b49.recover_day_anchor(10000.0)[0])
+check('T49 recover_day_anchor: anchor = equity - realised today (+50 -> 9950, -100 -> 10100); a +300 day (anchor < 99 % of equity) falls back to equity', an == [9950.0, 10100.0, 10000.0], str(an))
+
+# T50 (F8): strict env parsing, empty hash, hash mismatch -> guard-only (no crash loop), no rebalance, guards stay on
+r50 = subprocess.run([sys.executable, os.path.join(HERE, 'config.py')], env=dict(os.environ, VT_TARGET_DVOL='0,006'), capture_output=True, text=True, timeout=60)
+check('T50a an unparsable value stops the start with a clear message naming the variable (no silent default)', r50.returncode != 0 and 'VT_TARGET_DVOL' in (r50.stdout + r50.stderr) and 'FATAL' in (r50.stdout + r50.stderr), (r50.stderr or r50.stdout)[-200:])
+class _Stop(Exception): pass
+class _StartApi:
+    def switch_one_way(self): raise _Stop()
+td50 = tempfile.mkdtemp(prefix='f8_'); _sf, _eh, _dr = C.STATE_FILE, C.EXPECTED_CONFIG_HASH, C.DRY_RUN
+C.STATE_FILE = os.path.join(td50, 'st.json'); C.STATE_BACKUP_FILE = ''
+def mk_start50():
+    b = Bot.__new__(Bot); b.api = _StartApi(); b.mem = Memory(); b.mem.save = lambda: None; b.risk = RiskEngine(b.mem, lambda *a: None)
+    b.sleeves = types.SimpleNamespace(held={}); return b
+try:
+    C.EXPECTED_CONFIG_HASH = ''; C.DRY_RUN = False; b = mk_start50()
+    try: b.start(); e50 = None
+    except SystemExit as e: e50 = e
+    C.DRY_RUN = True; b = mk_start50()
+    try: b.start()
+    except _Stop: stop50 = True
+    else: stop50 = False
+    check('T50b empty EXPECTED_CONFIG_HASH: refuses to start unless DRY_RUN=1 (dry run passes the gate)', e50 is not None and stop50 and not b.guard_only, f'{e50}')
+    C.DRY_RUN = False; C.EXPECTED_CONFIG_HASH = 'deadbeefdeadbeef'; _tgo_f.clear(); b = mk_start50()
+    try: b.start()
+    except _Stop: pass
+    sent1 = [t for k, t in _tgo_f if k == 'tg' and 'не совпадает' in t]
+    b2 = mk_start50()
+    try: b2.start()
+    except _Stop: pass
+    sent2 = [t for k, t in _tgo_f if k == 'tg' and 'не совпадает' in t]
+    check('T50c hash mismatch: the process stays alive in guard-only mode (flag set, /status says so) and ONE Telegram message, also across a restart (persistent throttle)',
+          b.guard_only and b2.guard_only and len(sent1) == 1 and len(sent2) == 1 and botstate.get_status(True).get('guard_only') is True, f'{len(sent1)} {len(sent2)}')
+    gb = mk_botf([10000.0], {'AAAUSDT': _pos_f(upnl=-400.0)}); gb.guard_only = True; gb.guard_reason = 'test'
+    gb.api.equity = lambda: (_ for _ in ()).throw(AssertionError('rebalance must not run'))
+    gb.rebalance(); gb.scale_pass(); gb.api.equity = lambda: 10000.0
+    gb.watchdog()
+    check('T50d guard-only: rebalance / scale pass do nothing, the watchdog guards still work (per-trade loss closed the position)', gb.api.orders and gb.api.orders[0][0] == 'AAAUSDT', f'{gb.api.orders}')
+    check('T50e loop body skips the rebalance in guard-only mode', 'if self.guard_only:' in inspect.getsource(Bot.loop_body) and 'raise SystemExit' not in inspect.getsource(Bot.enter_guard_only))
+finally:
+    C.STATE_FILE, C.EXPECTED_CONFIG_HASH, C.DRY_RUN = _sf, _eh, _dr
+
+# T51 (F9 + B1): state save durability / alert, token never in logs
+td51 = tempfile.mkdtemp(prefix='f9_'); _paths = (C.STATE_FILE, C.STATE_BACKUP_FILE, C.TG_TOKEN, C.TG_CHAT)
+C.STATE_FILE = os.path.join(td51, 'state', 's.json'); C.STATE_BACKUP_FILE = os.path.join(td51, 'state_backup', 's.backup.json'); C.TG_TOKEN = ''
+fs51 = []; _fs = os.fsync; os.fsync = lambda fd: (fs51.append(fd), _fs(fd))[1]
+try:
+    m51 = Memory(); m51['initial'] = 123.0; m51.save()
+finally:
+    os.fsync = _fs
+check('T51a save: fsync before the rename, state and backup copy written, the copy in a DIFFERENT directory',
+      len(fs51) == 2 and json.load(open(C.STATE_FILE))['initial'] == 123.0 and json.load(open(C.STATE_BACKUP_FILE))['initial'] == 123.0
+      and os.path.dirname(C.STATE_FILE) != os.path.dirname(C.STATE_BACKUP_FILE), f'{len(fs51)}')
+msgs51 = []; _tg51 = botstate.tg; botstate.tg = msgs51.append; botstate._ALERTS.clear()
+C.STATE_FILE = '/proc/nonexistent_dir/s.json'; C.STATE_BACKUP_FILE = ''
+m52 = Memory(); m52.save(); m52.save()
+n_a = len(msgs51); botstate._ALERTS['state_save_fail'] -= 3601; m52.save()
+check('T51b a failing save goes to Telegram, at most once an hour (2 failures -> 1 message, after an hour -> 2nd)', n_a == 1 and len(msgs51) == 2 and 'state' in msgs51[0], f'{n_a} {len(msgs51)}')
+botstate.tg = _tg51
+tok51 = '123456789:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw0'; C.TG_TOKEN = tok51; C.TG_CHAT = '42'; logs51 = []
+_log51, _post = botstate.log, botstate.requests.post; botstate.log = logs51.append
+def _boom_post(url, **kw): raise requests.ConnectionError(f'HTTPSConnectionPool: Max retries exceeded with url: /bot{tok51}/sendMessage')
+botstate.requests.post = _boom_post
+try:
+    botstate.tg('hello'); botstate.Memory._push('{}')
+finally:
+    botstate.log, botstate.requests.post = _log51, _post
+check('T51c B1: the Telegram token never reaches the log (tg and the state push); scrub() also catches a token-shaped string', logs51 and all(tok51 not in l and '[REDACTED]' not in l for l in logs51) and tok51 not in botstate.scrub(f'x /bot{tok51}/y') and 'bot***' in botstate.scrub(f'/bot{tok51}/y', 'other'), str(logs51))
+C.STATE_FILE, C.STATE_BACKUP_FILE, C.TG_TOKEN, C.TG_CHAT = _paths
+
+# T52 (F10): cascade keeps a known trigger window when the cache is behind; extra retry at 00:50; legs without instrument meta are alerted
+cf52 = CASF.CascadeFilter(directory=tempfile.mkdtemp(), http=lambda *a: (500, None, 1), sleep=lambda x: None, universe_fn=lambda: [], log=lambda *a: None)
+cf52.cache = {'liq': {}, 'oi': {}, 'universe': [], 'codes': {}, 'uni_ts': 0, 'warn': False, 'err': '', 'last_ok': '2025-05-19',
+              'series': {'2025-05-18': [0.01, 0.02, False], '2025-05-19': [0.05, 0.02, True]}}
+m_a = cf52.multiplier(datetime(2025, 5, 21, 1, 1, tzinfo=timezone.utc))       # yesterday 05-20 missing (cache 1 day behind), trigger 05-19 is d-2
+m_b = cf52.multiplier(datetime(2025, 5, 22, 1, 1, tzinfo=timezone.utc))       # 2 days behind: the window d-1, d-2 holds no known trigger
+m_c = cf52.multiplier(datetime(2025, 5, 25, 1, 1, tzinfo=timezone.utc))       # 5 days behind
+check('T52a cache 1 day behind with a known trigger in the window: x0.5 kept (reason says the cache lags); 2+ days behind without a known trigger: 1.0',
+      m_a[0] == 0.5 and 'отстаёт' in m_a[1] and m_b[0] == 1.0 and m_c[0] == 1.0, f'{m_a} {m_b} {m_c}')
+cf52.cache['last_ok'] = '2025-05-18'; cf52.last_try = 5000.0; cf52.clock = lambda: 5100.0
+d_ = lambda h, mi: datetime(2025, 5, 20, h, mi, tzinfo=timezone.utc)
+due52 = [cf52.due(d_(0, 49)), cf52.due(d_(0, 50)), cf52.due(d_(0, 55)), cf52.due(d_(1, 5))]
+check('T52b extra Coinalyze retry at 00:50 UTC (once), not earlier, regardless of the 20-minute spacing; later only on the normal spacing', due52 == [False, True, False, False], str(due52))
+tgm52 = []; a52 = _Api24(); ex52 = Executor(a52, lambda *a: None, tgm52.append, False); ex52.abort = threading.Event()
+ex52.execute([('ZZZUSDT', 'Sell', 100.0, True, True), ('AAAUSDT', 'Buy', 500.0, False, False)], meta24, {'AAAUSDT': dict(mark=10.0, last=10.0, bid=9.99, ask=10.01)}, lambda: {'ZZZUSDT': dict(qty=5.0, mark=20.0)}, maker_attempts=0, wait_s=0, maker_only=False)
+check('T52c a leg whose symbol has no instrument meta is announced in Telegram (not silently dropped); the other leg still trades', any('ZZZUSDT' in t for t in tgm52) and [x[0] for x in a52.sent] == ['MKT'], f'{tgm52} {a52.sent}')
+
+# T53 (B4): API key with money-moving permissions -> refuse to trade
+class _KeyApi:
+    def __init__(self, risks=None, err=None): self.risks, self.err = risks, err
+    def api_key_wallet_risks(self):
+        if self.err: raise self.err
+        return self.risks
+_sf2 = C.STATE_FILE; C.STATE_FILE = os.path.join(td50, 'st53.json'); _tgo_f.clear()
+try:
+    bk = mk_botf([10000.0]); bk.api = _KeyApi(['Withdraw', 'AccountTransfer']); bk.check_key_permissions()
+    bk2 = mk_botf([10000.0]); bk2.api = _KeyApi([]); bk2.check_key_permissions()
+    bk3 = mk_botf([10000.0]); bk3.api = _KeyApi(err=ApiError(10003, 'bad key')); bk3.check_key_permissions()
+finally:
+    C.STATE_FILE = _sf2
+bb53 = Bybit('http://x', 'k', 's'); bb53._req = lambda *a, **k: {'permissions': {'ContractTrade': ['Order', 'Position'], 'Wallet': ['AccountTransfer', 'SubMemberTransfer']}, 'expiredAt': ''}
+bb53b = Bybit('http://x', 'k', 's'); bb53b._req = lambda *a, **k: {'permissions': {'ContractTrade': ['Order', 'Position'], 'Wallet': []}}
+check('T53 key with Withdraw / AccountTransfer / SubMemberTransfer: guard-only (no trading) + Telegram; clean key and an unreadable check do not block; the parser sees the Wallet list',
+      bk.guard_only and 'Withdraw' in bk.guard_reason and any('права на вывод' in t for k, t in _tgo_f if k == 'tg') and not bk2.guard_only and not bk3.guard_only
+      and bb53.api_key_wallet_risks() == ['AccountTransfer', 'SubMemberTransfer'] and bb53b.api_key_wallet_risks() == [] and 'self.check_key_permissions()' in inspect.getsource(Bot.start))
+botmain.tg_once = _orig_tgo; botmain.tg = _orig_tg_f; botstate.tg = _orig_tg_state
+for _k in ('guard_only', 'guard_reason', 'error', 'ok'): botstate.STATUS.pop(_k, None)
 
 print(f'\n{sum(1 for _, ok in res if ok)}/{len(res)} passed')
 sys.exit(0 if all(ok for _, ok in res) else 1)

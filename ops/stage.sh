@@ -59,11 +59,11 @@ OLDSTATE="$(grep -E '^[[:space:]]*(export[[:space:]]+)?STATE_FILE=' "$ENVF" | ta
   echo "MODE=$MODE"; echo "PHASE=$PHASE"; echo "ACCOUNT_SIZE=$SIZE"
   [[ "$STAGE" == trial ]] && echo "CASCADE_FILTER=1"   # reg. 5b: liquidation-cascade filter only on the trial/demo stage for now (key COINALYZE_API_KEY stays in the local env lines)
   [[ "$STAGE" == trial ]] && { echo "TARGETS=5"; echo "MIN_DAYS=2"; echo "PROFIT_DAYS=0"; }   # кабинет пробы: минимум 2 торговых дня
-  echo "STATE_FILE=$APP/state/${STAGE}_${SIZE}_$TS.json"; echo "STATE_BACKUP_FILE=$APP/state/${STAGE}_${SIZE}_$TS.backup.json"
+  echo "STATE_FILE=$APP/state/${STAGE}_${SIZE}_$TS.json"; echo "STATE_BACKUP_FILE=$APP/state_backup/${STAGE}_${SIZE}_$TS.backup.json"   # копия — в другом каталоге (F9)
   if [[ -n "$OLDSTATE" && -f "$OLDSTATE" ]]; then echo "ML8_CARRY_FROM=$OLDSTATE"; fi   # kill-rule memory of the previous stage (reg. 4)
 } > "$NEW"
 grep -q '^BYBIT_API_KEY=..' "$NEW" || die "нет API-ключа — сначала: bash ops/stage.sh keys"
-[[ -n "${STAGE_DRY:-}" ]] || mkdir -p "$APP/state"
+[[ -n "${STAGE_DRY:-}" ]] || mkdir -p "$APP/state" "$APP/state_backup"
 
 # хэш конфигурации новым env (тем же способом, что ops/deploy.sh)
 HASH="$("$BOTPY" - "$NEW" "$SRC" <<'PY'
@@ -83,6 +83,10 @@ PY
 echo "EXPECTED_CONFIG_HASH=$HASH" >> "$NEW"
 
 if [[ -n "${STAGE_DRY:-}" ]]; then sed -E 's/^(BYBIT_API_SECRET|BYBIT_API_KEY|TG_BOT_TOKEN|STATUS_TOKEN)=.*/\1=***/' "$NEW"; rm -f "$NEW"; exit 0; fi
+# F8: перезапуск только вне окна ребаланса (слоты из нового env; тот же расчёт, что в ops/retrain.py). Срочно, на свой риск: NO_WINDOW_WAIT=1
+if [[ -z "${NO_WINDOW_WAIT:-}" ]]; then
+  "$BOTPY" "$REPO/ops/rebal_window.py" "$NEW" || { rm -f "$NEW"; die "окно ребаланса не закончилось за отведённое время; повтори позже (env не менялся)"; }
+fi
 cp -a "$ENVF" "$ENVF.bak.$TS"; install -m 600 "$NEW" "$ENVF"; rm -f "$NEW"
 echo "стадия: $STAGE, счёт $SIZE, хэш $HASH (бэкап прежнего env: $ENVF.bak.$TS)"
 systemctl enable -q "$UNIT"; systemctl restart "$UNIT"

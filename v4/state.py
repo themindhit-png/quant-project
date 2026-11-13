@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Persistence, logging and Telegram for PROP-SLEEVES v4."""
-import os, sys, json, time, threading
+import os, sys, json, time, threading, re
 from datetime import datetime, timezone
 import requests
 
@@ -17,6 +17,19 @@ def log(msg):
     print(f'[{datetime.now(timezone.utc):%Y-%m-%dT%H:%M:%SZ}] {msg}', flush=True)
 
 
+_TOKEN_RE = re.compile(r'bot\d{5,}:[A-Za-z0-9_-]{20,}')
+
+
+def scrub(text, *secrets):
+    """B1: the Telegram bot token is part of the request URL, so a requests exception carries it. Never let it reach a log or a message:
+    the configured token and anything shaped like 'bot<id>:<secret>' become '***'."""
+    t = str(text)
+    for sec in (C.TG_TOKEN,) + tuple(secrets):
+        if sec and len(str(sec)) >= 8:
+            t = t.replace(str(sec), '***')
+    return _TOKEN_RE.sub('bot***', t)
+
+
 def tg(text):
     if not C.TG_TOKEN or not C.TG_CHAT:
         return
@@ -24,7 +37,7 @@ def tg(text):
         requests.post(f'https://api.telegram.org/bot{C.TG_TOKEN}/sendMessage',
                       json={'chat_id': C.TG_CHAT, 'text': text[:4000], 'disable_web_page_preview': True}, timeout=15)
     except Exception as e:
-        log(f'TG fail: {e}')
+        log(f'TG fail: {type(e).__name__}: {scrub(e)}')
 
 
 def tg_once(key, text, hours=24.0):
@@ -32,6 +45,28 @@ def tg_once(key, text, hours=24.0):
     if now - _ALERTS.get(key, 0) >= hours * 3600:
         _ALERTS[key] = now
         tg(text)
+
+
+def tg_persistent(key, text, hours=24.0):
+    """Like tg_once, but the throttle survives a process restart (file next to the state file): a bot that restarts every 30 s (supervisor) must
+    not repeat the same Telegram message every time. Best effort: a file problem falls back to the in-memory throttle."""
+    path = (C.STATE_FILE or '') + '.alerts.json'
+    now = time.time()
+    try:
+        d = json.load(open(path)) if os.path.exists(path) else {}
+    except Exception:
+        d = {}
+    if now - max(float(d.get(key, 0) or 0), _ALERTS.get(key, 0)) < hours * 3600:
+        return False
+    d[key] = now; _ALERTS[key] = now
+    try:
+        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+        with open(path, 'w') as f:
+            json.dump(d, f)
+    except Exception:
+        pass
+    tg(text)
+    return True
 
 
 class Memory(dict):
@@ -61,8 +96,12 @@ class Memory(dict):
                     f.write('ok')
                 os.remove(path + '.probe')
             except OSError as e:
-                tg(f'🛑 Нельзя писать state-файл {path}: {e}. Бот НЕ запущен (без памяти он забудет пол и стопы).')
+                tg(f'🛑 Нельзя писать state-файл {path}: {scrub(e)}. Бот НЕ запущен (без памяти он забудет пол и стопы).')
                 raise SystemExit(f'FATAL: state path {path} not writable: {e}')
+        if C.STATE_FILE and C.STATE_BACKUP_FILE and os.path.dirname(os.path.abspath(C.STATE_FILE)) == os.path.dirname(os.path.abspath(C.STATE_BACKUP_FILE)):
+            # F9: a copy in the same directory survives a corrupted file, not a lost directory / disk; ops/stage.sh now puts it into APP/state_backup/
+            tg_persistent('backup_same_dir', f'⚠️ Копия state лежит в том же каталоге, что и сам state ({os.path.dirname(C.STATE_BACKUP_FILE)}). '
+                                              f'Вынеси её в другой каталог (STATE_BACKUP_FILE=/opt/propsleeves/state_backup/..., ops/stage.sh делает так сам).', 24 * 7)
 
     def load(self):
         """Restore order: STATE_FILE -> STATE_BACKUP_FILE -> STATE_JSON_B64 env (paste of the last Telegram backup)."""
@@ -104,15 +143,18 @@ class Memory(dict):
             for path in (C.STATE_FILE, C.STATE_BACKUP_FILE):
                 if not path:
                     continue
+                os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)      # the backup directory may be new (APP/state_backup/)
                 tmp = path + '.tmp'
                 with open(tmp, 'w') as f:
-                    f.write(blob)
+                    f.write(blob); f.flush(); os.fsync(f.fileno())                       # F9: bytes on disk before the rename makes them the state
                 os.replace(tmp, path)
             if C.TG_TOKEN and C.TG_CHAT and C.STATE_PUSH_H > 0 and time.time() - Memory._last_push >= C.STATE_PUSH_H * 3600:
                 Memory._last_push = time.time()
                 threading.Thread(target=self._push, args=(blob,), daemon=True).start()
         except Exception as e:
-            log(f'state save fail: {e}')
+            log(f'state save fail: {scrub(e)}')
+            tg_once('state_save_fail', f'🛑 Не удалось сохранить state ({type(e).__name__}: {scrub(e)[:200]}). Бот торгует, но после перезапуска забудет пол / стопы — '
+                                       f'проверь диск и каталог {os.path.dirname(C.STATE_FILE or "")}.', hours=C.STATE_SAVE_ALERT_H)
 
     @staticmethod
     def _push(blob):
@@ -121,7 +163,7 @@ class Memory(dict):
             requests.post(f'https://api.telegram.org/bot{C.TG_TOKEN}/sendDocument', data={'chat_id': C.TG_CHAT, 'caption': f'state backup {datetime.now(timezone.utc):%Y-%m-%d %H:%M}Z'},
                           files={'document': ('state.json', blob.encode())}, timeout=30)
         except Exception as e:
-            log(f'state push fail: {e}')
+            log(f'state push fail: {type(e).__name__}: {scrub(e)}')
 
 
 def set_status(**kw):

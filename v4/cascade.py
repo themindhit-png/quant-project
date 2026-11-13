@@ -303,9 +303,18 @@ class CascadeFilter:
             now_dt = now or datetime.now(timezone.utc)
             c = self._load(); day = now_dt.date(); yest = day_str(day - DAY)
             ser = c.get('series') or {}
-            if yest not in ser or c.get('last_ok', '') < yest:
-                return 1.0, f'каскад: нет данных за {yest} → ×1.0'
+            last_ok = c.get('last_ok', '')
             trig = {dd for dd, v in ser.items() if v[2]}
+            if yest not in ser or last_ok < yest:
+                # F10: the cache is 1-2 days behind (Coinalyze late / down at the slot): the trigger days we DO know still scale the book —
+                # the window d-1, d-2 is applied as far as it is known (a missing day cannot be a known trigger). More than 2 days behind -> 1.0.
+                lag = (datetime.strptime(yest, '%Y-%m-%d').date() - datetime.strptime(last_ok, '%Y-%m-%d').date()).days if last_ok else None
+                if lag is not None and 1 <= lag <= 2:
+                    m = multiplier_for(day, trig, self.days, self.mult)
+                    if m < 1.0:
+                        td = [dd for dd in (day_str(day - timedelta(days=k)) for k in range(1, self.days + 1)) if dd in trig]
+                        return m, f'каскад ликвидаций {td[0]} → ×{m:g} (кэш отстаёт на {lag} дн., данные до {last_ok})'
+                return 1.0, f'каскад: нет данных за {yest} → ×1.0'
             m = multiplier_for(day, trig, self.days, self.mult)
             if m < 1.0:
                 td = [dd for dd in (day_str(day - timedelta(days=k)) for k in range(1, self.days + 1)) if dd in trig]
@@ -321,6 +330,11 @@ class CascadeFilter:
             return False
         if (now_dt.hour, now_dt.minute) < (0, 5):
             return False
+        # F10: one extra attempt from 00:50 UTC, ahead of the 01:01 slot, whatever the 20-minute spacing says (once per day)
+        today = day_str(now_dt.date())
+        if (now_dt.hour, now_dt.minute) >= (0, 50) and now_dt.hour == 0 and getattr(self, 'extra_day', '') != today:
+            self.extra_day = today
+            return True
         return self.clock() - self.last_try >= 20 * 60 or self.last_try == 0.0
 
     def start_background(self):

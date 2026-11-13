@@ -46,6 +46,7 @@ if A.pure:
                            TOTAL_DD_PCT='90', DAILY_DD_PCT='90', TARGETS='1000'))
 sys.path.insert(0, HERE); sys.path.insert(0, ROOT)
 import config as C
+C.EQ_CONFIRM_S = 0.0                      # harness time is simulated: no real 20 s wait for the equity-jump confirmation
 import execution, main as botmain, state as botstate
 from bt import Data, slip_model, metrics
 

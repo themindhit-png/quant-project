@@ -3,6 +3,8 @@
 #   bash ops/deploy.sh --check     # только проверить: обновить репо, тесты, посчитать хэши, показать, что изменится
 #   bash ops/deploy.sh             # то же + бэкап, копирование кода, новый EXPECTED_CONFIG_HASH, перезапуск, проверка /status
 #   bash ops/deploy.sh --models    # то же + замена моделей из репо (только когда это решение записано в docs/STATUS.md)
+#   bash ops/deploy.sh --accept-new-hash   # принять ИЗМЕНИВШИЙСЯ хэш конфигурации (новая пред-регистрация записана в docs/PREREG.md); без ключа деплой с новым хэшем отменяется
+# Перезапуск бота — только вне окна ребаланса (ops/rebal_window.py; срочно: NO_WINDOW_WAIT=1 bash ops/deploy.sh ...).
 # Ничего секретного не печатает. Откат — команды в конце вывода (бэкапы с меткой времени рядом с оригиналами).
 set -euo pipefail
 
@@ -14,9 +16,9 @@ BOTPY="${BOTPY:-$APP/venv/bin/python}"
 SYSTEMD_DIR="${SYSTEMD_DIR:-/etc/systemd/system}"
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TS="$(date -u +%Y%m%d-%H%M%S)"
-CHECK=0; MODELS=0
+CHECK=0; MODELS=0; ACCEPT=0
 for a in "$@"; do
-  case "$a" in --check) CHECK=1 ;; --models) MODELS=1 ;; *) echo "неизвестный ключ: $a" >&2; exit 1 ;; esac
+  case "$a" in --check) CHECK=1 ;; --models) MODELS=1 ;; --accept-new-hash) ACCEPT=1 ;; *) echo "неизвестный ключ: $a" >&2; exit 1 ;; esac
 done
 
 say()  { printf '\n== %s\n' "$*"; }
@@ -111,10 +113,23 @@ RESTART="$(systemctl show -p Restart --value "$UNIT")"
 echo "автоперезапуск сервиса: Restart=$RESTART"
 echo "изменённые файлы кода:"; diff -rq --exclude=__pycache__ --exclude=models "$SRC" "$REPO/v4" || true
 
+HASH_CHANGE=0
+if [[ "$CUR" != "$NEW" ]]; then
+  HASH_CHANGE=1
+  echo "!! ХЭШ КОНФИГУРАЦИИ ИЗМЕНИТСЯ: ${CUR:-<нет>} -> $NEW. Это изменение пред-регистрации: деплой пройдёт только с ключом --accept-new-hash (и если изменение записано в docs/PREREG.md)."
+fi
+
 if [[ $CHECK -eq 1 ]]; then
   say "Режим --check: ничего не изменено. Для деплоя: bash ops/deploy.sh"; exit 0
 fi
 [[ $MODELS_DIFF -eq 0 || $MODELS -eq 1 ]] || die "модели бота не совпадают с репо — их не трогаю (это пред-регистрация). Пришли вывод в чат."
+[[ $HASH_CHANGE -eq 0 || $ACCEPT -eq 1 ]] || die "хэш конфигурации изменился (${CUR:-<нет>} -> $NEW). Если это задумано и записано в docs/PREREG.md — повтори: bash ops/deploy.sh --accept-new-hash. Деплой отменён, ничего не изменено."
+
+# F8: перезапуск бота только вне окна ребаланса (слоты из env; та же логика, что в ops/retrain.py)
+if [[ -z "${NO_WINDOW_WAIT:-}" ]]; then
+  say "Окно ребаланса"
+  "$BOTPY" "$REPO/ops/rebal_window.py" "$ENVF" || die "окно ребаланса не закончилось за отведённое время; повтори позже (ничего не изменено)"
+fi
 
 # ---------------------------------------------------------------- 5. бэкап + код + env
 say "5/7 Бэкап и установка"

@@ -8,13 +8,15 @@ VERSION = '4.0.0'
 
 
 def _env(name, default, cast=str):
+    """Env value cast to the type of the setting. An unset / empty variable gives the default; a value that does NOT parse stops the
+    start with a clear message (F8, audit 2026-11): a typo like VT_TARGET_DVOL=0,006 must never silently fall back to the default."""
     v = os.environ.get(name)
     if v is None or v == '':
         return default
     try:
         return cast(v)
     except Exception:
-        return default
+        raise SystemExit(f'FATAL: env {name}={v!r} cannot be read as {getattr(cast, "__name__", cast)} - fix the value (no silent default)')
 
 
 def _bool(name, default=False):
@@ -193,7 +195,9 @@ def effective_config():
             # connection / operations, not strategy: demo -> live or a blacklist edit must not change the registered hash
             'BASE_URL', 'BLACKLIST', 'BLACKLIST_PATTERNS', 'STATE_PUSH_H', 'WATCHDOG_SEC', 'VERSION',
             'PAUSE_FILE', 'TRANSFER_CHECK', 'KEY_EXPIRY_WARN_D', 'ML8_CARRY_FROM',
-            'CASCADE_DIR', 'CASCADE_BACKFILL_D', 'CASCADE_RATE'}
+            'CASCADE_DIR', 'CASCADE_BACKFILL_D', 'CASCADE_RATE',
+            # safety / ops keys of the 2026-11-13 hardening (PREREG 'защитные правки'): they never change the registered strategy
+            'RISK_CUT_MARKET', 'REFLATTEN_S', 'EQ_JUMP_FRAC', 'EQ_CONFIRM_S', 'STATE_SAVE_ALERT_H'}
     out = {}
     for k, v in sorted(globals().items()):
         if k.startswith('_') or k in skip or not k.isupper() or callable(v):
@@ -310,6 +314,19 @@ CAND_POOL = _env('CAND_POOL', 350, int)                 # top-N by turnover fed 
 SET_LEVERAGE = _env('SET_LEVERAGE', 5.0, float)
 DRY_RUN = _bool('DRY_RUN', False)
 KILL_SWITCH = _bool('KILL_SWITCH', False)
+
+# ---------------------------------------------------------------- safety keys (audit 2026-11-13; NOT in the registration hash, see effective_config)
+# F3: risk-reducing legs (K fell below 0.8 x the previous K because of a guard) and closes of names that left the candidate pool go to market after the
+# maker rounds instead of being carried to the next slot (MAKER_ONLY still governs ordinary rebalance legs). 0 = off.
+RISK_CUT_MARKET = _env('RISK_CUT_MARKET', 1, int)
+# F1: while a total / daily halt is latched, the watchdog retries the flatten every this many seconds if positions remain
+REFLATTEN_S = _env('REFLATTEN_S', 300, int)
+# F2: equity plausibility: a reading below the previous accepted one by more than EQ_JUMP_FRAC x initial must be confirmed by a second reading
+# at least EQ_CONFIRM_S seconds later before any floor / daily-halt / abandon action; equity <= 0 or None is never acted on
+EQ_JUMP_FRAC = _env('EQ_JUMP_FRAC', 0.03, float)
+EQ_CONFIRM_S = _env('EQ_CONFIRM_S', 20.0, float)
+# F9: a failed state save goes to Telegram at most once per this many hours
+STATE_SAVE_ALERT_H = _env('STATE_SAVE_ALERT_H', 1.0, float)
 
 # trading-day marker (Mubite, found on the free trial 2026-10-30): a day counts only with a CLOSE of >= 5 % of the starting balance and
 # |P/L| >= 1 % of that position's margin; the book's closes are ~$600-2 000 on $100k, so no day was counted. Once per UTC day the bot

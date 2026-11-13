@@ -7,7 +7,11 @@ from the repo clone (/root/quant-project). Steps:
      PHASE4_LOG «4.2 ревью»: gap h + 7 days, the h7 gap is used for both) and 8h (TRAIN_END = cutoff - 8 d);
   5. gates (no tuning — the models have no honest OOS): v4/tests_v4.py with the new models (feature parity T25/T25c, sleeves T4/T26);
      predictions not degenerate; Spearman new vs current models over the last 30 days >= 0.5;
-  6. swap: backup of the live models, copy, bot restart outside a rebalance window, Telegram report (hashes, Spearman, train ends).
+  6. swap (F7, audit 2026-11): the new models are copied into LIVE.new (a copy of the live directory), every file is verified by sha, then the directories
+     are swapped by rename (live -> LIVE.bak.<time>, LIVE.new -> live); any failure puts the backup back and the message says exactly what state the
+     bot is in. Bot restart outside a rebalance window, then /status of each bot must answer (ok is not false, model hashes = the new files): otherwise
+     the old models are restored and the bots restarted again (automatic rollback). Telegram report: hashes, Spearman, train ends and the rank IC of the
+     new vs the old models on the held-out last 14 days (information only, not a gate).
 Memory (VPS 2 GB): by default NOTHING else is stopped - every bot keeps trading (demo, prop and own account alike); the edge-lab bot fits next to
 the retrain with MEM_LEAN=1 (~0.7 GB), the rest goes to swap (slower retrain, Nice=10). Optional emergency switch: RETRAIN_PAUSE_UNITS=unit[,unit]
 stops those units for the retrain and always starts them again (end, failure, SIGTERM; a 12 h systemd timer if this process is killed).
@@ -23,6 +27,8 @@ LIVE = os.environ.get('LIVE_MODELS', os.path.join(L.APP, 'models'))
 NEW = os.path.join(REPO, 'models_new')
 FILES = ('ml_h3_noage.txt', 'ml_h7_noage.txt', 'spec_noage.json', 'ml_8h.txt', 'spec_8h.json')
 LOG = []
+HELD_DAYS = {'h3': 14, 'h7': 14, '8h': 8}              # models are trained to cutoff-14 d (h3/h7) / cutoff-8 d (8h): the days after that are held out
+HORIZON_H = {'h3': 72, 'h7': 168, '8h': 8}              # forward-return horizon of each model, hours
 
 
 def say(msg):
@@ -115,7 +121,37 @@ def gates(cutoff):
         if not rho >= 0.5:
             raise RuntimeError(f'gate 3: Spearman новой и текущей модели {k} = {rho:.2f} < 0.5 — что-то сломано в данных')
     say(f'gates 2-3: predictions OK, Spearman new vs live {rep}')
-    return rep
+    ic = {'new': heldout_ic(new, predictions.d), 'old': heldout_ic(old, predictions.d)}
+    say(f'held-out rank IC (information, not a gate): {ic}')
+    return rep, ic
+
+
+def heldout_ic(preds, d, held=None):
+    """Mean daily rank IC (Spearman of the prediction vs the realised forward return over the model's horizon, across names) on the held-out days:
+    the last HELD_DAYS[model] days of the data, decisions whose forward window ends inside the data. -> {model: (ic|None, n_decisions)}."""
+    import numpy as np, pandas as pd
+    T = d.cff.shape[0]; out = {}
+    for name, res in preds.items():
+        H = HORIZON_H[name]; lo = T - (held or HELD_DAYS)[name] * 24; by = {}
+        for (i, j), p in res.items():
+            if i >= lo and i + H <= T - 1:
+                by.setdefault(i, []).append((j, p))
+        ics = []
+        for i, lst in by.items():
+            js = np.array([j for j, _ in lst]); p = np.array([v for _, v in lst], float)
+            r = d.cff[i + H, js] / d.cff[i, js] - 1.0
+            ok = np.isfinite(r) & np.isfinite(p)
+            if ok.sum() >= 20:
+                ic = pd.Series(p[ok]).rank().corr(pd.Series(r[ok]).rank())
+                if np.isfinite(ic):
+                    ics.append(float(ic))
+        out[name] = (round(float(np.mean(ics)), 4) if ics else None, len(ics))
+    return out
+
+
+def fmt_ic(ic):
+    f = lambda t: 'н/д' if t[0] is None else f'{t[0]:+.3f}'
+    return ', '.join(f'{k} {f(ic["new"][k])}/{f(ic["old"][k])} (n={ic["new"][k][1]})' for k in ic['new'])
 
 
 def rebal_slots(env):
@@ -129,6 +165,117 @@ def in_rebal_window(now, slots, before=3, after=30):
     """True from `before` min before a rebalance slot to `after` min after it (orders + fills take ~5 min)."""
     x = now.hour * 60 + now.minute
     return any(-before <= ((x - s + 720) % 1440) - 720 < after for s in slots)
+
+
+class SwapFailed(RuntimeError):
+    """The swap / post-restart check failed; the message is the complete, truthful Telegram text (state of the live models and of the bots)."""
+
+
+def stage_models(new_dir, live, files):
+    """LIVE.new = copy of the live directory + the new files, every new file verified by sha against new_dir. Live is untouched. -> path."""
+    stg = live.rstrip('/') + '.new'
+    shutil.rmtree(stg, ignore_errors=True)
+    shutil.copytree(live, stg)
+    for f in files:
+        shutil.copy2(os.path.join(new_dir, f), os.path.join(stg, f))
+    for f in files:
+        if sha12(os.path.join(stg, f)) != sha12(os.path.join(new_dir, f)):
+            raise RuntimeError(f'контрольная сумма {f} после копирования не совпала')
+    return stg
+
+
+def swap_models(live, stg, stamp):
+    """Swap by rename: live -> live.bak.<stamp>, stg -> live. If the second rename fails the first is undone. -> backup path."""
+    live = live.rstrip('/'); bak = f'{live}.bak.{stamp}'
+    os.rename(live, bak)
+    try:
+        os.rename(stg, live)
+    except Exception as e:
+        try:
+            os.rename(bak, live)
+        except Exception as e2:
+            raise SwapFailed(f'⚠️ Замена моделей оборвалась ({e}); прежние модели лежат в {bak}, а {live} НЕ на месте и не восстановлен ({e2}). '
+                             f'Выполни вручную: mv {bak} {live} && systemctl restart propsleeves') from e2
+        raise RuntimeError(f'замена каталога моделей не удалась ({e}); прежние модели возвращены на место')
+    return bak
+
+
+def restore_models(live, bak):
+    """Put the backup back as the live directory (the failed one is kept as live.failed.<time>). True on success."""
+    live = live.rstrip('/')
+    try:
+        if os.path.exists(live):
+            os.rename(live, f'{live}.failed.{int(time.time())}')
+        os.rename(bak, live)
+        return True
+    except Exception as e:
+        say(f'restore failed: {e}')
+        return False
+
+
+def verify_running(expected, timeout=300, poll=10):
+    """After a restart: every active bot answers /status with ok not false and the expected model hashes ({file: sha12}). -> (ok, reason)."""
+    units = [u for u in L.bot_units() if L.is_active(u)]
+    if not units:
+        return True, 'активных ботов нет, проверять нечего'
+    end = time.time() + timeout; why = {}
+    pending = set(units)
+    while pending:
+        for u in list(pending):
+            st = L.status(L.read_env(L.env_file(u) or ''))
+            if st is None:
+                why[u] = '/status не отвечает'
+            elif st.get('ok') is False:
+                why[u] = f'/status ok=false ({st.get("error") or st.get("guard_reason") or "?"})'
+            else:
+                got = st.get('model_hashes') or {}
+                bad = [f for f, h in expected.items() if got.get(f) != h]
+                if bad:
+                    why[u] = f'хэши моделей в /status не те: {bad}'
+                else:
+                    pending.discard(u); why.pop(u, None)
+        if not pending or time.time() >= end:
+            break
+        time.sleep(poll)
+    return (not pending), '; '.join(f'{L.short(u)}: {r}' for u, r in why.items())
+
+
+def install_with_rollback(new_dir, live, files, hashes, stamp, restart=None, verify=None):
+    """Stage -> swap -> restart -> verify; on any failure restore the backup, restart and verify the old models. Returns the backup path.
+    Raises SwapFailed with a truthful complete message when the new models are NOT in use."""
+    restart = restart or safe_restart; verify = verify or verify_running
+    old_hashes = {f: sha12(os.path.join(live, f)) for f in files if os.path.exists(os.path.join(live, f))}
+    try:
+        stg = stage_models(new_dir, live, files)
+    except Exception as e:
+        shutil.rmtree(live.rstrip('/') + '.new', ignore_errors=True)
+        raise SwapFailed(f'⚠️ Переобучение: не удалось подготовить новые модели ({e}). Живые модели не тронуты, бот работает на прежних.') from e
+    try:
+        bak = swap_models(live, stg, stamp)
+    except SwapFailed:
+        raise
+    except Exception as e:
+        raise SwapFailed(f'⚠️ Переобучение: {e}. Бот работает на прежних моделях (бот не перезапускался).') from e
+    say(f'models replaced (backup {bak}); new hashes {hashes}')
+    try:
+        restart(); ok, why = verify(hashes)
+    except Exception as e:
+        ok, why = False, f'{type(e).__name__}: {e}'
+    if ok:
+        return bak
+    say(f'post-restart check FAILED ({why}); rolling back')
+    if not restore_models(live, bak):
+        raise SwapFailed(f'🛑 Новые модели не прошли проверку после перезапуска ({why}), а ОТКАТ НЕ УДАЛСЯ. Прежние модели: {bak}. '
+                         f'Выполни вручную: rm -rf {live} && cp -a {bak} {live} && systemctl restart propsleeves')
+    try:
+        restart(); ok2, why2 = verify(old_hashes)
+    except Exception as e:
+        ok2, why2 = False, f'{type(e).__name__}: {e}'
+    if ok2:
+        raise SwapFailed(f'⚠️ Новые модели не прошли проверку после перезапуска ({why}). Автоматический откат ВЫПОЛНЕН: боты снова на прежних моделях '
+                         f'(/status подтверждён).')
+    raise SwapFailed(f'🛑 Новые модели не прошли проверку ({why}). Прежние модели возвращены в {live}, но после повторного перезапуска /status '
+                     f'не подтвердил их ({why2}). Проверь бота: bash ops/bot.sh status')
 
 
 def safe_restart():
@@ -185,21 +332,23 @@ def main():
         shutil.rmtree(NEW, ignore_errors=True); os.makedirs(NEW)
         run([sys.executable, 'exp6b_noage_final.py'], env={'TRAIN_END': end_hl, 'OUT_DIR': NEW})
         run([sys.executable, 'exp17b_final_8h.py'], env={'TRAIN_END': end_8h, 'OUT_DIR': NEW})
-        rho = gates(cutoff)
+        rho, ic = gates(cutoff)
         hashes = {f: sha12(os.path.join(NEW, f)) for f in FILES}
         if A.dry:
             say(f'DRY RUN: gates passed, live models not touched. New hashes {hashes}')
-            L.tg_send(f'🧪 Переобучение (проба, {cutoff:%Y-%m-%d}): проверки пройдены, модели НЕ заменены. Spearman с текущими {rho}'); return 0
-        bak = f'{LIVE}.bak.{now:%Y%m%d-%H%M%S}'; shutil.copytree(LIVE, bak)
-        for f in FILES:
-            shutil.copy2(os.path.join(NEW, f), os.path.join(LIVE, f))
-        say(f'models replaced (backup {bak}); new hashes {hashes}')
-        safe_restart()
+            L.tg_send(f'🧪 Переобучение (проба, {cutoff:%Y-%m-%d}): проверки пройдены, модели НЕ заменены. Spearman с текущими {rho}. '
+                      f'Ранговая IC на отложенных днях, новые/прежние: {fmt_ic(ic)}'); return 0
+        bak = install_with_rollback(NEW, LIVE, FILES, hashes, f'{now:%Y%m%d-%H%M%S}')
         with open(os.path.join(L.APP, 'models_history.log'), 'a') as h:
-            h.write(json.dumps(dict(utc=now.isoformat(), cutoff=str(cutoff.date()), end_hl=end_hl, end_8h=end_8h, spearman=rho, hashes=hashes, backup=bak)) + '\n')
-        L.tg_send(f'🧠 Модели переобучены (данные до {cutoff:%Y-%m-%d}). Проверки пройдены, бот перезапущен. Spearman с прежними {rho}. '
-                  f'Откат: cp {bak}/* {LIVE}/ && systemctl restart propsleeves')
+            h.write(json.dumps(dict(utc=now.isoformat(), cutoff=str(cutoff.date()), end_hl=end_hl, end_8h=end_8h, spearman=rho, heldout_ic=ic, hashes=hashes, backup=bak)) + '\n')
+        L.tg_send(f'🧠 Модели переобучены (данные до {cutoff:%Y-%m-%d}). Проверки пройдены, бот перезапущен и подтвердил новые модели в /status. Spearman с прежними {rho}. '
+                  f'Ранговая IC на отложенных днях (3/7 дн: последние 14 дн, 8ч: последние 8 дн), новые/прежние: {fmt_ic(ic)} — для информации, не критерий. '
+                  f'Откат вручную: rm -rf {LIVE} && cp -a {bak} {LIVE} && systemctl restart propsleeves')
         return 0
+    except SwapFailed as e:
+        say(f'FAILED (swap): {e}')
+        L.tg_send(str(e)[:3500])
+        return 1
     except Exception as e:
         say(f'FAILED: {e}')
         L.tg_send(f'⚠️ Переобучение моделей не выполнено, работают прежние модели. Причина: {str(e)[:700]}')

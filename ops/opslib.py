@@ -3,7 +3,7 @@
 """Shared helpers for the VPS services (ops/tg_control.py, ops/daily.py): find the bot units (systemd propsleeves*.service), read their
 env files, query /status, build the owner's summary, send Telegram messages. Bot code (v4/) is not imported: these services keep working
 when a bot is stopped or broken."""
-import os, json, subprocess, time
+import os, re, json, subprocess, time
 from datetime import datetime, timezone
 import requests
 
@@ -104,15 +104,28 @@ def tg_conf():
     return None, None
 
 
+_TOKEN_RE = re.compile(r'bot\d{5,}:[A-Za-z0-9_-]{20,}')
+
+
+def scrub(text, *secrets):
+    """B1: the Telegram bot token is part of every request URL, so a requests exception text carries it. Replace the given secrets and anything
+    shaped like 'bot<id>:<secret>' before the text reaches a log (journal) or a message."""
+    t = str(text)
+    for sec in secrets:
+        if sec and len(str(sec)) >= 8:
+            t = t.replace(str(sec), '***')
+    return _TOKEN_RE.sub('bot***', t)
+
+
 def tg_send(text, token=None, chat=None):
     if token is None:
         token, chat = tg_conf()
     if not token:
-        print(text); return
+        print(scrub(text)); return
     try:
-        requests.post(f'https://api.telegram.org/bot{token}/sendMessage', json={'chat_id': chat, 'text': text[:4000]}, timeout=15)
+        requests.post(f'https://api.telegram.org/bot{token}/sendMessage', json={'chat_id': chat, 'text': scrub(text, token)[:4000]}, timeout=15)
     except Exception as e:
-        print(f'tg fail: {e}')
+        print(f'tg fail: {type(e).__name__}: {scrub(e, token)}')
 
 
 def now_utc():

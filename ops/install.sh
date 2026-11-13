@@ -9,7 +9,11 @@
 #   propsleeves-collect  — каждый час :35 (вне ребалансов в :10): данные Bybit на диск (/opt/propsleeves/data/bybit);
 #   propsleeves-retrain  — 5 января и 5 июля 03:30 UTC: переобучение моделей с проверками и откатом (ops/retrain.py).
 # Повторный запуск ничего не ломает (обновляет код и службы, env-файл не трогает).
+#   bash ops/install.sh --models      # то же + заменить живые модели моделями из репо (по умолчанию живые модели, отличающиеся от репо, НЕ перезаписываются:
+#                                     после переобучения они новее репо)
 set -euo pipefail
+MODELS=0
+for a in "$@"; do case "$a" in --models) MODELS=1 ;; *) echo "неизвестный ключ: $a" >&2; exit 1 ;; esac; done
 APP="${APP:-/opt/propsleeves}"; UNIT=propsleeves
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 say() { printf '\n== %s\n' "$*"; }
@@ -39,14 +43,14 @@ if awk "BEGIN {exit !($MEM_GB < 6)}" && ! swapon --show | grep -q .; then
 fi
 
 say "2/7 Каталоги и venv"
-mkdir -p "$APP"/{src/v4,models,state,backup,data,ops}
+mkdir -p "$APP"/{src/v4,models,state,state_backup,backup,data,ops}     # state_backup: копия state в ДРУГОМ каталоге (F9)
 [[ -x "$APP/venv/bin/python" ]] || python3 -m venv "$APP/venv"
 "$APP/venv/bin/pip" install -q --upgrade pip
 "$APP/venv/bin/pip" install -q -r "$REPO/v4/requirements.txt"
 
 say "3/7 Код, модели, сервисные скрипты"
 cp -f "$REPO"/v4/*.py "$REPO"/v4/requirements.txt "$APP/src/v4/"; rm -rf "$APP/src/v4/__pycache__"
-cp -f "$REPO"/v4/models/* "$APP/models/"
+bash "$REPO/ops/sync_models.sh" "$REPO/v4/models" "$APP/models" "$MODELS"      # живые модели, отличающиеся от репо, не перезаписываются (кроме --models)
 cp -f "$REPO"/ops/opslib.py "$REPO"/ops/tg_control.py "$REPO"/ops/daily.py "$REPO"/ops/collect_bybit.py "$APP/ops/"
 echo "код: $(cd "$REPO" && git log --oneline -1 2>/dev/null || echo '?')"
 

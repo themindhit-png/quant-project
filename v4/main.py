@@ -20,11 +20,17 @@ from data import MarketData, NEED_H
 from signals import Sleeves
 from risk import RiskEngine
 from execution import Executor, round_qty, fmt_price
-from state import Memory, log, tg, tg_once, set_status, get_status
+from state import Memory, log, tg, tg_once, tg_persistent, scrub, set_status, get_status
 import cascade as CAS
 
 
 class Bot:
+    # class-level defaults: tests build bots with Bot.__new__, and the guard-only / plausibility state must exist then too
+    guard_only = False            # F8 / B4: watchdog guards run, no rebalance / scale pass / day marker (hash mismatch, key with withdrawal rights)
+    guard_reason = ''
+    _eq_ok = None                 # F2: last accepted equity reading
+    _reflat_t = 0.0               # F1: time of the last halt re-flatten attempt
+
     def __init__(self, api, md=None, sleeves=None, mem=None):
         self.api = api
         self.mem = mem or Memory()
@@ -32,6 +38,7 @@ class Bot:
         self.sleeves = sleeves or Sleeves(log)
         self.risk = RiskEngine(self.mem, log)
         self.ex = Executor(api, log, tg, C.DRY_RUN)
+        self.ex.tg_once = tg_once                          # throttled alerts from the executor (cancel left orders, dropped legs, flatten failures)
         self.instr = {}
         self.lock = threading.Lock()
         self.abort_event = threading.Event()               # watchdog -> executor: stop trading the current rebalance (hard limit hit)
@@ -65,7 +72,10 @@ class Bot:
         return self.api.equity()
 
     def recover_day_anchor(self, equity):
-        """State lost mid-day: anchor = equity - realised change today (tx log); conservative floor guard."""
+        """State lost mid-day: anchor = equity - realised change today (tx log); conservative floor guard.
+        The sign logic is right for REALISED P&L (equity now minus what was realised today = equity at 00:00 as far as the log shows). Note: the
+        UNREALISED P&L of positions carried over midnight at 00:00 is unknown to the transaction log, so the anchor can differ from the true
+        00:00 equity by that amount; the `anchor < equity * 0.99 -> equity` line below limits the error to the conservative side."""
         d = self.now().date()
         day_start = datetime(d.year, d.month, d.day, tzinfo=timezone.utc)
         try:
@@ -76,6 +86,62 @@ class Bot:
         except Exception as e:
             log(f'txlog anchor fail: {e}')
             return equity, 'fallback'
+
+    # ------------------------------------------------------------ equity plausibility (F2)
+    @staticmethod
+    def _eq_valid(x):
+        try:
+            return x is not None and math.isfinite(float(x)) and float(x) > 0
+        except (TypeError, ValueError):
+            return False
+
+    def checked_equity(self):
+        """Equity reading that guards may act on, or None. Never acted on: equity <= 0 / None / NaN (an API glitch would look like a total loss and latch
+        the floor guard). A fall of more than EQ_JUMP_FRAC x initial versus the previously accepted reading must be confirmed by a second reading at least
+        EQ_CONFIRM_S seconds later; when the second reading is back to normal the first was a glitch and the second is used. Exceptions of the API call
+        propagate (callers log them as before)."""
+        raw = self.equity()
+        if not self._eq_valid(raw):
+            log(f'EQUITY IMPLAUSIBLE ({raw!r}): not acted on')
+            tg_once('eq_implausible', f'⚠️ Биржа вернула нереальный equity ({raw!r}) — игнорирую это чтение, лимиты не трогаю.', 1.0)
+            return None
+        raw = float(raw); prev = self._eq_ok
+        thr = C.EQ_JUMP_FRAC * float(self.mem.get('initial') or C.ACCOUNT_SIZE)
+        if prev is not None and raw < prev - thr:
+            log(f'EQUITY JUMP {prev:,.2f} -> {raw:,.2f} (> {C.EQ_JUMP_FRAC * 100:.0f}% of initial): confirming in {C.EQ_CONFIRM_S:g}s before acting')
+            time.sleep(max(0.0, C.EQ_CONFIRM_S))
+            raw2 = self.equity()
+            if not self._eq_valid(raw2):
+                log(f'EQUITY second reading implausible ({raw2!r}): not acted on'); return None
+            raw2 = float(raw2)
+            if raw2 >= prev - thr:
+                log(f'EQUITY jump not confirmed (second reading {raw2:,.2f}): glitch, ignored')
+            else:
+                tg_once('eq_drop', f'📉 Equity упал {prev:,.2f} → {raw2:,.2f} (подтверждено вторым чтением через {C.EQ_CONFIRM_S:g} с).', 1.0)
+            raw = raw2
+        self._eq_ok = raw
+        return raw
+
+    def reflatten_if_halted(self):
+        """F1: while halt_total / halted_day is latched the flatten that started it may have failed (API error, partial fill, new order). Every
+        REFLATTEN_S seconds, if positions remain, flatten again (one Telegram message per hour, not per attempt). Called under the lock."""
+        m = self.mem
+        if not (m['halt_total'] or m.get('halted_day') == self.now().date().isoformat()):
+            return False
+        if time.time() - self._reflat_t < C.REFLATTEN_S:
+            return False
+        self._reflat_t = time.time()
+        try:
+            poss = self.api.positions()
+        except Exception as e:
+            log(f're-flatten: positions fail: {e}'); return False
+        if not poss:
+            return False
+        why = 'TOTAL HALT' if m['halt_total'] else 'DAILY HALT'
+        log(f'RE-FLATTEN: {len(poss)} positions still open under {why}')
+        tg_once(f'reflatten_{why}', f'⚠️ {why}: после остановки на бирже остались позиции ({len(poss)}: {sorted(poss)[:8]}). Повторяю закрытие каждые {C.REFLATTEN_S // 60} мин.', 1.0)
+        self.ex.flatten_all(self.instr, f'{why}: positions still open (re-flatten)', quiet=True)
+        return True
 
     # ------------------------------------------------------------ guards
     def guards(self, equity):
@@ -94,11 +160,13 @@ class Bot:
         if met['buffer_total'] <= C.FLOOR_GUARD_FRAC * self.risk.dd_amount():
             m['halt_total'] = True; m.save()
             self.ex.flatten_all(self.instr, f'FLOOR GUARD: equity {equity:,.0f} within {C.FLOOR_GUARD_FRAC * 100:.0f}% of allowance to floor {met["total_floor"]:,.0f}')
+            self._reflat_t = time.time()                  # F1: the re-flatten timer starts with the halting flatten
             tg(f'🛑 ОБЩИЙ СТОП: equity {equity:,.2f}, пол фирмы {met["total_floor"]:,.2f}. Торговля остановлена (латч). Сброс: RESET_TOTAL_STOP=1')
             return False
         if C.MODE == 'challenge' and C.ABANDON_FRAC > 0 and met['buffer_total'] <= C.ABANDON_FRAC * self.risk.dd_amount():
             m['halt_total'] = True; m['abandoned'] = True; m.save()
             self.ex.flatten_all(self.instr, f'ABANDON: buffer {met["buffer_total"]:,.0f} <= {C.ABANDON_FRAC * 100:.0f}% of allowance')
+            self._reflat_t = time.time()                  # F1: the re-flatten timer starts with the halting flatten
             tg(f'🏳️ Челлендж сдан по правилу перезапуска: equity {equity:,.2f}, буфер до пола {met["buffer_total"]:,.0f} '
                f'(≤{C.ABANDON_FRAC * 100:.0f}% допуска). Быстрее купить новый челлендж, чем выползать. Бот остановлен (латч).')
             return False
@@ -109,6 +177,7 @@ class Bot:
         if day_loss <= -C.DAILY_HALT_FRAC * C.RULES['daily_dd'] / 100.0:
             m['halted_day'] = today; m.save()
             self.ex.flatten_all(self.instr, f'DAILY HALT: day drawdown {day_loss * 100:.2f}% of initial (firm limit {C.RULES["daily_dd"]}%)')
+            self._reflat_t = time.time()                  # F1: the re-flatten timer starts with the halting flatten
             tg(f'🛑 ДНЕВНОЙ СТОП {day_loss * 100:.2f}% (лимит фирмы −{C.RULES["daily_dd"]}%). Флэт до 00:00 UTC.')
             return False
         if C.MODE == 'challenge' and not m['target_hit']:
@@ -146,12 +215,18 @@ class Bot:
             self.ex.flatten_all(self.instr, 'PAUSE: closing everything for a payout / transfer')
             m['pause_eq'] = None; m.save(); return True
         if m.get('pause_eq') is None:                          # flat now: remember the equity, tell the owner it is safe
-            m['pause_eq'] = float(self.equity()); m['transfer_ts'] = int(time.time() * 1000); m.save()
+            eq_flat = self.equity()
+            if not self._eq_valid(eq_flat):
+                log(f'PAUSE: implausible equity {eq_flat!r}, waiting'); return True        # F2: never booked as a cash flow
+            m['pause_eq'] = float(eq_flat); m['transfer_ts'] = int(time.time() * 1000); m.save()
             log(f'PAUSE: flat at {m["pause_eq"]:,.2f}; waiting')
             tg(f'⏸ Пауза: все позиции закрыты, equity {m["pause_eq"]:,.2f}. Можно запрашивать выплату / выводить. '
                f'Продолжить: ops/bot.sh resume')
             return True
-        eq_now = float(self.equity()); flow = eq_now - float(m['pause_eq'])
+        eq_raw = self.equity()
+        if not self._eq_valid(eq_raw):
+            log(f'PAUSE: implausible equity {eq_raw!r}, reading skipped'); return True       # F2: a glitch must not become a booked "cash flow"
+        eq_now = float(eq_raw); flow = eq_now - float(m['pause_eq'])
         if abs(flow) >= max(1.0, 1e-4 * eq_now):
             self.risk.note_cash_flow(flow); m['pause_eq'] = eq_now
             log(f'CASH FLOW {flow:+,.2f} booked during the pause (equity {eq_now:,.2f})')
@@ -291,10 +366,14 @@ class Bot:
 
     def rebalance(self, slot=None):
         with self.lock:
+            if self.guard_only:
+                log(f'rebalance skipped: guard-only mode ({self.guard_reason})'); return
             self.abort_event.clear()                       # guards() below re-checks the limits with fresh equity
             t0 = time.time()
             slot_key = slot or f'{self.now().date().isoformat()}T{self.now().hour:02d}'     # EMA once per slot (risk.build_targets)
-            equity = self.equity()
+            equity = self.checked_equity()
+            if equity is None:
+                log('rebalance skipped: no plausible equity reading'); return
             m = self.mem
             if C.MODE == 'challenge' and not m.get('phase_base'):
                 m['phase_base'] = float(C.ACCOUNT_SIZE) if C.PHASE == 1 else float(equity)
@@ -446,6 +525,11 @@ class Bot:
                 start = m.get('slot_pos0') or {}
             legs = self.ex.plan(targets, positions, tickers, self.instr, C.REBAL_BAND, C.MIN_TRADE_USDT, frac=C.REBAL_PARTIAL, start=start)
             force_mkt = set(blocked) | (set(positions) & set(getattr(self.md, 'delist', None) or ()))    # reg. 5c: risk/forced closes stay market
+            pool = set(C.MAJORS) | set(cands[:max(C.UNI_TOP_ML + 60, C.CAND_POOL)]) | set(young)         # names the sleeves could still pick
+            rc = self.risk_cut_market(legs, positions, targets, pool, k, m.get('k_ref'))
+            if rc:
+                log(f'RISK CUT AT MARKET: {len(rc)} reducing legs finish at market after the maker rounds (K {m.get("k_ref")} -> {k:.2f}, or name left the pool)')
+                force_mkt |= rc
             stats, errors = self.ex.execute(legs, self.instr, tickers, self.api.positions, force_market=force_mkt)
             # ---- bookkeeping
             m['last_targets'] = targets; m['k_ref'] = k; m['last_rebal_date'] = self.now().date().isoformat()
@@ -467,10 +551,24 @@ class Bot:
                        trading_days=m['trading_days'], profit_days=m.get('profit_days', 0), day_pnls_n=len(m['day_pnls']), consistency_ok=self.risk.consistency_ok(), ok=True)
             log(f'REBALANCE done in {time.time() - t0:.0f}s | eq {equity:,.2f} K={k:.2f} ({why}) lev {lev:.2f} ({vt_why}) | '
                 f'targets {len(targets)} gross {tinfo["gross"]:,.0f} ({tinfo["gross_x_initial"]:.2f}x) L{tinfo["n_long"]}/S{tinfo["n_short"]} | '
-                f'orders maker {stats["maker_sent"]} market {stats["market_sent"]} unfilled {stats.get("unfilled_legs", 0)} errors {len(errors)} | positions {len(poss2)} gross {g:,.0f} net {net:+,.0f}')
+                f'orders maker {stats["maker_sent"]} market {stats["market_sent"]} unfilled {stats.get("unfilled_legs", 0)} ({stats.get("unfilled_notional", 0):,.0f} USDT) errors {len(errors)} | positions {len(poss2)} gross {g:,.0f} net {net:+,.0f}')
             tg(f'📊 Ребаланс: equity {equity:,.2f} | K {k:.2f} ({why}) | lev {lev:.2f} | целей {len(targets)} (L{tinfo["n_long"]}/S{tinfo["n_short"]}) '
                f'gross {tinfo["gross_x_initial"]:.2f}x | позиций {len(poss2)}, net {net / equity * 100:+.1f}% | ордера maker/market {stats["maker_sent"]}/{stats["market_sent"]}'
+               f' | не исполнено ног {stats.get("unfilled_legs", 0)} на {stats.get("unfilled_notional", 0):,.0f} USDT'
                + (f' | {cas_why}' if cas_m < 1.0 else '') + (f' | ошибок {len(errors)}' if errors else ''))
+
+    def risk_cut_market(self, legs, positions, targets, pool, k, k_prev):
+        """F3 (RISK_CUT_MARKET): symbols whose legs are ALL reducing and must not wait for the next slot under MAKER_ONLY: (a) K fell below 0.8 x
+        the previous K (floor approach / CPPI / daily throttle: the cut is the point of the guard), (b) full closes of held names that are no
+        longer in the candidate pool (left the universe: delisting-prone, thin). Opening / adding legs are never forced to market here."""
+        if not C.RISK_CUT_MARKET:
+            return set()
+        reducing = {sym for sym in {l[0] for l in legs} if all(l[3] for l in legs if l[0] == sym)}
+        out = set()
+        if k_prev and float(k_prev) > 0 and k < 0.8 * float(k_prev):
+            out |= reducing
+        out |= {s for s in reducing if s in positions and s not in targets and s not in pool}
+        return out
 
     # ------------------------------------------------------------ funding diagnostics (PREREG rule 6)
     def funding_check(self, panel, syms, now_):
@@ -537,11 +635,15 @@ class Bot:
     # ------------------------------------------------------------ hourly proportional scale pass
     def scale_pass(self):
         with self.lock:
+            if self.guard_only:
+                return
             self.abort_event.clear()
             m = self.mem
             if not m.get('last_targets') or m.get('k_ref') in (None, 0):
                 return
-            equity = self.equity()
+            equity = self.checked_equity()
+            if equity is None:
+                return
             if not self.guards(equity):
                 return
             k, why = self.risk.multiplier(equity, self.now())
@@ -571,12 +673,14 @@ class Bot:
     def watchdog(self):
         m = self.mem
         try:
-            equity = self.equity()
+            equity = self.checked_equity()                  # F2: None = implausible reading, never acted on
         except Exception as e:
             log(f'watchdog equity fail: {e}'); return
-        self.live_status(equity)
-        if m['halt_total'] or m['target_hit']:
+        if equity is None:
             return
+        self.live_status(equity)
+        if m['target_hit']:
+            return                                          # (a latched halt still goes through the lock: guards() is False there and the re-flatten runs)
         # a rebalance holds the lock for 5-7 min: do not wait for it; check the hard limits read-only and, if one is hit,
         # stop its execution (abort_event); the flatten itself runs under the lock at the next watchdog tick
         if not self.lock.acquire(timeout=5):
@@ -588,7 +692,7 @@ class Bot:
         try:
             self.abort_event.clear()
             ok = self._watchdog_locked(equity) is not False
-            if ok and C.DAY_MARKER_FRAC > 0:
+            if ok and C.DAY_MARKER_FRAC > 0 and not self.guard_only:
                 self.day_marker_step()
         finally:
             self.lock.release()
@@ -662,7 +766,8 @@ class Bot:
 
     def limit_breach(self, equity):
         """Read-only (no memory writes, safe without the lock): the hard limit guards() would act on at this equity, or None.
-        Short stops / per-trade / gross guards are not checked here: the rebalance itself is re-sizing the positions."""
+        The per-trade loss guard IS checked (F5: a rebalance that is adding to a losing position must stop); short stops / gross guards are not:
+        the rebalance itself is re-sizing the positions."""
         m = self.mem
         if C.KILL_SWITCH:
             return 'KILL_SWITCH'
@@ -678,12 +783,35 @@ class Bot:
             day_loss = (equity - ref) / self.risk.initial
             if day_loss <= -C.DAILY_HALT_FRAC * C.RULES['daily_dd'] / 100.0:
                 return f'DAILY HALT ({day_loss * 100:.2f}% of initial)'
+        api = getattr(self, 'api', None)
+        if api is not None and float(C.RULES.get('per_trade_loss', 0.0) or 0.0) > 0:
+            try:
+                br = self.per_trade_breaches(api.positions(), equity)
+            except Exception as e:
+                log(f'limit_breach: per-trade check failed: {e}'); br = []
+            if br:
+                return f'PER-TRADE LOSS {br[0][0]} ({br[0][1]:,.0f} USDT)'
         return None
+
+    def per_trade_breaches(self, poss, equity):
+        """F5: positions whose total loss (unrealisedPnl + curRealisedPnl) exceeds 0.9 x per_trade_loss % x min(equity, initial) (the firm counts
+        realised loss per trade against the equity at open, so the lower of equity / initial is the safe base). -> [(sym, loss, limit)]."""
+        ptl = float(C.RULES.get('per_trade_loss', 0.0) or 0.0)
+        if ptl <= 0:
+            return []
+        lim = 0.9 * ptl / 100.0 * min(float(equity), self.risk.initial)
+        out = []
+        for sym, p in poss.items():
+            loss = float(p.get('upnl', 0.0) or 0.0) + float(p.get('rpnl', 0.0) or 0.0)
+            if p['qty'] != 0 and loss < -lim:
+                out.append((sym, loss, lim))
+        return out
 
     def _watchdog_locked(self, equity):
         """False when a guard stopped trading (no day marker then)."""
         m = self.mem
         if not self.guards(equity):
+            self.reflatten_if_halted()
             return False
         try:
             poss = self.api.positions()
@@ -710,20 +838,21 @@ class Bot:
         # per-position loss guard (firm 'per trade loss' rules; RULES.per_trade_loss % of initial, 0 = off)
         ptl = float(C.RULES.get('per_trade_loss', 0.0) or 0.0)
         if ptl > 0:
-            for sym, p in list(poss.items()):
-                if p.get('upnl', 0.0) < -0.9 * ptl / 100.0 * self.risk.initial and p['qty'] != 0:
-                    meta = self.instr.get(sym)
-                    if not meta:
-                        continue
-                    try:
-                        if not C.DRY_RUN:
-                            self.api.market(sym, round_qty(abs(p['qty']), meta), 'Sell' if p['qty'] > 0 else 'Buy', reduce_only=True)
-                        m['cooldown'][sym] = self.now().timestamp() + C.STOP_COOLDOWN_H * 3600
-                        m['last_targets'].pop(sym, None); m.save()
-                        log(f'PER-TRADE LOSS GUARD: {sym} closed, upnl {p["upnl"]:,.0f} (limit {ptl}% of {self.risk.initial:,.0f})')
-                        tg(f'✂️ Лимит убытка по позиции {sym}: {p["upnl"]:,.0f} USDT (правило фирмы {ptl}% от initial). Закрыта, карантин {C.STOP_COOLDOWN_H}ч.')
-                    except Exception as e:
-                        tg(f'🛑 Не смог закрыть {sym} по лимиту убытка: {e} — ЗАКРОЙ ВРУЧНУЮ'); log(f'per-trade guard {sym}: {e}')
+            for sym, loss, lim in self.per_trade_breaches(poss, equity):             # F5: unrealised + realised-so-far, base min(equity, initial)
+                p = poss[sym]
+                meta = self.instr.get(sym)
+                if not meta:
+                    tg_once(f'ptl_nometa_{sym}', f'🛑 Лимит убытка по {sym} ({loss:,.0f} USDT), но нет данных инструмента — ЗАКРОЙ ВРУЧНУЮ', 1.0)
+                    continue
+                try:
+                    if not C.DRY_RUN:
+                        self.api.market(sym, round_qty(abs(p['qty']), meta), 'Sell' if p['qty'] > 0 else 'Buy', reduce_only=True)
+                    m['cooldown'][sym] = self.now().timestamp() + C.STOP_COOLDOWN_H * 3600
+                    m['last_targets'].pop(sym, None); m.save()
+                    log(f'PER-TRADE LOSS GUARD: {sym} closed, loss {loss:,.0f} = upnl {p["upnl"]:,.0f} + realised {p.get("rpnl", 0.0):,.0f} (limit {lim:,.0f} = 0.9 x {ptl}% x min(equity, initial))')
+                    tg(f'✂️ Лимит убытка по позиции {sym}: {loss:,.0f} USDT (нереализ. {p["upnl"]:,.0f} + реализ. {p.get("rpnl", 0.0):,.0f}; правило фирмы {ptl}% от min(equity, initial)). Закрыта, карантин {C.STOP_COOLDOWN_H}ч.')
+                except Exception as e:
+                    tg(f'🛑 Не смог закрыть {sym} по лимиту убытка: {e} — ЗАКРОЙ ВРУЧНУЮ'); log(f'per-trade guard {sym}: {e}')
         # notional / margin guards vs firm limits (of INITIAL)
         g = sum(abs(p['qty'] * p['mark']) for p in poss.values())
         im = sum(p.get('im', 0.0) for p in poss.values())
@@ -748,15 +877,26 @@ class Bot:
     def start(self):
         m = self.mem
         cfg, h = C.effective_config(); log(f'effective config hash {h} ({len(cfg)} keys)'); set_status(config_hash=h)
+        if not C.EXPECTED_CONFIG_HASH and not C.DRY_RUN:
+            # F8: an empty hash would turn the pre-registration guard off silently. Only a dry run may start without one.
+            tg_persistent('hash_empty', f'🛑 EXPECTED_CONFIG_HASH не задан — бот НЕ запущен (без пред-регистрации торговать нельзя). Хэш этой конфигурации: {h}. '
+                                        f'Задать: ops/stage.sh <стадия> <размер> или bash ops/deploy.sh --accept-new-hash.', 6.0)
+            raise SystemExit('FATAL: EXPECTED_CONFIG_HASH is empty (set it, or DRY_RUN=1 for a dry run)')
         if C.EXPECTED_CONFIG_HASH and h != C.EXPECTED_CONFIG_HASH:
-            tg(f'🛑 Конфигурация ({h}) не совпадает с пред-регистрацией ({C.EXPECTED_CONFIG_HASH}). Бот НЕ запущен.')
-            raise SystemExit(f'FATAL: effective config hash {h} != EXPECTED_CONFIG_HASH {C.EXPECTED_CONFIG_HASH}')
+            # F8: no crash loop (the supervisor restarts a dead bot every 30 s, with the open positions unguarded in between): stay alive in
+            # guard-only mode - watchdog guards, short stop, per-trade guard run, no rebalance - and say so once.
+            self.enter_guard_only(f'config hash {h} != registered {C.EXPECTED_CONFIG_HASH}')
+            tg_persistent(f'hash_mismatch_{h}_{C.EXPECTED_CONFIG_HASH}',
+                          f'🛑 Конфигурация ({h}) не совпадает с пред-регистрацией ({C.EXPECTED_CONFIG_HASH}). Бот в режиме «только защита»: стоп-лимиты, стоп шорта и '
+                          f'лимит убытка по сделке работают, ребалансов и новых сделок НЕТ. Исправь env / код или прими новый хэш: bash ops/deploy.sh --accept-new-hash.', 24.0)
         m.check_writable()
         m.load()
         bl = sorted(C.BLACKLIST); bh = hashlib.sha256(','.join(bl).encode()).hexdigest()[:12]
         log(f'blacklist {len(bl)} symbols, hash {bh} (not part of the config hash)'); set_status(blacklist_hash=bh, blacklist_n=len(bl))
+        self.publish_model_hashes()
         self.warn_cppi_inactive()
         self.apply_resets()
+        self.check_key_permissions()
         try:
             self.api.switch_one_way()
         except ApiError as e:
@@ -766,6 +906,9 @@ class Bot:
         if m.get('held_w'):
             self.sleeves.held = {k: dict(v) for k, v in m['held_w'].items()}      # restore held daily sleeves
         equity = self.equity()
+        if not self._eq_valid(equity):
+            raise RuntimeError(f'start: implausible equity reading {equity!r}')          # network-class error: start_with_retry tries again
+        self._eq_ok = float(equity)
         if not m.loaded:
             self.carry_ml8_memory()
             anchor, src = self.recover_day_anchor(equity)
@@ -789,7 +932,7 @@ class Bot:
         except Exception as e:
             log(f'positions at start: {e}')
         # leverage on the tradable set (best effort)
-        if not C.DRY_RUN and C.SET_LEVERAGE > 0:
+        if not C.DRY_RUN and C.SET_LEVERAGE > 0 and not self.guard_only:
             tk = self.api.tickers()
             top = sorted([s for s in tk if s in self.instr], key=lambda s: -tk[s]['turnover24h'])[:260]
             n = 0
@@ -808,7 +951,40 @@ class Bot:
            f'Правила: total DD {C.RULES["total_dd"]}% ({C.RULES["total_dd_mode"]}), daily {C.RULES["daily_dd"]}% ({C.RULES["daily_dd_mode"]}), '
            f'цели {C.RULES["targets"]}, consistency {C.RULES["consistency"]}%, notional ≤{C.RULES["notional_x"]}x\n'
            f'Пол сейчас: {tf:,.2f} | рукава {C.SLEEVES} | BASE {C.BASE_SCALE} CPPI {C.CPPI_FRAC} VT {C.VT_TARGET_DVOL * 100:.2f}%/д\n'
-           f'Ребаланс {C.REBAL_HOUR_UTC:02d}:{C.REBAL_MINUTE:02d} UTC | {"DRY_RUN" if C.DRY_RUN else "LIVE"} | {C.BASE_URL}')
+           f'Ребаланс {C.REBAL_HOUR_UTC:02d}:{C.REBAL_MINUTE:02d} UTC | {"DRY_RUN" if C.DRY_RUN else "LIVE"} | {C.BASE_URL}'
+           + (f'\n⛔ РЕЖИМ «ТОЛЬКО ЗАЩИТА»: {self.guard_reason}. Ребалансов нет.' if self.guard_only else ''))
+
+    def enter_guard_only(self, reason):
+        """Guard-only mode: the watchdog guards keep protecting the open positions, nothing new is traded (no rebalance / scale pass / day marker)."""
+        self.guard_only = True; self.guard_reason = reason
+        log(f'GUARD-ONLY MODE: {reason}')
+        set_status(guard_only=True, guard_reason=reason, ok=False, error=f'guard-only: {reason}')
+
+    def check_key_permissions(self):
+        """B4: a trading key must not be able to move money out. Wallet permissions Withdraw / AccountTransfer / SubMemberTransfer -> refuse to
+        trade (guard-only mode + Telegram). Cannot be read (ApiError) -> warning only; a network failure propagates to start_with_retry."""
+        if not hasattr(getattr(self, 'api', None), 'api_key_wallet_risks'):
+            return
+        try:
+            risks = self.api.api_key_wallet_risks()
+        except ApiError as e:
+            log(f'key permission check: {e}'); tg_once('key_perm_unreadable', f'⚠️ Не смог проверить права API-ключа ({e}). Проверь вручную: ключ не должен иметь права на вывод / перевод.', 24.0)
+            return
+        set_status(key_wallet_risks=risks)
+        if risks:
+            self.enter_guard_only(f'API key has money-moving permissions {risks}')
+            tg_persistent(f'key_perm_{"_".join(risks)}', f'🛑 У API-ключа есть права на вывод / перевод средств ({", ".join(risks)}). Бот НЕ торгует (режим «только защита»). '
+                                                            f'Создай новый ключ только с правами торговли (Contract Trade: Orders + Positions), без Wallet-прав, '
+                                                            f'и запиши его: bash ops/stage.sh keys.', 24.0)
+
+    def publish_model_hashes(self):
+        """/status model_hashes {file: sha256[:12]} of the files in MODEL_DIR: ops/retrain.py compares them after a restart (F7)."""
+        try:
+            out = {f: hashlib.sha256(open(os.path.join(C.MODEL_DIR, f), 'rb').read()).hexdigest()[:12] for f in sorted(os.listdir(C.MODEL_DIR))
+                   if os.path.isfile(os.path.join(C.MODEL_DIR, f))}
+            set_status(model_hashes=out)
+        except Exception as e:
+            log(f'model hashes: {e}')
 
     ML8_CARRY_KEYS = ('sleeve_pnl_hist', 'ml8_mult', 'ml8_mult_date', 'ml8_changes', 'ml8_audit', 'ml8_audit_day')
 
@@ -886,7 +1062,7 @@ class Bot:
 
     def loop(self):
         self.start_with_retry()
-        if self.cascade:
+        if self.cascade and not self.guard_only:
             self.cascade.start_background()
         self.loop_body()
 
@@ -896,7 +1072,9 @@ class Bot:
             try:
                 now = self.now()
                 due = self.due_slot(now); slot = f'{due.date().isoformat()}T{due.hour:02d}'
-                if self.mem.get('last_rebal_slot') != slot:       # covers a missed slot (downtime): rebalance at the next wake-up
+                if self.guard_only:
+                    pass                                          # watchdog guards only (rebalance() / scale_pass() refuse as well)
+                elif self.mem.get('last_rebal_slot') != slot:       # covers a missed slot (downtime): rebalance at the next wake-up
                     self.rebalance(slot)
                 elif now.minute >= C.REBAL_MINUTE:
                     self.scale_pass()
@@ -947,7 +1125,7 @@ def main():
     bot = Bot(api)
     bot.start_with_retry()                                  # watchdog only after the state is loaded and the config checked
     wd = threading.Thread(target=bot.watchdog_loop, daemon=True, name='watchdog'); wd.start()
-    if bot.cascade:
+    if bot.cascade and not bot.guard_only:
         bot.cascade.start_background()                      # reg. 5b: daily Coinalyze job at ~00:05 UTC (reads the key from env COINALYZE_API_KEY only)
     threading.Thread(target=HTTPServer((C.STATUS_BIND, C.PORT), Handler).serve_forever, daemon=True, name='http').start()
 

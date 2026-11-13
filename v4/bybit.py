@@ -25,6 +25,15 @@ class ApiError(RuntimeError):
         self.code = int(code or 0)
 
 
+class BatchError(RuntimeError):
+    """create_batch failed in a LATER chunk (F4). `done` = (retCode, retMsg) for every order of the chunks the exchange already accepted, in input
+    order (always a whole number of chunks); the orders after them were not accepted by this call (or their outcome is unknown: the caller checks
+    the open orders before it resends)."""
+    def __init__(self, done, cause):
+        super().__init__(f'batch failed after {len(done)} accepted orders: {cause}')
+        self.done, self.cause = list(done), cause
+
+
 class Bybit:
     def __init__(self, base, key='', secret='', log=print):
         self.base = base.rstrip('/')
@@ -253,7 +262,7 @@ class Bybit:
                     except (TypeError, ValueError):
                         return 0.0
                 leg = dict(qty=sign * sz, positionIdx=int(pos.get('positionIdx') or 0), mark=f('markPrice'),
-                           entry=f('avgPrice'), upnl=f('unrealisedPnl'), value=f('positionValue'), im=f('positionIM'),
+                           entry=f('avgPrice'), upnl=f('unrealisedPnl'), rpnl=f('curRealisedPnl'), value=f('positionValue'), im=f('positionIM'),
                            sl=str(pos.get('stopLoss') or ''))
                 raw.setdefault(pos['symbol'], []).append(leg)
             cursor = r.get('nextPageCursor', '')
@@ -264,7 +273,7 @@ class Bybit:
             q = sum(l['qty'] for l in legs)
             mark = next((l['mark'] for l in legs if l['mark']), 0.0)
             ent = sum(abs(l['qty']) * l['entry'] for l in legs) / max(sum(abs(l['qty']) for l in legs), 1e-12)
-            out[sym] = dict(qty=q, mark=mark, entry=ent, upnl=sum(l['upnl'] for l in legs),
+            out[sym] = dict(qty=q, mark=mark, entry=ent, upnl=sum(l['upnl'] for l in legs), rpnl=sum(l['rpnl'] for l in legs),
                             im=sum(l['im'] for l in legs), legs=legs)
         return out
 
@@ -327,9 +336,21 @@ class Bybit:
             if not cursor:
                 return total, last
 
+    def api_key_info(self):
+        """/v5/user/query-api of the key in use (permissions, expiry, ...)."""
+        return self._req('GET', '/v5/user/query-api', {}, auth=True)
+
+    FORBIDDEN_WALLET_PERMS = ('Withdraw', 'AccountTransfer', 'SubMemberTransfer')
+
+    def api_key_wallet_risks(self, info=None):
+        """B4: the Wallet permissions of the key that let money leave the account (Withdraw / AccountTransfer / SubMemberTransfer)."""
+        r = info if info is not None else self.api_key_info()
+        wallet = (r.get('permissions') or {}).get('Wallet') or []
+        return [x for x in wallet if x in self.FORBIDDEN_WALLET_PERMS]
+
     def api_key_expiry(self):
         """Expiry of the API key in use (datetime, UTC) or None when it does not expire / is unknown."""
-        r = self._req('GET', '/v5/user/query-api', {}, auth=True)
+        r = self.api_key_info()
         exp = str(r.get('expiredAt') or '').strip()
         if not exp or exp.startswith('0001') or exp == '0':
             return None
@@ -360,7 +381,12 @@ class Bybit:
             chunk = []
             for p in orders[k:k + 10]:
                 p = dict(p); p['orderLinkId'] = self.oid(); chunk.append(p)
-            j = self._req('POST', '/v5/order/create-batch', {'category': 'linear', 'request': chunk}, auth=True, retries=2, raw=True)
+            try:
+                j = self._req('POST', '/v5/order/create-batch', {'category': 'linear', 'request': chunk}, auth=True, retries=2, raw=True)
+            except Exception as e:
+                if out:                                    # earlier chunks are on the book: tell the caller exactly which, so it resends only the rest
+                    raise BatchError(out, e) from e
+                raise
             time.sleep(0.1 * len(chunk))
             codes = ((j.get('retExtInfo') or {}).get('list') or [])
             for n in range(len(chunk)):
